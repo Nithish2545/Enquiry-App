@@ -58,8 +58,8 @@ function PaymentConfirmCard({ item, index }) {
           {item.pickUpPersonName || "-"}
         </p>
         <p className="text-base font-medium text-gray-800">
-          <strong className="text-gray-900">Pickup Completed DateTime:</strong>{" "}
-          {item.pickupCompletedDatatime || "-"}
+          <strong className="text-gray-900">Package Connected:</strong>{" "}
+          {item.packageConnectedDataTime || "-"}
         </p>
         {item.rtoIfAny && (
           <p className="text-base font-medium text-red-600">

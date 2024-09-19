@@ -4,6 +4,7 @@ import Nav from "./Nav";
 import PaymentConfirmCard from "./PaymentConfirmCard";
 
 function PaymentConfirm() {
+  
   const [data, setData] = useState([]);
   const [activeTab, setActiveTab] = useState("PAYMENT PENDING");
 
@@ -17,6 +18,7 @@ function PaymentConfirm() {
   }, []);
 
   const filteredData = data.filter((item) => item.status === activeTab);
+  console.log(data);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -47,8 +49,12 @@ function PaymentConfirm() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 pt-10">
           {filteredData.length === 0 ? (
             <div className="flex flex-col items-center justify-center w-full h-64  bg-white rounded-lg shadow-md">
-              <p className="text-lg font-semibold text-gray-600">No records found</p>
-              <p className="text-sm text-gray-400">There are no payments to display for the selected status.</p>
+              <p className="text-lg font-semibold text-gray-600">
+                No records found
+              </p>
+              <p className="text-sm text-gray-400">
+                There are no payments to display for the selected status.
+              </p>
             </div>
           ) : (
             filteredData.map((item, index) => (

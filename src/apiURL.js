@@ -1,2 +1,3 @@
-const SHEETYAPI =  "https://api.sheety.co/c8e5c72713f88a4dc0f9689d459ff4b6/pickupdata/sheet1"
-export default  {SHEETYAPI:SHEETYAPI}
+const SHEETYAPI =  "https://api.sheety.co/584e3066e3d830496e2806328c85c0be/pickupdata/sheet1"
+const CANCELSHEETYAPI =  "https://api.sheety.co/584e3066e3d830496e2806328c85c0be/canceledBooking/sheet1"
+export default  {SHEETYAPI:SHEETYAPI , CANCELSHEETYAPI:CANCELSHEETYAPI}

@@ -21,6 +21,9 @@ const RateCardForm = () => {
     { name: "HONG KONG" },
     { name: "MALAYSIA" },
     { name: "NEW ZEALAND" },
+    { name: "SOUTH AMERICA" },
+    { name: "SINGAPORE" },
+    { name: "Australia" },
   ];
 
   const API_ENDPOINT = "https://script.google.com/macros/s/AKfycbzV38Uyx2o1hHDG8EQKhIDiG3ciRZWNqxGkZrU01rr8ssfL5QxhC5lzLBTbmf_MExrOWA/exec"; // Replace with your actual Web App URL

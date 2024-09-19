@@ -16,25 +16,24 @@ function CancelCard({ item, index }) {
     try {
       const result = await axios.get(API_URL);
       const userDetails = result.data.sheet1;
-      const final_result = userDetails.filter((user) => user.awbNumber === awbNumber);
-      
+      const final_result = userDetails.filter(
+        (user) => user.awbNumber === awbNumber
+      );
+
       const body = {
         sheet1: {
           ...final_result[0],
-          CancelReason: cancelReason,
+          cancelReason: cancelReason,
         },
       };
 
-      const response = await fetch(
-        "https://api.sheety.co/c8e5c72713f88a4dc0f9689d459ff4b6/canceledBooking/sheet1",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(body),
-        }
-      );
+      const response = await fetch(apiURL.CANCELSHEETYAPI, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
       const json = await response.json();
       console.log(json.sheet1);
 
@@ -77,43 +76,80 @@ function CancelCard({ item, index }) {
       <div className="flex flex-col mb-4 gap-2">
         {item.consignorname && (
           <p className="text-base font-medium text-gray-800">
-            <strong className="text-gray-900">Name:</strong> {item.consignorname}
+            <strong className="text-gray-900">Name:</strong>{" "}
+            {item.consignorname}
           </p>
         )}
         <p className="text-base font-medium text-gray-800">
-          <strong className="text-gray-900">AWB Number:</strong> {item.awbNumber || "-"}
+          <strong className="text-gray-900">Shiphit AWB Number:</strong>{" "}
+          {item.awbNumber || "-"}
         </p>
       </div>
 
       <div className="flex flex-col mb-4 gap-2">
         {item.consignorphonenumber && (
           <p className="text-base font-medium text-gray-800">
-            <strong className="text-gray-900">Phone Number:</strong> {item.consignorphonenumber}
+            <strong className="text-gray-900">Phone Number:</strong>{" "}
+            {item.consignorphonenumber}
           </p>
         )}
         {item.destination && (
           <p className="text-base font-medium text-gray-800">
-            <strong className="text-gray-900">Destination:</strong> {item.destination}
+            <strong className="text-gray-900">Destination:</strong>{" "}
+            {item.destination}
           </p>
         )}
       </div>
 
-      <div className="flex flex-col mb-4 gap-2">
-        <p className="text-base font-medium text-gray-800">
-          <strong className="text-gray-900">Final Weight:</strong> {item.actualWeight + " KG" || "-"}
-        </p>
-      </div>
+      {item.actualWeight != "" ? (
+        <div className="flex flex-col mb-4 gap-2">
+          <p className="text-base font-medium text-gray-800">
+            <strong className="text-gray-900">Final Weight:</strong>{" "}
+            {item.actualWeight + " KG" || "-"}
+          </p>
+        </div>
+      ) : (
+        <></>
+      )}
 
       <div className="flex flex-col mb-4 gap-2">
-        <p className="text-base font-medium text-gray-800">
-          <strong className="text-gray-900">PickUp Person Name:</strong> {item.pickUpPersonName || "-"}
-        </p>
-        <p className="text-base font-medium text-gray-800">
-          <strong className="text-gray-900">Pickup Completed DateTime:</strong> {item.pickupCompletedDatatime || "-"}
-        </p>
+        {item.pickUpPersonName != "" ? (
+          <p className="text-base font-medium text-gray-800">
+            <strong className="text-gray-900">PickUp Person Name:</strong>{" "}
+            {item.pickUpPersonName || "-"}
+          </p>
+        ) : (
+          <></>
+        )}
+
+        {item.pickupDatetime && (
+          <p className="text-base font-medium text-gray-800">
+            <strong className="text-gray-900">Pickup Booked At:</strong>{" "}
+            {item.pickupDatetime || "-"}
+          </p>
+        )}
         {item.rtoIfAny && (
           <p className="text-base font-medium text-red-600">
-            <strong className="text-gray-900">RTO Information:</strong> {item.rtoIfAny}
+            <strong className="text-gray-900">RTO Information:</strong>{" "}
+            {item.rtoIfAny}
+          </p>
+        )}
+        {item.weightapx && (
+          <p className="text-base font-medium text-gray-900">
+            <strong className="text-gray-900">Apx Weight:</strong>{" "}
+            {item.weightapx}
+          </p>
+        )}
+        {item.actualWeight && (
+          <p className="text-base font-medium text-gray-900">
+            <strong className="text-gray-900">Final weight:</strong>{" "}
+            {item.actualWeight}
+          </p>
+        )}
+        {item.vendorName && (
+          <p className="text-base font-medium text-gray-900">
+            <strong className="text-gray-900">Vendor (Carrier):</strong>{" "}
+            {item.vendorName}
           </p>
         )}
       </div>

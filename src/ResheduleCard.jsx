@@ -11,29 +11,31 @@ function CancelCard({ item, index }) {
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
   const [selectedDate, setSelectedDate] = useState(); // DateTime state
   const [selectedTime, setSelectedTime] = useState(""); // DateTime state
+  const [loading, setloading] = useState(false);
+  const [Hour, setHour] = useState(""); // DateTime state
+  const [Timeperiod, setTimeperiod] = useState(""); // DateTime state
 
   // Handle reschedule click
   const handleAcceptClick = async (awbNumber) => {
-   
+    setloading(true);
     // pickupDatetime
     const body = {
       sheet1: {
-        pickupDatetime: selectedDate + " " + selectedTime,
+        pickupDatetime:
+          selectedDate + " "  + "&" + " " + Hour + " " + Timeperiod,
       },
     };
 
-    const response = await fetch(
-      `${"https://api.sheety.co/c8e5c72713f88a4dc0f9689d459ff4b6/pickupdata/sheet1"}/${item.id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      }
-    );
+    const response = await fetch(`${apiURL.SHEETYAPI}/${item.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
     const json = await response.json();
     console.log(json.sheet1);
+    setloading(false);
     setIsModalOpen(false); // Close the modal after submission
   };
 
@@ -91,26 +93,55 @@ function CancelCard({ item, index }) {
         )}
       </div>
 
-      <div className="flex flex-col mb-4 gap-2">
-        <p className="text-base font-medium text-gray-800">
-          <strong className="text-gray-900">Final Weight:</strong>{" "}
-          {item.actualWeight + " KG" || "-"}
-        </p>
-      </div>
+      {item.actualWeight != "" ? (
+        <div className="flex flex-col mb-4 gap-2">
+          <p className="text-base font-medium text-gray-800">
+            <strong className="text-gray-900">Final Weight:</strong>{" "}
+            {item.actualWeight + " KG" || "-"}
+          </p>
+        </div>
+      ) : (
+        <></>
+      )}
 
       <div className="flex flex-col mb-4 gap-2">
-        <p className="text-base font-medium text-gray-800">
-          <strong className="text-gray-900">PickUp Person Name:</strong>{" "}
-          {item.pickUpPersonName || "-"}
-        </p>
-        <p className="text-base font-medium text-gray-800">
-          <strong className="text-gray-900">Pickup Completed DateTime:</strong>{" "}
-          {item.pickupCompletedDatatime || "-"}
-        </p>
+        {item.pickUpPersonName != "" ? (
+          <p className="text-base font-medium text-gray-800">
+            <strong className="text-gray-900">PickUp Person Name:</strong>{" "}
+            {item.pickUpPersonName || "-"}
+          </p>
+        ) : (
+          <></>
+        )}
+
+        {item.pickupDatetime && (
+          <p className="text-base font-medium text-gray-800">
+            <strong className="text-gray-900">Pickup Booked At:</strong>{" "}
+            {item.pickupDatetime || "-"}
+          </p>
+        )}
         {item.rtoIfAny && (
           <p className="text-base font-medium text-red-600">
             <strong className="text-gray-900">RTO Information:</strong>{" "}
             {item.rtoIfAny}
+          </p>
+        )}
+        {item.weightapx && (
+          <p className="text-base font-medium text-gray-900">
+            <strong className="text-gray-900">Apx Weight:</strong>{" "}
+            {item.weightapx}
+          </p>
+        )}
+        {item.actualWeight && (
+          <p className="text-base font-medium text-gray-900">
+            <strong className="text-gray-900">Final weight:</strong>{" "}
+            {item.actualWeight}
+          </p>
+        )}
+        {item.vendorName && (
+          <p className="text-base font-medium text-gray-900">
+            <strong className="text-gray-900">Vendor (Carrier):</strong>{" "}
+            {item.vendorName}
           </p>
         )}
       </div>
@@ -121,9 +152,7 @@ function CancelCard({ item, index }) {
             <strong className="text-gray-900">Status:</strong>
           </p>
           <p
-            className={`rounded-full py-1 px-3 text-sm font-semibold text-center ${
-              item.status === "PAYMENT DONE" ? "bg-green-500" : "bg-red-500"
-            } text-white`}
+            className={`rounded-full py-1 px-3 text-sm font-semibold text-center  text-white bg-red-500`}
           >
             {item.status}
           </p>
@@ -185,15 +214,36 @@ function CancelCard({ item, index }) {
             </div>
 
             {/* Time Picker */}
-            <div>
-              <label className="block mb-2 text-sm font-medium text-gray-700">
-                Select New Time:
+            <div className="mb-4">
+              <label className="block text-gray-700 font-semibold mb-2">
+                Pickup Time:
               </label>
-              <input
-                type="time"
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent mb-4"
-                onChange={(e) => setSelectedTime(e.target.value)}
-              />
+
+              {/* Time Dropdown */}
+              <div className="flex space-x-2">
+                {/* Hour Dropdown */}
+                <select
+                  className="w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:border-[#8847D9]"
+                  onChange={(e) => setHour(e.target.value)}
+                >
+                  <option value="">Select Hour</option>
+                  {[...Array(12).keys()].map((hour) => (
+                    <option key={hour + 1} value={hour + 1}>
+                      {hour + 1}:00
+                    </option>
+                  ))}
+                </select>
+
+                {/* AM/PM Dropdown */}
+                <select
+                  className="w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:border-[#8847D9]"
+                  onChange={(e) => setTimeperiod(e.target.value)}
+                >
+                  <option value="">AM/PM</option>
+                  <option value="AM">AM</option>
+                  <option value="PM">PM</option>
+                </select>
+              </div>
             </div>
 
             {/* Action Buttons */}
@@ -206,9 +256,14 @@ function CancelCard({ item, index }) {
               </button>
               <button
                 onClick={() => handleAcceptClick(item.awbNumber)}
-                className="bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 active:bg-purple-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 transition-colors"
+                className={`py-2 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-opacity-50 ${
+                  loading
+                    ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                    : "bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800 focus:ring-purple-500"
+                }`}
+                disabled={loading}
               >
-                Submit Reschedule
+                {loading ? "Loading..." : "Submit Reschedule"}
               </button>
             </div>
           </div>

@@ -26,7 +26,6 @@ function PickupBooking() {
     reset,
   } = useForm();
   const barcodeRef = useRef(null);
-  const staticAwbNumber = "AWB123456789";
   const todayDate = new Date().toLocaleDateString();
   const generateAWBNumber = () => {
     return String(Math.floor(100000 + Math.random() * 900000)).padStart(6, "0");
@@ -96,10 +95,10 @@ function PickupBooking() {
         sheet1: {
           consignorname: data.Consignorname,
           consignorphonenumber: data.Consignornumber,
-          consignorlocation: data.Consignorlocation,
-          consigneename: data.consigneename,
-          consigneephonenumber: data.consigneenumber,
-          consigneelocation: data.consigneelocation,
+          // consignorlocation: data.Consignorlocation,
+          // consigneename: data.consigneename,
+          // consigneephonenumber: data.consigneenumber,
+          // consigneelocation: data.consigneelocation,
           content: data.Content,
           email: data.email,
           phonenumber: data.number,
@@ -110,11 +109,10 @@ function PickupBooking() {
           weightapx: data.weight + " KG",
           pickupInstructions: data.instructions,
           awbNumber: awbNumber,
-          pickupDatetime: data.pickupDate + " " + data.pickupTime,
+          pickupDatetime: data.pickupDate + " " + " " + "&" + data.pickupHour + " " + data.pickupPeriod,
           vendorName: data.vendor,
           status: "RUN SHEET",
           Pickuparea: data.pickuparea,
-          imageUrLs: JSON.stringify(uploadedImageURLs),
         },
       };
 
@@ -136,100 +134,100 @@ function PickupBooking() {
       setLoading(false);
     }
 
-    JsBarcode(barcodeRef.current, awbNumber, {
-      format: "CODE128",
-      displayValue: true,
-      width: 2,
-      height: 40,
-    });
+    // JsBarcode(barcodeRef.current, awbNumber, {
+    //   format: "CODE128",
+    //   displayValue: true,
+    //   width: 2,
+    //   height: 40,
+    // });
 
-    const doc = new jsPDF();
+    // const doc = new jsPDF();
 
-    // Add logo to the PDF (replace with your logo URL)
-    const logoUrl = "/shiphtlogo.png";
-    doc.addImage(logoUrl, "PNG", 150, 10, 40, 20);
+    // // Add logo to the PDF (replace with your logo URL)
+    // const logoUrl = "/shiphtlogo.png";
+    // doc.addImage(logoUrl, "PNG", 150, 10, 40, 20);
 
-    // Title formatting
-    doc.setFontSize(20);
-    doc.setFont("helvetica", "bold");
-    doc.text("Express Service", 20, 30);
+    // // Title formatting
+    // doc.setFontSize(20);
+    // doc.setFont("helvetica", "bold");
+    // doc.text("Express Service", 20, 30);
 
-    // Add today's date
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Date: ${todayDate}`, 20, 40);
+    // // Add today's date
+    // doc.setFontSize(12);
+    // doc.setFont("helvetica", "normal");
+    // doc.text(`Date: ${todayDate}`, 20, 40);
 
-    // Draw a border around the form
-    doc.setLineWidth(0.5);
-    doc.rect(10, 50, 190, 160);
+    // // Draw a border around the form
+    // doc.setLineWidth(0.5);
+    // doc.rect(10, 50, 190, 160);
 
-    // From and To section
-    const xOffset = 20;
-    const yOffset = 60;
-    const sectionWidth = 85; // Width for each section
-    const verticalSpacing = 20;
+    // // From and To section
+    // const xOffset = 20;
+    // const yOffset = 60;
+    // const sectionWidth = 85; // Width for each section
+    // const verticalSpacing = 20;
 
-    // From section
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("From:", xOffset, yOffset);
+    // // From section
+    // doc.setFontSize(14);
+    // doc.setFont("helvetica", "bold");
+    // doc.text("From:", xOffset, yOffset);
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
+    // doc.setFont("helvetica", "normal");
+    // doc.setFontSize(12);
 
-    doc.text(`Name: ${data.Consignorname}`, xOffset, yOffset + 10);
-    doc.text(`Phone Number: ${data.Consignornumber}`, xOffset, yOffset + 20);
-    const fromLocationLines = doc.splitTextToSize(
-      `Location: ${data.Consignorlocation}`,
-      sectionWidth - 10
-    );
-    doc.text(fromLocationLines, xOffset, yOffset + 30);
+    // doc.text(`Name: ${data.Consignorname}`, xOffset, yOffset + 10);
+    // doc.text(`Phone Number: ${data.Consignornumber}`, xOffset, yOffset + 20);
+    // const fromLocationLines = doc.splitTextToSize(
+    //   `Location: ${data.Consignorlocation}`,
+    //   sectionWidth - 10
+    // );
+    // doc.text(fromLocationLines, xOffset, yOffset + 30);
 
-    // To section
-    doc.setFont("helvetica", "bold");
-    doc.text("To:", xOffset + sectionWidth, yOffset);
+    // // To section
+    // doc.setFont("helvetica", "bold");
+    // doc.text("To:", xOffset + sectionWidth, yOffset);
 
-    doc.setFont("helvetica", "normal");
+    // doc.setFont("helvetica", "normal");
 
-    doc.setFontSize(12);
+    // doc.setFontSize(12);
 
-    doc.text(
-      `Name: ${data.consigneename}`,
-      xOffset + sectionWidth,
-      yOffset + 10
-    );
-    doc.text(
-      `Phone Number: ${data.consigneenumber}`,
-      xOffset + sectionWidth,
-      yOffset + 20
-    );
-    const toLocationLines = doc.splitTextToSize(
-      `Location: ${data.consigneelocation}`,
-      sectionWidth - 10
-    );
-    doc.text(toLocationLines, xOffset + sectionWidth, yOffset + 30);
+    // doc.text(
+    //   `Name: ${data.consigneename}`,
+    //   xOffset + sectionWidth,
+    //   yOffset + 10
+    // );
+    // doc.text(
+    //   `Phone Number: ${data.consigneenumber}`,
+    //   xOffset + sectionWidth,
+    //   yOffset + 20
+    // );
+    // const toLocationLines = doc.splitTextToSize(
+    //   `Location: ${data.consigneelocation}`,
+    //   sectionWidth - 10
+    // );
+    // doc.text(toLocationLines, xOffset + sectionWidth, yOffset + 30);
 
-    // Add weight section
-    doc.setFont("helvetica", "bold");
-    doc.text("Weight (kg):", xOffset, yOffset + 50);
-    doc.setFont("helvetica", "normal");
-    doc.text(`${data.weight} kg`, xOffset + sectionWidth, yOffset + 50);
+    // // Add weight section
+    // doc.setFont("helvetica", "bold");
+    // doc.text("Weight (kg):", xOffset, yOffset + 50);
+    // doc.setFont("helvetica", "normal");
+    // doc.text(`${data.weight} kg`, xOffset + sectionWidth, yOffset + 50);
 
-    // Content section
-    doc.setFont("helvetica", "bold");
-    doc.text("Content:", xOffset, yOffset + 70);
-    const content = doc.splitTextToSize(data.Content, 160);
-    doc.setFont("helvetica", "normal");
-    doc.text(content, xOffset, yOffset + 80);
+    // // Content section
+    // doc.setFont("helvetica", "bold");
+    // doc.text("Content:", xOffset, yOffset + 70);
+    // const content = doc.splitTextToSize(data.Content, 160);
+    // doc.setFont("helvetica", "normal");
+    // doc.text(content, xOffset, yOffset + 80);
 
-    // Add barcode section
-    doc.setFont("helvetica", "bold");
-    doc.text(`AWB Number: ${awbNumber}`, xOffset, yOffset + 120);
+    // // Add barcode section
+    // doc.setFont("helvetica", "bold");
+    // doc.text(`AWB Number: ${awbNumber}`, xOffset, yOffset + 120);
 
-    const barcodeImage = barcodeRef.current.toDataURL();
-    doc.addImage(barcodeImage, "PNG", xOffset, yOffset + 130, 100, 30);
-    // Save the PDF
-    doc.save(`${data.Consignorname}-client-form.pdf`);
+    // const barcodeImage = barcodeRef.current.toDataURL();
+    // doc.addImage(barcodeImage, "PNG", xOffset, yOffset + 130, 100, 30);
+    // // Save the PDF
+    // doc.save(`${data.Consignorname}-client-form.pdf`);
     setShowModal(true);
   };
 
@@ -306,7 +304,6 @@ function PickupBooking() {
                 </p>
               )}
             </div>
-
             <div className="mb-4">
               <label className="block text-gray-700 font-semibold mb-2">
                 Consignor Phone Number:
@@ -320,6 +317,10 @@ function PickupBooking() {
                     value: /^[0-9]+$/,
                     message: "Please enter a valid phone number",
                   },
+                  onChange: (e) => {
+                    // Remove non-numeric characters
+                    e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                  },
                 })}
                 className={`w-full px-3 py-2 border ${
                   errors.Consignornumber ? "border-red-500" : "border-gray-300"
@@ -332,7 +333,7 @@ function PickupBooking() {
               )}
             </div>
 
-            <div className="mb-4">
+            {/* <div className="mb-4">
               <label className="block text-gray-700 font-semibold mb-2">
                 Consignor location:
               </label>
@@ -353,9 +354,9 @@ function PickupBooking() {
                   {errors.Consignorlocation.message}
                 </p>
               )}
-            </div>
+            </div> */}
 
-            <div className="mb-4">
+            {/* <div className="mb-4">
               <label className="block text-gray-700 font-semibold mb-2">
                 consignee Name:
               </label>
@@ -422,7 +423,7 @@ function PickupBooking() {
                   {errors.consigneelocation.message}
                 </p>
               )}
-            </div>
+            </div> */}
 
             <div className="mb-4">
               <label className="block text-gray-700 font-semibold mb-2">
@@ -620,18 +621,50 @@ function PickupBooking() {
               <label className="block text-gray-700 font-semibold mb-2">
                 Pickup Time:
               </label>
-              <input
-                type="time"
-                {...register("pickupTime", {
-                  required: "Pickup time is required",
-                })}
-                className={`w-full px-3 py-2 border ${
-                  errors.pickupTime ? "border-red-500" : "border-gray-300"
-                } rounded-md focus:outline-none focus:border-[#8847D9]`}
-              />
-              {errors.pickupTime && (
+
+              {/* Time Dropdown */}
+              <div className="flex space-x-2">
+                {/* Hour Dropdown */}
+                <select
+                  {...register("pickupHour", {
+                    required: "Pickup hour is required",
+                  })}
+                  className={`w-1/2 px-3 py-2 border ${
+                    errors.pickupHour ? "border-red-500" : "border-gray-300"
+                  } rounded-md focus:outline-none focus:border-[#8847D9]`}
+                >
+                  <option value="">Select Hour</option>
+                  {[...Array(12).keys()].map((hour) => (
+                    <option key={hour + 1} value={hour + 1}>
+                      {hour + 1}:00
+                    </option>
+                  ))}
+                </select>
+
+                {/* AM/PM Dropdown */}
+                <select
+                  {...register("pickupPeriod", {
+                    required: "AM/PM is required",
+                  })}
+                  className={`w-1/2 px-3 py-2 border ${
+                    errors.pickupPeriod ? "border-red-500" : "border-gray-300"
+                  } rounded-md focus:outline-none focus:border-[#8847D9]`}
+                >
+                  <option value="">AM/PM</option>
+                  <option value="AM">AM</option>
+                  <option value="PM">PM</option>
+                </select>
+              </div>
+
+              {/* Error messages */}
+              {errors.pickupHour && (
                 <p className="text-red-500 text-sm mt-1">
-                  {errors.pickupTime.message}
+                  {errors.pickupHour.message}
+                </p>
+              )}
+              {errors.pickupPeriod && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.pickupPeriod.message}
                 </p>
               )}
             </div>

@@ -208,7 +208,7 @@ function PaymentConfirmationForm() {
             <label className="text-gray-700 font-medium mb-1">Package Connected:</label>
             <input
               type="text"
-              value={details.pickupCompletedDatatime}
+              value={details.packageConnectedDataTime}
               readOnly
               className="p-2 border rounded bg-gray-100"
             />
