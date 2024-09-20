@@ -25,6 +25,7 @@ const RateCardForm = () => {
     { name: "AUSTRALIA" },
     { name: "SAUDI" },
     { name: "MAURITIUS" },
+    { name: "PHILIPPINES" },
   ];
 
   const API_ENDPOINT =
