@@ -3,7 +3,6 @@ import axios from "axios";
 import Nav from "./Nav";
 
 const RateCardForm = () => {
-
   const [country, setCountry] = useState("USA"); // Use the sheet name directly
   const [weight, setWeight] = useState("");
   const [weights, setWeights] = useState([]);
@@ -23,10 +22,13 @@ const RateCardForm = () => {
     { name: "NEW ZEALAND" },
     { name: "SOUTH AMERICA" },
     { name: "SINGAPORE" },
-    { name: "Australia" },
+    { name: "AUSTRALIA" },
+    { name: "SAUDI" },
+    { name: "MAURITIUS" },
   ];
 
-  const API_ENDPOINT = "https://script.google.com/macros/s/AKfycbzV38Uyx2o1hHDG8EQKhIDiG3ciRZWNqxGkZrU01rr8ssfL5QxhC5lzLBTbmf_MExrOWA/exec"; // Replace with your actual Web App URL
+  const API_ENDPOINT =
+    "https://script.google.com/macros/s/AKfycbzV38Uyx2o1hHDG8EQKhIDiG3ciRZWNqxGkZrU01rr8ssfL5QxhC5lzLBTbmf_MExrOWA/exec"; // Replace with your actual Web App URL
 
   // Fetch data from Google Sheets
   const fetchData = async () => {

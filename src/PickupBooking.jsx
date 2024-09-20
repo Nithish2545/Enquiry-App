@@ -109,7 +109,14 @@ function PickupBooking() {
           weightapx: data.weight + " KG",
           pickupInstructions: data.instructions,
           awbNumber: awbNumber,
-          pickupDatetime: data.pickupDate + " " + " " + "&" + data.pickupHour + " " + data.pickupPeriod,
+          pickupDatetime:
+            data.pickupDate +
+            " " +
+            " " +
+            "&" +
+            data.pickupHour +
+            " " +
+            data.pickupPeriod,
           vendorName: data.vendor,
           status: "RUN SHEET",
           Pickuparea: data.pickuparea,

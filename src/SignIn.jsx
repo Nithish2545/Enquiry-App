@@ -6,7 +6,9 @@ import { useNavigate } from "react-router-dom";
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
+  const [authError, setAuthError] = useState(""); // New state for error message
+
   const {
     control,
     handleSubmit,
@@ -16,6 +18,7 @@ const SignIn = () => {
 
   const onSubmit = async (data) => {
     setLoading(true);
+    setAuthError(""); // Clear previous error before submission
     try {
       await signInWithEmailAndPassword(auth, data.email, data.password);
       console.log("You are signed in successfully!");
@@ -71,9 +74,15 @@ const SignIn = () => {
       }
 
     } catch (error) {
-      alert("Error: " + error.message);
+      console.log(error.code)
+      // Set the error message for inline display
+      if (error.code === "auth/invalid-credential" || error.code === "auth/user-not-found") {
+        setAuthError("Invalid email or password. Please try again.");
+      } else {
+        setAuthError("Something went wrong. Please try again.");
+      }
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
@@ -89,10 +98,10 @@ const SignIn = () => {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
       <img src="/logo.png" alt="Logo" className="w-auto h-12 mb-6" />
       <h1 className="text-3xl font-bold text-gray-800 mb-8">Sign In</h1>
-      <form 
-        onSubmit={handleSubmit(onSubmit)} 
+      <form
+        onSubmit={handleSubmit(onSubmit)}
         className="w-full max-w-md"
-        onKeyPress={handleKeyPress}  // Add this to handle Enter key
+        onKeyPress={handleKeyPress}
       >
         <div className="w-full max-w-md">
           <Controller
@@ -133,7 +142,7 @@ const SignIn = () => {
               },
             }}
             render={({ field: { onChange, onBlur, value } }) => (
-              <div className="relative ">
+              <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   className={`w-full p-3 mb-4 border rounded ${
@@ -170,6 +179,11 @@ const SignIn = () => {
             <p className="text-red-500 text-sm mb-4">
               {errors.password.message}
             </p>
+          )}
+
+          {/* Inline authentication error message */}
+          {authError && (
+            <p className="text-red-500 text-sm text-center my-4">{authError}</p>
           )}
 
           <button
