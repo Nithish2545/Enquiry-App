@@ -32,13 +32,17 @@ function PickupBooking() {
   };
 
   useEffect(() => {
+    
     const countryData = getData();
+    console.log(countryData)
     countryData.push({ code: "UAE", name: "United Arab Emirates" });
     countryData.push({ code: "EU", name: "Europe" });
+    countryData.push({ code: "GB", name: "UK" });
+    countryData.push({ code: "US", name: "USA" });
 
     const topCountries = [
-      "United States of America",
-      "United Kingdom of Great Britain and Northern Ireland",
+      "USA",
+      "UK",
       "Canada",
       "Europe",
       "Singapore",
