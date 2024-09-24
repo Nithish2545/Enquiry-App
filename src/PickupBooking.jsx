@@ -16,6 +16,7 @@ function PickupBooking() {
   const [showModal, setShowModal] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({});
   const [imageURLs, setImageURLs] = useState([]);
+  const [username, setUsername] = useState("");
   const [files, setFiles] = useState([]);
   const [awbNumber, setawbNumber] = useState();
 
@@ -30,6 +31,11 @@ function PickupBooking() {
   const generateAWBNumber = () => {
     return String(Math.floor(100000 + Math.random() * 900000)).padStart(6, "0");
   };
+useEffect(() => {
+
+  const data = JSON.parse(localStorage.getItem("enquiryAuthToken")).name
+  setUsername(data)
+},[])
 
   useEffect(() => {
     
@@ -124,6 +130,7 @@ function PickupBooking() {
           vendorName: data.vendor,
           status: "RUN SHEET",
           Pickuparea: data.pickuparea,
+          pickupBookedBy:username
         },
       };
 
