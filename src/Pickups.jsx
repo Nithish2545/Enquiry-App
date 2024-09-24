@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Nav from "./Nav";
+import apiURL from "./apiURL";
 
 function Pickups() {
   const [username, setUsername] = useState(null);
@@ -16,12 +17,26 @@ function Pickups() {
     setUsername(storedUser);
   }, []);
 
+
+  const parsePickupDateTime = (dateTimeString) => {
+    const [datePart, timePart] = dateTimeString.split("&"); // Split date and time
+    const [year, month, day] = datePart.split("-"); // Get year, month, day
+    const [hour, minute] = timePart.split(" ")[0].split(":"); // Get hour and minute
+
+    // Convert hour to 24-hour format if it's PM
+    const isPM = timePart.includes("PM") && hour !== "12";
+    const adjustedHour = isPM ? parseInt(hour, 10) + 12 : hour;
+    const date = new Date(year, month - 1, day, adjustedHour, minute || 0); // Create Date object
+    return date;
+  };
+
+
   // Fetch pickup data from the API and filter based on the username
   useEffect(() => {
     if (username) {
       const fetchData = async () => {
         try {
-          const response = await fetch("https://api.sheety.co/d8d0c1c371101a10b17498a21b56cf51/pickupdata/sheet1");
+          const response = await fetch(apiURL.SHEETYAPI);
           const data = await response.json();
 
           // Filter the data based on the username
@@ -29,7 +44,16 @@ function Pickups() {
             (pickup) => pickup.pickupBookedBy === username
           );
 
-          setPickups(filteredData);
+          const sortedData = filteredData.sort((a, b) => {
+            const dateTimeA = parsePickupDateTime(a.pickupDatetime);
+            const dateTimeB = parsePickupDateTime(b.pickupDatetime);
+            return dateTimeB - dateTimeA; // Sort by date and time
+        
+          });
+
+          console.log(sortedData)
+
+          setPickups(sortedData);
           setLoading(false);
         } catch (error) {
           setError("Failed to fetch data: " + error.message);
@@ -96,10 +120,10 @@ function Pickups() {
                 <th className="py-3 px-4 border">AWB Number</th>
                 <th className="py-3 px-4 border">Consignor Name</th>
                 <th className="py-3 px-4 border">Consignor Phone</th>
-                <th className="py-3 px-4 border">Consignee Name</th>
                 <th className="py-3 px-4 border">Destination</th>
                 <th className="py-3 px-4 border">Weight (Apx)</th>
-                <th className="py-3 px-4 border">Pickup Date & Time</th>
+                <th className="py-3 px-4 border">Vendor</th>
+                <th className="py-3 px-4  border">Pickup Date & Time</th>
                 <th className="py-3 px-4 border">Status</th>
               </tr>
             </thead>
@@ -110,9 +134,9 @@ function Pickups() {
                     <td className="py-10 px-4 border">{pickup.awbNumber}</td>
                     <td className="py-10 px-4 border">{pickup.consignorname}</td>
                     <td className="py-10 px-4 border">{pickup.consignorphonenumber}</td>
-                    <td className="py-10 px-4 border">{pickup.consigneename}</td>
                     <td className="py-10 px-4 border">{pickup.destination}</td>
                     <td className="py-10 px-4 border">{pickup.weightapx} kg</td>
+                    <td className="py-10 px-4 border">{pickup.vendorName}</td>
                     <td className="py-10 px-4 border">{pickup.pickupDatetime}</td>
                     <td className="py-10 px-4 border">{pickup.status}</td>
                   </tr>
