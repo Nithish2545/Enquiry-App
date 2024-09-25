@@ -13,10 +13,11 @@ function Pickups() {
 
   // Fetch user info from localStorage
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("enquiryAuthToken"))?.name;
+    const storedUser = JSON.parse(
+      localStorage.getItem("enquiryAuthToken")
+    )?.name;
     setUsername(storedUser);
   }, []);
-
 
   const parsePickupDateTime = (dateTimeString) => {
     const [datePart, timePart] = dateTimeString.split("&"); // Split date and time
@@ -29,7 +30,6 @@ function Pickups() {
     const date = new Date(year, month - 1, day, adjustedHour, minute || 0); // Create Date object
     return date;
   };
-
 
   // Fetch pickup data from the API and filter based on the username
   useEffect(() => {
@@ -47,11 +47,10 @@ function Pickups() {
           const sortedData = filteredData.sort((a, b) => {
             const dateTimeA = parsePickupDateTime(a.pickupDatetime);
             const dateTimeB = parsePickupDateTime(b.pickupDatetime);
-            return dateTimeB - dateTimeA; // Sort by date and time
-        
+            return dateTimeA - dateTimeB; // Sort by date and time
           });
 
-          console.log(sortedData)
+          console.log(sortedData);
 
           setPickups(sortedData);
           setLoading(false);
@@ -67,9 +66,15 @@ function Pickups() {
 
   // Filter pickups based on search terms
   const filteredPickups = pickups.filter((pickup) => {
-    const awbMatch = pickup.awbNumber.toLowerCase().includes(awbSearchTerm.toLowerCase());
-    const dateMatch = pickup.pickupDatetime.split("&")[0].startsWith(dateSearchTerm); // Check if the date starts with the input
-    const consignorPhoneMatch = pickup.consignorphonenumber.toLowerCase().includes(consignorPhoneSearchTerm.toLowerCase());
+    const awbMatch = pickup.awbNumber
+      .toLowerCase()
+      .includes(awbSearchTerm.toLowerCase());
+    const dateMatch = pickup.pickupDatetime
+      .split("&")[0]
+      .startsWith(dateSearchTerm); // Check if the date starts with the input
+    const consignorPhoneMatch = pickup.consignorphonenumber
+      .toLowerCase()
+      .includes(consignorPhoneSearchTerm.toLowerCase());
     return awbMatch && dateMatch && consignorPhoneMatch; // Use AND logic to filter
   });
 
@@ -85,7 +90,9 @@ function Pickups() {
     <>
       <Nav />
       <div className="container mx-auto p-6 rounded-lg">
-        <h1 className="text-3xl font-bold mb-6 text-purple-700">Pickups Booked by {username}</h1>
+        <h1 className="text-3xl font-bold mb-6 text-purple-700">
+          Pickups Booked by {username}
+        </h1>
 
         {/* Search Inputs */}
         <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -132,18 +139,26 @@ function Pickups() {
                 filteredPickups.map((pickup) => (
                   <tr key={pickup.awbNumber}>
                     <td className="py-10 px-4 border">{pickup.awbNumber}</td>
-                    <td className="py-10 px-4 border">{pickup.consignorname}</td>
-                    <td className="py-10 px-4 border">{pickup.consignorphonenumber}</td>
+                    <td className="py-10 px-4 border">
+                      {pickup.consignorname}
+                    </td>
+                    <td className="py-10 px-4 border">
+                      {pickup.consignorphonenumber}
+                    </td>
                     <td className="py-10 px-4 border">{pickup.destination}</td>
                     <td className="py-10 px-4 border">{pickup.weightapx} kg</td>
                     <td className="py-10 px-4 border">{pickup.vendorName}</td>
-                    <td className="py-10 px-4 border">{pickup.pickupDatetime}</td>
+                    <td className="py-10 px-4 border">
+                      {pickup.pickupDatetime}
+                    </td>
                     <td className="py-10 px-4 border">{pickup.status}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="8" className="py-4 text-center text-gray-500">No pickups found.</td>
+                  <td colSpan="8" className="py-4 text-center text-gray-500">
+                    No pickups found.
+                  </td>
                 </tr>
               )}
             </tbody>
