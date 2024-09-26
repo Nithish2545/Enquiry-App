@@ -50,16 +50,20 @@ function PaymentConfirmCard({ item, index }) {
           <strong className="text-gray-900">Final Weight:</strong>{" "}
           {item.actualWeight + " " + "KG" || "-"}
         </p>
+        <p className="text-base font-medium text-gray-800">
+          <strong className="text-gray-900">Final no. of boxes:</strong>{" "}
+          {item.actualWeight + " " + "KG" || "-"}
+        </p>
       </div>
 
       <div className="flex flex-col mb-4 gap-2">
-        <p className="text-base font-medium text-gray-800">
+      <p className="text-base font-medium text-gray-800">
           <strong className="text-gray-900">PickUp Person Name:</strong>{" "}
           {item.pickUpPersonName || "-"}
         </p>
         <p className="text-base font-medium text-gray-800">
-          <strong className="text-gray-900">Package Connected:</strong>{" "}
-          {item.packageConnectedDataTime || "-"}
+          <strong className="text-gray-900">Pickup completed datetime:</strong>{" "}
+          {item.pickupCompletedDatatime || "-"}
         </p>
         {item.rtoIfAny && (
           <p className="text-base font-medium text-red-600">

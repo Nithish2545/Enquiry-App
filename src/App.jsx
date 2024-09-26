@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { auth } from "./firebase";
 import CancelOrReshedule from './CancelOrReshedule';
 import Pickups from './Pickups';
+import LogisticsDashboard from './LogisticsDashboard';
 
 function App() {
 
@@ -44,6 +45,7 @@ function App() {
           <Route path="/Pickups" element={user ? <Pickups /> : <Navigate to="/signin" />} />
           <Route path="/Sale-rates" element={user ? <RateCardForm /> : <Navigate to="/signin" />} />
           <Route path="/Payment-confirm" element={user ? <PaymentConfirm /> : <Navigate to="/signin" />} />
+          <Route path="/logisticsDashboard" element={user ? <LogisticsDashboard /> : <Navigate to="/signin" />} />
           <Route path="/Payment-confirmation-form/:awbnumber" element={user ? <PaymentConfirmationForm /> : <Navigate to="/signin" />} />
           {/* Sign In route, only accessible if no user is logged in */}
           <Route path="/signin" element={!user ? <SignIn /> : <Navigate to="/PickupBooking" />} />

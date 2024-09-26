@@ -19,6 +19,7 @@ function PickupBooking() {
   const [username, setUsername] = useState("");
   const [files, setFiles] = useState([]);
   const [awbNumber, setawbNumber] = useState();
+  const [frachise, setfrachise] = useState("");
 
   const {
     register,
@@ -29,18 +30,26 @@ function PickupBooking() {
   const barcodeRef = useRef(null);
   const todayDate = new Date().toLocaleDateString();
   const generateAWBNumber = () => {
-    return String(Math.floor(100000 + Math.random() * 900000)).padStart(6, "0");
+    return String(Math.floor(100000 + Math.random() * 900000)).padStart(4, "0");
   };
-useEffect(() => {
 
-  const data = JSON.parse(localStorage.getItem("enquiryAuthToken")).name
-  setUsername(data)
-},[])
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = date.getDate(); // Gets the day (1-31)
+    const month = date.getMonth() + 1; // Gets the month (0-11), so add 1
+    return `${day}-${month}`; // Format as "DD-M"
+  };
+
+  // Example usage
 
   useEffect(() => {
-    
+    const data = JSON.parse(localStorage.getItem("enquiryAuthToken")).name;
+    setUsername(data);
+  }, []);
+
+  useEffect(() => {
     const countryData = getData();
-    console.log(countryData)
+    console.log(countryData);
     countryData.push({ code: "UAE", name: "United Arab Emirates" });
     countryData.push({ code: "EU", name: "Europe" });
     countryData.push({ code: "GB", name: "UK" });
@@ -89,7 +98,7 @@ useEffect(() => {
   }, []);
 
   const onSubmit = async (data) => {
-    console.log(data);
+    console.log(frachise);
     setLoading(true);
     const awbNumber = generateAWBNumber();
     setawbNumber(awbNumber);
@@ -105,10 +114,10 @@ useEffect(() => {
         sheet1: {
           consignorname: data.Consignorname,
           consignorphonenumber: data.Consignornumber,
-          // consignorlocation: data.Consignorlocation,
-          // consigneename: data.consigneename,
-          // consigneephonenumber: data.consigneenumber,
-          // consigneelocation: data.consigneelocation,
+          consignorlocation: data.Consignorlocation,
+          consigneename: data.consigneename,
+          consigneephonenumber: data.consigneenumber,
+          consigneelocation: data.consigneelocation,
           content: data.Content,
           email: data.email,
           phonenumber: data.number,
@@ -118,9 +127,8 @@ useEffect(() => {
           destination: destinationCountryName, // Use full country name here
           weightapx: data.weight + " KG",
           pickupInstructions: data.instructions,
-          awbNumber: awbNumber,
           pickupDatetime:
-            data.pickupDate +
+            formatDate(data.pickupDate) +
             " " +
             " " +
             "&" +
@@ -130,11 +138,12 @@ useEffect(() => {
           vendorName: data.vendor,
           status: "RUN SHEET",
           Pickuparea: data.pickuparea,
-          pickupBookedBy:username
+          pickupBookedBy: username,
+          franchise:frachise
         },
       };
 
-      const response = await fetch(apiURL.SHEETYAPI, {
+      const response = await fetch(apiURL.CHENNAI, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -351,7 +360,7 @@ useEffect(() => {
               )}
             </div>
 
-            {/* <div className="mb-4">
+            <div className="mb-4">
               <label className="block text-gray-700 font-semibold mb-2">
                 Consignor location:
               </label>
@@ -372,9 +381,9 @@ useEffect(() => {
                   {errors.Consignorlocation.message}
                 </p>
               )}
-            </div> */}
+            </div>
 
-            {/* <div className="mb-4">
+            <div className="mb-4">
               <label className="block text-gray-700 font-semibold mb-2">
                 consignee Name:
               </label>
@@ -441,7 +450,7 @@ useEffect(() => {
                   {errors.consigneelocation.message}
                 </p>
               )}
-            </div> */}
+            </div>
 
             <div className="mb-4">
               <label className="block text-gray-700 font-semibold mb-2">
@@ -698,7 +707,23 @@ useEffect(() => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#8847D9]"
               ></textarea>
             </div>
+            <div>
+              <p>Frachise</p>
+              <select
+                className={`w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:border-[#8847D9]`}
+                onChange={(e) => {
+                  setfrachise(e.target.value)
+                  console.log(e.target.value)
+                }}
+              >
+                <option value="select">select</option>
+                <option value="CHENNAI">CHENNAI</option>
+                <option value="COIMBATORE">KOVAI</option>
+                <option value="PONDY">PONDY</option>
+              </select>
+            </div>
           </div>
+
           <div className="mb-4">
             <label className="block text-gray-700 font-semibold mb-2">
               Upload Images (max 5):

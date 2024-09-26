@@ -19,7 +19,7 @@ function Nav() {
       {/* Left Section */}
       <div className="flex items-center gap-4">
         <img src="/logo.png" className="h-10" alt="Logo" />
-        
+
         {/* Hamburger icon for mobile */}
         <button
           className="lg:hidden block text-white"
@@ -34,7 +34,8 @@ function Nav() {
             <Link
               to="/"
               className={`text-white rounded transition-colors ${
-                location.pathname === "/PickupBooking" || location.pathname === "/"
+                location.pathname === "/PickupBooking" ||
+                location.pathname === "/"
                   ? "text-purple-900 font-semibold"
                   : "bg-transparent"
               }`}
@@ -95,9 +96,23 @@ function Nav() {
               Pickups
             </Link>
           </li>
+          {user.email == "dinesh@gmail.com" && (
+            <li>
+              <Link
+                to="/logisticsDashboard"
+                className={`text-white rounded transition-colors ${
+                  location.pathname === "/logisticsDashboard"
+                    ? "text-purple-900 font-semibold"
+                    : "bg-transparent"
+                }`}
+                style={{ minHeight: "40px" }}
+              >
+                Logistics Dashboard
+              </Link>
+            </li>
+          )}
         </ul>
       </div>
-
       {/* Right Section */}
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-3">
@@ -135,7 +150,8 @@ function Nav() {
             <Link
               to="/"
               className={`py-2 px-4 text-gray-700 rounded transition-colors block ${
-                location.pathname === "/PickupBooking" || location.pathname === "/"
+                location.pathname === "/PickupBooking" ||
+                location.pathname === "/"
                   ? "text-purple-900 font-semibold"
                   : "bg-transparent"
               }`}

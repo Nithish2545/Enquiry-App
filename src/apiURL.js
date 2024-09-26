@@ -1,5 +1,5 @@
 const SHEETYAPI =
-  "https://api.sheety.co/a39f676d8d01fe5df44a3d9cccf49908/pickupdata/sheet1";
+  "https://api.sheety.co/4057b982b999cdc3a2c47ac28ad20d4a/pickupdata/sheet1";
 const CANCELSHEETYAPI =
-  "https://api.sheety.co/a39f676d8d01fe5df44a3d9cccf49908/pickupdata/sheet1";
-export default { SHEETYAPI: SHEETYAPI, CANCELSHEETYAPI: CANCELSHEETYAPI };
+  "https://api.sheety.co/4057b982b999cdc3a2c47ac28ad20d4a/canceledBooking/sheet1";
+export default { CHENNAI: SHEETYAPI,  COIMBATORE:SHEETYAPI, PONDY:SHEETYAPI, CANCELSHEETYAPI: CANCELSHEETYAPI };
