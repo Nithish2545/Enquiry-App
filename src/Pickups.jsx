@@ -36,7 +36,7 @@ function Pickups() {
     if (username) {
       const fetchData = async () => {
         try {
-          const response = await fetch(apiURL.SHEETYAPI);
+          const response = await fetch(apiURL.CHENNAI);
           const data = await response.json();
 
           // Filter the data based on the username
@@ -66,7 +66,8 @@ function Pickups() {
 
   // Filter pickups based on search terms
   const filteredPickups = pickups.filter((pickup) => {
-    const awbMatch = pickup.awbNumber
+    console.log(typeof String(pickup.awbNumber));
+    const awbMatch = String(pickup.awbNumber)
       .toLowerCase()
       .includes(awbSearchTerm.toLowerCase());
     const dateMatch = pickup.pickupDatetime
@@ -85,6 +86,15 @@ function Pickups() {
   if (error) {
     return <div className="text-center text-red-600">{error}</div>;
   }
+
+  function handleDateChange(value) {
+    const inputDate = new Date(value);
+    const day = String(inputDate.getDate()).padStart(2, '0');  // Get the day and pad with leading zero if necessary
+    const month = String(inputDate.getMonth() + 1).padStart(2, '0');  // Get the month (months are 0-indexed)
+    const formattedDate = `${day}-${month}`;
+    return formattedDate
+  }
+  
 
   return (
     <>
@@ -107,7 +117,8 @@ function Pickups() {
             type="date"
             placeholder="Search by Date (YYYY-MM-DD)"
             value={dateSearchTerm}
-            onChange={(e) => setDateSearchTerm(e.target.value)}
+            onChange={(e) => console.log(e.target.value)}
+            
             className="border border-gray-300 rounded py-2 px-4 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-purple-600"
           />
           <input

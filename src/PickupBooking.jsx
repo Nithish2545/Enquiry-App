@@ -139,7 +139,7 @@ function PickupBooking() {
           status: "RUN SHEET",
           Pickuparea: data.pickuparea,
           pickupBookedBy: username,
-          franchise:frachise
+          franchise: frachise,
         },
       };
 
@@ -311,145 +311,158 @@ function PickupBooking() {
             Submit Pickup Details
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div className="mb-4">
-              <label className="block text-gray-700 font-semibold mb-2">
-                Consignor Name:
-              </label>
-              <input
-                type="text"
-                placeholder="Enter consignor name"
-                {...register("Consignorname", {
-                  required: "Consignor name is required",
-                })}
-                className={`w-full px-3 py-2 border ${
-                  errors.Consignorname ? "border-red-500" : "border-gray-300"
-                } rounded-md focus:outline-none focus:border-[#8847D9]`}
-              />
-              {errors.Consignorname && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.Consignorname.message}
-                </p>
-              )}
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 font-semibold mb-2">
-                Consignor Phone Number:
-              </label>
-              <input
-                type="text"
-                placeholder="Enter consignor phone number"
-                {...register("Consignornumber", {
-                  required: "Consignor phone number is required",
-                  pattern: {
-                    value: /^[0-9]+$/,
-                    message: "Please enter a valid phone number",
-                  },
-                  onChange: (e) => {
-                    // Remove non-numeric characters
-                    e.target.value = e.target.value.replace(/[^0-9]/g, "");
-                  },
-                })}
-                className={`w-full px-3 py-2 border ${
-                  errors.Consignornumber ? "border-red-500" : "border-gray-300"
-                } rounded-md focus:outline-none focus:border-[#8847D9]`}
-              />
-              {errors.Consignornumber && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.Consignornumber.message}
-                </p>
-              )}
-            </div>
+            {/* Consignee */}
+            <div>
+              <div className="mb-4">
+                <label className="block text-gray-700 font-semibold mb-2">
+                  Consignor Name:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter consignor name"
+                  {...register("Consignorname", {
+                    required: "Consignor name is required",
+                  })}
+                  className={`w-full px-3 py-2 border ${
+                    errors.Consignorname ? "border-red-500" : "border-gray-300"
+                  } rounded-md focus:outline-none focus:border-[#8847D9]`}
+                />
+                {errors.Consignorname && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.Consignorname.message}
+                  </p>
+                )}
+              </div>
 
-            <div className="mb-4">
-              <label className="block text-gray-700 font-semibold mb-2">
-                Consignor location:
-              </label>
-              <input
-                type="text"
-                placeholder="Enter Consignor location"
-                {...register("Consignorlocation", {
-                  required: "Enter Consignor location",
-                })}
-                className={`w-full px-3 py-2 border ${
-                  errors.Consignorlocation
-                    ? "border-red-500"
-                    : "border-gray-300"
-                } rounded-md focus:outline-none focus:border-[#8847D9]`}
-              />
-              {errors.Consignorlocation && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.Consignorlocation.message}
-                </p>
-              )}
-            </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 font-semibold mb-2">
+                  Consignor location:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter Consignor location"
+                  {...register("Consignorlocation", {
+                    required: "Enter Consignor location",
+                  })}
+                  className={`w-full px-3 py-2 border ${
+                    errors.Consignorlocation
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  } rounded-md focus:outline-none focus:border-[#8847D9]`}
+                />
+                {errors.Consignorlocation && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.Consignorlocation.message}
+                  </p>
+                )}
+              </div>
 
-            <div className="mb-4">
-              <label className="block text-gray-700 font-semibold mb-2">
-                consignee Name:
-              </label>
-              <input
-                type="text"
-                placeholder="Enter consignee name"
-                {...register("consigneename", {
-                  required: "Consignee name is required",
-                })}
-                className={`w-full px-3 py-2 border ${
-                  errors.consigneename ? "border-red-500" : "border-gray-300"
-                } rounded-md focus:outline-none focus:border-[#8847D9]`}
-              />
-              {errors.consigneename && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.consigneename.message}
-                </p>
-              )}
+              <div className="mb-4">
+                <label className="block text-gray-700 font-semibold mb-2">
+                  Consignor Phone Number:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter consignor phone number"
+                  {...register("Consignornumber", {
+                    required: "Consignor phone number is required",
+                    pattern: {
+                      value: /^[0-9]+$/,
+                      message: "Please enter a valid phone number",
+                    },
+                    onChange: (e) => {
+                      // Remove non-numeric characters
+                      e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                    },
+                  })}
+                  className={`w-full px-3 py-2 border ${
+                    errors.Consignornumber
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  } rounded-md focus:outline-none focus:border-[#8847D9]`}
+                />
+                {errors.Consignornumber && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.Consignornumber.message}
+                  </p>
+                )}
+              </div>
             </div>
+            {/* Consignee */}
+            <div>
+              <div className="mb-4">
+                <label className="block text-gray-700 font-semibold mb-2">
+                  consignee Name{" "}
+                  <span className="text-gray-500"> (optional)</span>:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter consignee name"
+                  {...register("consigneename", {
+                    // required: "Consignee name is required",
+                  })}
+                  className={`w-full px-3 py-2 border ${
+                    errors.consigneename ? "border-red-500" : "border-gray-300"
+                  } rounded-md focus:outline-none focus:border-[#8847D9]`}
+                />
+                {errors.consigneename && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.consigneename.message}
+                  </p>
+                )}
+              </div>
 
-            <div className="mb-4">
-              <label className="block text-gray-700 font-semibold mb-2">
-                consignee Phone Number:
-              </label>
-              <input
-                type="text"
-                placeholder="Enter consignee phone number"
-                {...register("consigneenumber", {
-                  required: "consignee phone number is required",
-                  pattern: {
-                    value: /^[0-9]+$/,
-                    message: "Please enter a valid phone number",
-                  },
-                })}
-                className={`w-full px-3 py-2 border ${
-                  errors.consigneenumber ? "border-red-500" : "border-gray-300"
-                } rounded-md focus:outline-none focus:border-[#8847D9]`}
-              />
-              {errors.consigneenumber && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.consigneenumber.message}
-                </p>
-              )}
-            </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 font-semibold mb-2">
+                  consignee Phone Number{" "}
+                  <span className="text-gray-500"> (optional)</span>:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter consignee phone number"
+                  {...register("consigneenumber", {
+                    // required: "consignee phone number is required",
+                    // pattern: {
+                    //   value: /^[0-9]+$/,
+                    //   message: "Please enter a valid phone number",
+                    // },
+                  })}
+                  className={`w-full px-3 py-2 border ${
+                    errors.consigneenumber
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  } rounded-md focus:outline-none focus:border-[#8847D9]`}
+                />
+                {errors.consigneenumber && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.consigneenumber.message}
+                  </p>
+                )}
+              </div>
 
-            <div className="mb-4">
-              <label className="block text-gray-700 font-semibold mb-2">
-                consignee location:
-              </label>
-              <input
-                type="text"
-                placeholder="Enter consignee location"
-                {...register("consigneelocation", {
-                  required: "Enter consignee location",
-                })}
-                className={`w-full px-3 py-2 border ${
-                  errors.consigneelocation
-                    ? "border-red-500"
-                    : "border-gray-300"
-                } rounded-md focus:outline-none focus:border-[#8847D9]`}
-              />
-              {errors.consigneelocation && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.consigneelocation.message}
-                </p>
-              )}
+              <div className="mb-4">
+                <label className="block text-gray-700 font-semibold mb-2">
+                  consignee location{" "}
+                  <span className="text-gray-500"> (optional)</span>:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter consignee location"
+                  {...register("consigneelocation", {
+                    // required: "Enter consignee location",
+                  })}
+                  className={`w-full px-3 py-2 border ${
+                    errors.consigneelocation
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  } rounded-md focus:outline-none focus:border-[#8847D9]`}
+                />
+                {errors.consigneelocation && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.consigneelocation.message}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="mb-4">
@@ -712,8 +725,8 @@ function PickupBooking() {
               <select
                 className={`w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:border-[#8847D9]`}
                 onChange={(e) => {
-                  setfrachise(e.target.value)
-                  console.log(e.target.value)
+                  setfrachise(e.target.value);
+                  console.log(e.target.value);
                 }}
               >
                 <option value="select">select</option>

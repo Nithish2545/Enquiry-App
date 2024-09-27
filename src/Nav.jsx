@@ -199,6 +199,19 @@ function Nav() {
               Cancel - Reschedule
             </Link>
           </li>
+          <li>
+            <Link
+              to="/Pickups"
+              className={`py-2 px-4 text-gray-700 rounded transition-colors block ${
+                location.pathname === "/Pickups"
+                  ? "text-purple-900 font-semibold"
+                  : "bg-transparent"
+              }`}
+              onClick={() => setSidebarOpen(false)}
+            >
+              Pickups
+            </Link>
+          </li>
         </ul>
       </div>
 

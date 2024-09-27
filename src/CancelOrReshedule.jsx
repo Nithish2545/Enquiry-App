@@ -8,7 +8,7 @@ function CancelOrReschedule() {
   const [activeTab, setActiveTab] = useState("CANCEL");
 
   useEffect(() => {
-    const url = apiURL.SHEETYAPI;
+    const url = apiURL.CHENNAI;
     fetch(url)
       .then((response) => response.json())
       .then((json) => {
