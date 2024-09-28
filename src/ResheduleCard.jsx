@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import apiURL from "./apiURL";
 import axios from "axios";
-import DateTimePicker from "react-datetime-picker"; // Import DateTimePicker
 
 function CancelCard({ item, index }) {
   const navigate = useNavigate();
@@ -17,6 +16,7 @@ function CancelCard({ item, index }) {
 
   // Handle reschedule click
   const handleAcceptClick = async (awbNumber) => {
+    
     setloading(true);
     // pickupDatetime
     const body = {
