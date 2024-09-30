@@ -3,21 +3,24 @@ import apiURL from "./apiURL";
 import Nav from "./Nav";
 import ResheduleCard from "./ResheduleCard"
 import CancelCard from "./CancelCard"
+import axios from "axios";
 function CancelOrReschedule() {
+
   const [data, setData] = useState([]);
   const [activeTab, setActiveTab] = useState("CANCEL");
 
   useEffect(() => {
     const url = apiURL.CHENNAI;
-    fetch(url)
-      .then((response) => response.json())
+    axios.get(url)
       .then((json) => {
-        setData(json.sheet1);
+        setData(json.data.sheet1);
       });
   }, []);
 
+  console.log(data)
+
   // Filter data based on the active tab
-  const filteredData = data.filter(item =>
+  const filteredData = data?.filter(item =>
     activeTab === "CANCEL" ?   data  : activeTab === "RESCHEDULE" ? data :  null
   );
 

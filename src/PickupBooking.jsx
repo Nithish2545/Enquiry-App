@@ -150,6 +150,7 @@ function PickupBooking() {
         },
         body: JSON.stringify(body),
       });
+      setShowModal(true);
 
       const json = await response.json();
       console.log(json.sheet1);
@@ -240,7 +241,7 @@ function PickupBooking() {
 
               <div className="mb-4">
                 <label className="block text-gray-700 font-semibold mb-2">
-                  Consignor location:
+                  Consignor address:
                 </label>
                 <input
                   type="text"
@@ -296,7 +297,7 @@ function PickupBooking() {
             <div>
               <div className="mb-4">
                 <label className="block text-gray-700 font-semibold mb-2">
-                  consignee Name{" "}
+                  Consignee Name{" "}
                   <span className="text-gray-500"> (optional)</span>:
                 </label>
                 <input
@@ -318,7 +319,7 @@ function PickupBooking() {
 
               <div className="mb-4">
                 <label className="block text-gray-700 font-semibold mb-2">
-                  consignee Phone Number{" "}
+                  Consignee Phone Number{" "}
                   <span className="text-gray-500"> (optional)</span>:
                 </label>
                 <input
@@ -346,7 +347,7 @@ function PickupBooking() {
 
               <div className="mb-4">
                 <label className="block text-gray-700 font-semibold mb-2">
-                  consignee location{" "}
+                  Consignee address{" "}
                   <span className="text-gray-500"> (optional)</span>:
                 </label>
                 <input
@@ -615,7 +616,7 @@ function PickupBooking() {
 
             <div className="mb-4">
               <label className="block text-gray-700 font-semibold mb-2">
-                Special Instructions:{" "}
+                Special Instructions{" "}
                 <span className="text-gray-500">(optional)</span>:
               </label>
               <textarea

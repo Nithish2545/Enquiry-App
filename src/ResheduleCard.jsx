@@ -5,7 +5,7 @@ import axios from "axios";
 
 function CancelCard({ item, index }) {
   const navigate = useNavigate();
-  const API_URL = apiURL.SHEETYAPI;
+  const API_URL = apiURL.CHENNAI;
   const [details, setDetails] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
   const [selectedDate, setSelectedDate] = useState(); // DateTime state
@@ -26,7 +26,7 @@ function CancelCard({ item, index }) {
       },
     };
 
-    const response = await fetch(`${apiURL.SHEETYAPI}/${item.id}`, {
+    const response = await fetch(`${apiURL.CHENNAI}/${item.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
