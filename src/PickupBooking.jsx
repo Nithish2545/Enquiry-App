@@ -20,6 +20,8 @@ function PickupBooking() {
   const [files, setFiles] = useState([]);
   const [awbNumber, setawbNumber] = useState();
   const [frachise, setfrachise] = useState("");
+  const [clientName, setClientName] = useState("");
+  const [service, setservice] = useState("");
 
   const {
     register,
@@ -100,10 +102,10 @@ function PickupBooking() {
   const onSubmit = async (data) => {
     console.log(frachise);
     setLoading(true);
-    const awbNumber = generateAWBNumber();
-    setawbNumber(awbNumber);
-    console.log(`Generated AWB Number: ${awbNumber}`);
-    const uploadedImageURLs = await uploadImages(files);
+    const result = generateAWBNumber();
+    setawbNumber(result);
+    setClientName(data.Consignorname);
+    const uploadedImageURLs = await uploadImages(files, data.Consignorname);
     console.log(uploadedImageURLs);
 
     try {
@@ -140,6 +142,7 @@ function PickupBooking() {
           pickuparea: data.pickuparea,
           pickupBookedBy: username,
           franchise: frachise,
+          service: service,
         },
       };
 
@@ -160,18 +163,18 @@ function PickupBooking() {
       console.error(e);
     } finally {
       setLoading(false);
-    }    
+    }
   };
 
   const closeModal = () => {
     setShowModal(false);
   };
 
-  const uploadImages = async (images) => {
+  const uploadImages = async (images, name) => {
     const uploadedURLs = [];
-    console.log(awbNumber);
+    console.log(`Consignor name: ${name}`);
     const uploadPromises = images.map((image, index) => {
-      const imageRef = ref(storage, `${awbNumber}/${image.name}`);
+      const imageRef = ref(storage, `${name}/KYC/${image.name}`);
       const uploadTask = uploadBytesResumable(imageRef, image);
 
       return new Promise((resolve, reject) => {
@@ -238,30 +241,6 @@ function PickupBooking() {
                   </p>
                 )}
               </div>
-
-              <div className="mb-4">
-                <label className="block text-gray-700 font-semibold mb-2">
-                  Consignor address:
-                </label>
-                <input
-                  type="text"
-                  placeholder="Enter Consignor location"
-                  {...register("Consignorlocation", {
-                    required: "Enter Consignor location",
-                  })}
-                  className={`w-full px-3 py-2 border ${
-                    errors.Consignorlocation
-                      ? "border-red-500"
-                      : "border-gray-300"
-                  } rounded-md focus:outline-none focus:border-[#8847D9]`}
-                />
-                {errors.Consignorlocation && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.Consignorlocation.message}
-                  </p>
-                )}
-              </div>
-
               <div className="mb-4">
                 <label className="block text-gray-700 font-semibold mb-2">
                   Consignor Phone Number:
@@ -289,6 +268,29 @@ function PickupBooking() {
                 {errors.Consignornumber && (
                   <p className="text-red-500 text-sm mt-1">
                     {errors.Consignornumber.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-gray-700 font-semibold mb-2">
+                  Consignor address:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter Consignor location"
+                  {...register("Consignorlocation", {
+                    required: "Enter Consignor location",
+                  })}
+                  className={`w-full px-3 py-2 border ${
+                    errors.Consignorlocation
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  } rounded-md focus:outline-none focus:border-[#8847D9]`}
+                />
+                {errors.Consignorlocation && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.Consignorlocation.message}
                   </p>
                 )}
               </div>
@@ -628,23 +630,52 @@ function PickupBooking() {
             <div>
               <p>Frachise</p>
               <select
-                className={`w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:border-[#8847D9]`}
+                className="w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:border-[#8847D9]"
+                {...register("franchise", {
+                  required: "Franchise is required",
+                })}
                 onChange={(e) => {
                   setfrachise(e.target.value);
-                  console.log(e.target.value);
                 }}
               >
-                <option value="select">select</option>
+                <option value="">Select</option>
                 <option value="CHENNAI">CHENNAI</option>
-                <option value="COIMBATORE">KOVAI</option>
+                <option value="COIMBATORE">COIMBATORE</option>
                 <option value="PONDY">PONDY</option>
               </select>
+              {errors.franchise && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.franchise.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <p>Service</p>
+              <select
+                className="w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:border-[#8847D9]"
+                {...register("service", {
+                  required: "service is required",
+                })}
+                onChange={(e) => {
+                  setservice(e.target.value);
+                }}
+              >
+                <option value="">Select</option>
+                <option value="Express">Express</option>
+                <option value="Economy">Economy</option>
+              </select>
+              {errors.service && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.service.message}
+                </p>
+              )}
             </div>
           </div>
 
           <div className="mb-4">
             <label className="block text-gray-700 font-semibold mb-2">
-              Upload Images (max 5):
+              Upload KYC & Product Images (max 5):
             </label>
             <input
               type="file"

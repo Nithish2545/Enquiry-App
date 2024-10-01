@@ -24,27 +24,27 @@ function PaymentConfirmationForm() {
 
   const generatePDF = () => {
     const doc = new jsPDF();
-    
+
     // Format date as day/month/year
     const todayDate = new Date().toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric"
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
     });
 
     // Generate barcode
     JsBarcode(barcodeRef.current, awbnumber, {
-        format: "CODE128",
-        displayValue: true,
-        width: 2, // Adjust width as needed
-        height: 40, // Adjust height as needed
-        fontOptions: "bold", // Make the text bold
-        fontSize: 16, // Increase font size for the barcode text
-        textMargin: 5, // Space between the barcode and text
-        margin: 10, // Margin around the barcode
-        background: "#ffffff", // Background color of the barcode
-        lineColor: "#000000", // Color of the bars
-        scale: 4, // Higher scale for better quality
+      format: "CODE128",
+      displayValue: true,
+      width: 2, // Adjust width as needed
+      height: 40, // Adjust height as needed
+      fontOptions: "bold", // Make the text bold
+      fontSize: 16, // Increase font size for the barcode text
+      textMargin: 5, // Space between the barcode and text
+      margin: 10, // Margin around the barcode
+      background: "#ffffff", // Background color of the barcode
+      lineColor: "#000000", // Color of the bars
+      scale: 4, // Higher scale for better quality
     });
     const barcodeImage = barcodeRef.current.toDataURL();
 
@@ -55,7 +55,7 @@ function PaymentConfirmationForm() {
     // Add title and date
     doc.setFontSize(20);
     doc.setFont("helvetica", "bold");
-    doc.text("Express Service", 20, 30);
+    doc.text(`${details.service} Service`, 20, 30);
     doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
     doc.text(`Date: ${todayDate}`, 20, 40);
@@ -72,13 +72,13 @@ function PaymentConfirmationForm() {
     doc.text(`Name: ${details.consignorname}`, 20, 70);
     doc.text(`Phone Number: ${details.consignorphonenumber}`, 20, 80);
     const fromLocation = doc.splitTextToSize(
-        `Location: ${details.consignorlocation}`,
-        85
+      `Location: ${details.consignorlocation}`,
+      85
     );
     doc.text(fromLocation, 20, 90);
 
     // Horizontal line between "From" and "To" sections
-    doc.line(10, 100, 200, 100);
+    doc.line(10, 107, 200, 107);
 
     // To section
     doc.setFont("helvetica", "bold");
@@ -87,8 +87,8 @@ function PaymentConfirmationForm() {
     doc.text(`Name: ${details.consigneename}`, 110, 70);
     doc.text(`Phone Number: ${details.consigneephonenumber}`, 110, 80);
     const toLocation = doc.splitTextToSize(
-        `Location: ${details.consigneelocation}`,
-        85
+      `Location: ${details.consigneelocation}`,
+      85
     );
     doc.text(toLocation, 110, 90);
 
@@ -98,7 +98,11 @@ function PaymentConfirmationForm() {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
     doc.text(`Weight (kg): ${details.actualWeight} kg`, 20, 125);
-    doc.text(`Pce/Shpt: ${details.actualNoOfPackages} / ${details.actualNoOfPackages}`, 20, 135);
+    doc.text(
+      `Pce/Shpt: ${details.actualNoOfPackages} / ${details.actualNoOfPackages}`,
+      20,
+      135
+    );
     doc.text(`Content: ${details.content}`, 20, 145);
 
     // Horizontal line above "AWB Number" section
@@ -111,9 +115,7 @@ function PaymentConfirmationForm() {
 
     // Save PDF
     doc.save(`${details.consignorname}-client-form.pdf`);
-};
-
-
+  };
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -178,8 +180,7 @@ function PaymentConfirmationForm() {
           status: "PAYMENT DONE",
         },
       });
-      setShowPopup(true)
-
+      setShowPopup(true);
     } catch (error) {
       handleError(error);
     } finally {
@@ -305,17 +306,32 @@ function PaymentConfirmationForm() {
               className="p-2 border rounded bg-gray-100"
             />
           </div>
+         
+          {/* FROM */}
           <div className="flex flex-col mb-4">
             <label className="text-gray-700 font-medium mb-1">
-              Destination:
+              From:
             </label>
             <input
               type="text"
-              value={details.destination}
+              value={details.consignorlocation}
               readOnly
               className="p-2 border rounded bg-gray-100"
             />
           </div>
+          {/* TO */}
+          <div className="flex flex-col mb-4">
+            <label className="text-gray-700 font-medium mb-1">
+              To:
+            </label>
+            <input
+              type="text"
+              value={details.consigneelocation}
+              readOnly
+              className="p-2 border rounded bg-gray-100"
+            />
+          </div>
+
           <div className="flex flex-col mb-4">
             <label className="text-gray-700 font-medium mb-1">
               Pickup connected datetime
@@ -366,8 +382,9 @@ function PaymentConfirmationForm() {
             </button>
             <button
               className="mt-4 px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
-              onClick={() =>{ setShowPopup(false)
-      navigate("/Payment-confirm");
+              onClick={() => {
+                setShowPopup(false);
+                navigate("/Payment-confirm");
               }}
             >
               Close
