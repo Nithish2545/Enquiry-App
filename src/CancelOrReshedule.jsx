@@ -20,10 +20,13 @@ function CancelOrReschedule() {
   console.log(data)
 
   // Filter data based on the active tab
-  const filteredData = data?.filter(item =>
-    activeTab === "CANCEL" ?   data  : activeTab === "RESCHEDULE" ? data :  null
-  );
-
+  const filteredData = data?.filter(item => {
+    if (activeTab === "CANCEL" || activeTab === "RESCHEDULE") {
+      return item.status === "RUN SHEET"; // Filter only items with status "RUN SHEET"
+    }
+    return null; // No filtering for other tabs
+  });
+  
   return (
     <div className="min-h-screen bg-gray-100">
       <Nav />

@@ -616,17 +616,7 @@ function PickupBooking() {
               )}
             </div>
 
-            <div className="mb-4">
-              <label className="block text-gray-700 font-semibold mb-2">
-                Special Instructions{" "}
-                <span className="text-gray-500">(optional)</span>:
-              </label>
-              <textarea
-                placeholder="Enter any special instructions"
-                {...register("instructions")}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#8847D9]"
-              ></textarea>
-            </div>
+           
             <div>
               <p>Frachise</p>
               <select
@@ -649,7 +639,6 @@ function PickupBooking() {
                 </p>
               )}
             </div>
-
             <div>
               <p>Service</p>
               <select
@@ -671,8 +660,18 @@ function PickupBooking() {
                 </p>
               )}
             </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 font-semibold mb-2">
+                Special Instructions{" "}
+                <span className="text-gray-500">(optional)</span>:
+              </label>
+              <textarea
+                placeholder="Enter any special instructions"
+                {...register("instructions")}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#8847D9]"
+              ></textarea>
+            </div>
           </div>
-
           <div className="mb-4">
             <label className="block text-gray-700 font-semibold mb-2">
               Upload KYC & Product Images (max 5):

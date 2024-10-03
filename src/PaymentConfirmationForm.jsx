@@ -6,6 +6,7 @@ import apiURL from "./apiURL";
 import { storage } from "./firebase"; // Import storage from your Firebase config
 import JsBarcode from "jsbarcode";
 import { jsPDF } from "jspdf";
+import { useForm } from "react-hook-form";
 
 const API_URL = apiURL.CHENNAI;
 
@@ -19,7 +20,12 @@ function PaymentConfirmationForm() {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [showPopup, setShowPopup] = useState(false); // State to control popup visibility
   const barcodeRef = useRef(null); // Ref for barcode generation
-
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm();
   const navigate = useNavigate();
 
   const generatePDF = () => {
@@ -159,8 +165,7 @@ function PaymentConfirmationForm() {
     return true;
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const onSubmit = async (data) => {
     if (!validateForm()) return;
 
     setSubmitLoading(true);
@@ -178,6 +183,7 @@ function PaymentConfirmationForm() {
       await axios.put(`${API_URL}/${details.id}`, {
         sheet1: {
           status: "PAYMENT DONE",
+          logisticsCost: data.logisticsCost,
         },
       });
       setShowPopup(true);
@@ -228,7 +234,7 @@ function PaymentConfirmationForm() {
     <div className="p-6 max-w-3xl mx-auto bg-white shadow-md rounded-lg">
       {details ? (
         <form
-          onSubmit={handleSubmit}
+          onSubmit={handleSubmit(onSubmit)}
           className="bg-gray-50 p-4 rounded-lg shadow-sm"
         >
           <h2 className="text-xl font-semibold text-gray-800 mb-4">
@@ -306,12 +312,10 @@ function PaymentConfirmationForm() {
               className="p-2 border rounded bg-gray-100"
             />
           </div>
-         
+
           {/* FROM */}
           <div className="flex flex-col mb-4">
-            <label className="text-gray-700 font-medium mb-1">
-              From:
-            </label>
+            <label className="text-gray-700 font-medium mb-1">From:</label>
             <input
               type="text"
               value={details.consignorlocation}
@@ -321,9 +325,7 @@ function PaymentConfirmationForm() {
           </div>
           {/* TO */}
           <div className="flex flex-col mb-4">
-            <label className="text-gray-700 font-medium mb-1">
-              To:
-            </label>
+            <label className="text-gray-700 font-medium mb-1">To:</label>
             <input
               type="text"
               value={details.consigneelocation}
@@ -343,6 +345,35 @@ function PaymentConfirmationForm() {
               className="p-2 border rounded bg-gray-100"
             />
           </div>
+
+          <div className="flex flex-col mb-4">
+            <label className="text-gray-700 font-medium mb-1">
+              Enter Logistics Cost
+            </label>
+            <input
+              type="text"
+              className="p-2 border rounded bg-gray-100"
+              value={details.logisticsCost}
+              placeholder="Enter Logistic Cost"
+              {...register("logisticsCost", {
+                required: "Consignor phone number is required",
+                pattern: {
+                  value: /^[0-9]+$/,
+                  message:
+                    "Please enter a valid phone number consisting of digits only",
+                },
+                valueAsNumber: true, // Converts input value to an integer
+                validate: (value) =>
+                  Number.isInteger(value) ||
+                  "Please enter a valid integer number",
+              })}
+            />
+          </div>
+          {errors.logisticsCost && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.logisticsCost.message}
+            </p>
+          )}
           <div className="flex flex-col mb-4">
             <label className="text-gray-700 font-medium mb-1">
               Payment Proof:
