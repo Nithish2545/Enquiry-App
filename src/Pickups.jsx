@@ -4,6 +4,7 @@ import apiURL from "./apiURL";
 
 function Pickups() {
   const [username, setUsername] = useState(null);
+  const [role, setRole] = useState("");
   const [pickups, setPickups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,10 +14,10 @@ function Pickups() {
 
   // Fetch user info from localStorage
   useEffect(() => {
-    const storedUser = JSON.parse(
-      localStorage.getItem("enquiryAuthToken")
-    )?.name;
-    setUsername(storedUser);
+    const storedUser = JSON.parse(localStorage.getItem("enquiryAuthToken"));
+    console.log(JSON.parse(localStorage.getItem("enquiryAuthToken")));
+    setUsername(storedUser?.name);
+    setRole(storedUser.role);
   }, []);
 
   const parsePickupDateTime = (dateTimeString) => {
@@ -38,19 +39,20 @@ function Pickups() {
         try {
           const response = await fetch(apiURL.CHENNAI);
           const data = await response.json();
-
           // Filter the data based on the username
-          const filteredData = data.sheet1.filter(
-            (pickup) => pickup.pickupBookedBy === username
-          );
+          const filteredData = data.sheet1.filter((pickup) => {
+            if (role == "sales admin") {
+              return data;
+            }
+            if(role == "sales associate ")
+            return pickup.pickupBookedBy == username;
+          });
 
           const sortedData = filteredData.sort((a, b) => {
             const dateTimeA = parsePickupDateTime(a.pickupDatetime);
             const dateTimeB = parsePickupDateTime(b.pickupDatetime);
             return dateTimeA - dateTimeB; // Sort by date and time
           });
-
-          console.log(sortedData);
 
           setPickups(sortedData);
           setLoading(false);
@@ -87,14 +89,6 @@ function Pickups() {
     return <div className="text-center text-red-600">{error}</div>;
   }
 
-  function handleDateChange(value) {
-    const inputDate = new Date(value);
-    const day = String(inputDate.getDate()).padStart(2, '0');  // Get the day and pad with leading zero if necessary
-    const month = String(inputDate.getMonth() + 1).padStart(2, '0');  // Get the month (months are 0-indexed)
-    const formattedDate = `${day}-${month}`;
-    return formattedDate
-  }
-  
 
   return (
     <>
@@ -118,7 +112,6 @@ function Pickups() {
             placeholder="Search by Date (YYYY-MM-DD)"
             value={dateSearchTerm}
             onChange={(e) => console.log(e.target.value)}
-            
             className="border border-gray-300 rounded py-2 px-4 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-purple-600"
           />
           <input
@@ -143,6 +136,7 @@ function Pickups() {
                 <th className="py-3 px-4 border">Vendor</th>
                 <th className="py-3 px-4  border">Pickup Date & Time</th>
                 <th className="py-3 px-4 border">Status</th>
+                <th className="py-3 px-4 border"> Pickup Booked by</th>
               </tr>
             </thead>
             <tbody>
@@ -163,6 +157,7 @@ function Pickups() {
                       {pickup.pickupDatetime}
                     </td>
                     <td className="py-10 px-4 border">{pickup.status}</td>
+                    <td className="py-10 px-4 border">{pickup.pickupBookedBy}</td>
                   </tr>
                 ))
               ) : (
