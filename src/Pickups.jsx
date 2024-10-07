@@ -11,6 +11,7 @@ function Pickups() {
   const [awbSearchTerm, setAwbSearchTerm] = useState("");
   const [dateSearchTerm, setDateSearchTerm] = useState("");
   const [consignorPhoneSearchTerm, setConsignorPhoneSearchTerm] = useState("");
+  const [PickupPersonName, setPickUpPersonName] = useState("");
 
   // Fetch user info from localStorage
   useEffect(() => {
@@ -44,8 +45,8 @@ function Pickups() {
             if (role == "sales admin") {
               return data;
             }
-            if(role == "sales associate ")
-            return pickup.pickupBookedBy == username;
+            if (role == "sales associate ")
+              return pickup.pickupBookedBy == username;
           });
 
           const sortedData = filteredData.sort((a, b) => {
@@ -78,7 +79,11 @@ function Pickups() {
     const consignorPhoneMatch = pickup.consignorphonenumber
       .toLowerCase()
       .includes(consignorPhoneSearchTerm.toLowerCase());
-    return awbMatch && dateMatch && consignorPhoneMatch; // Use AND logic to filter
+    const PhonesearchItem = pickup.pickUpPersonName
+      .toLowerCase()
+      .includes(PickupPersonName.toLowerCase());
+
+    return awbMatch && dateMatch && consignorPhoneMatch && PhonesearchItem; // Use AND logic to filter
   });
 
   if (loading) {
@@ -89,15 +94,17 @@ function Pickups() {
     return <div className="text-center text-red-600">{error}</div>;
   }
 
-
   return (
     <>
       <Nav />
       <div className="container mx-auto p-6 rounded-lg">
         <h1 className="text-3xl font-bold mb-6 text-purple-700">
-          Pickups Booked by {username}
+          {role != "sales admin" ? (
+            <>Pickups Booked by {username}</>
+          ) : (
+            "All Booked Pickups"
+          )}
         </h1>
-
         {/* Search Inputs */}
         <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
           <input
@@ -110,8 +117,13 @@ function Pickups() {
           <input
             type="date"
             placeholder="Search by Date (YYYY-MM-DD)"
-            value={dateSearchTerm}
-            onChange={(e) => console.log(e.target.value)}
+            onChange={(e) => {
+              const dateValue = e.target.value; // e.g., "2024-10-07"
+              const [year, month, day] = dateValue.split("-");
+              const result = `${parseInt(day)}-${parseInt(month)}`;
+              console.log(result);
+              setDateSearchTerm(result);
+            }}
             className="border border-gray-300 rounded py-2 px-4 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-purple-600"
           />
           <input
@@ -119,6 +131,13 @@ function Pickups() {
             placeholder="Search by Consignor Phone Number"
             value={consignorPhoneSearchTerm}
             onChange={(e) => setConsignorPhoneSearchTerm(e.target.value)}
+            className="border border-gray-300 rounded py-2 px-4 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-purple-600"
+          />
+          <input
+            type="text"
+            placeholder="Search by Pickup Person"
+            value={PickupPersonName}
+            onChange={(e) => setPickUpPersonName(e.target.value)}
             className="border border-gray-300 rounded py-2 px-4 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-purple-600"
           />
         </div>
@@ -137,6 +156,7 @@ function Pickups() {
                 <th className="py-3 px-4  border">Pickup Date & Time</th>
                 <th className="py-3 px-4 border">Status</th>
                 <th className="py-3 px-4 border"> Pickup Booked by</th>
+                <th className="py-3 px-4 border">PickUp Person</th>
               </tr>
             </thead>
             <tbody>
@@ -157,7 +177,15 @@ function Pickups() {
                       {pickup.pickupDatetime}
                     </td>
                     <td className="py-10 px-4 border">{pickup.status}</td>
-                    <td className="py-10 px-4 border">{pickup.pickupBookedBy}</td>
+                    <td className="py-10 px-4 border">
+                      {pickup.pickupBookedBy}
+                    </td>
+                    <td className="py-10 px-4 border">
+                      {pickup.pickUpPersonName == "" ||
+                      pickup.pickUpPersonName == "Unassigned"
+                        ? "Unassigned"
+                        : pickup.pickUpPersonName}
+                    </td>
                   </tr>
                 ))
               ) : (
