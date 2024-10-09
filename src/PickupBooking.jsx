@@ -49,14 +49,12 @@ function PickupBooking() {
   }, []);
 
   useEffect(() => {
-
     const countryData = getData();
     console.log(countryData);
     countryData.push({ code: "UAE", name: "United Arab Emirates" });
     countryData.push({ code: "EU", name: "Europe" });
     countryData.push({ code: "GB", name: "UK" });
     countryData.push({ code: "US", name: "USA" });
-
     const topCountries = [
       "USA",
       "UK",
@@ -69,33 +67,26 @@ function PickupBooking() {
       "New Zealand",
       "China",
     ];
-
     // Sort countries alphabetically
     const sortedCountries = countryData.sort((a, b) =>
       a.name.localeCompare(b.name)
     );
-
     // Map top countries to their data
     const topCountryData = topCountries
       .map((name) => sortedCountries.find((country) => country.name === name))
       .filter(Boolean); // Remove any undefined entries
-
     // Filter out top countries from sorted list
     const remainingCountries = sortedCountries.filter(
       (country) => !topCountries.includes(country.name)
     );
-
     // Combine top countries with remaining countries
     const orderedCountries = [...topCountryData, ...remainingCountries];
-
     setCountries(orderedCountries);
-
     // Create a map of country codes to names
     const codeToNameMap = orderedCountries.reduce((acc, country) => {
       acc[country.code] = country.name;
       return acc;
     }, {});
-
     setCountryCodeToName(codeToNameMap);
   }, []);
 
