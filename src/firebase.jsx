@@ -3,12 +3,12 @@ import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { getStorage ,  ref, getDownloadURL} from "firebase/storage";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCXT0P7ORMI7WFf0yU6anrqRlnGywLDwRE",
-    authDomain: "shiphitmobileapppickup.firebaseapp.com",
-    projectId: "shiphitmobileapppickup",
-    storageBucket: "shiphitmobileapppickup.appspot.com",
-    messagingSenderId: "591798517548",
-    appId: "1:591798517548:web:f205493abadedf270d3689"
+    apiKey: "AIzaSyAwHe1Ci22MD09r-skn7OZLyYBdEX35L74",
+  authDomain: "shiphitmobileapppickup-4d0a1.firebaseapp.com",
+  projectId: "shiphitmobileapppickup-4d0a1",
+  storageBucket: "shiphitmobileapppickup-4d0a1.appspot.com",
+  messagingSenderId: "977746945332",
+  appId: "1:977746945332:web:17c4aa3b217b35cf58f161"
 };
 
 // Initialize Firebase

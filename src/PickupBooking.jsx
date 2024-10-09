@@ -2,12 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { getData } from "country-list";
 import Nav from "./Nav";
-import apiURL from "./apiURL";
 import { storage } from "./firebase";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
-import SavePDF from "./savePDF";
-import jsPDF from "jspdf";
-import JsBarcode from "jsbarcode";
 
 function PickupBooking() {
   const [loading, setLoading] = useState(false);
@@ -91,7 +87,6 @@ function PickupBooking() {
   }, []);
 
   const onSubmit = async (data) => {
-
     console.log(frachise);
     setLoading(true);
     const awbNumber = generateAWBNumber();
@@ -99,76 +94,16 @@ function PickupBooking() {
     console.log(`Generated AWB Number: ${awbNumber}`);
     const uploadedImageURLs = await uploadImages(files);
     console.log(uploadedImageURLs);
-
     try {
-
       const destinationCountryName =
         countryCodeToName[data.country] || data.country;
-
       console.log(data);
-
-      // await addDoc(collection(db, "awbTrackingData"), {
-      //   awbNumber,
-      //   data.Consignorname,
-      //   data.Consignorlocation,
-      //   data.consigneename,
-      //   data.consigneenumber,
-      //   data.consigneelocation,
-      //   data.Content,
-      // });
-
-      // console.log(data);
-      // const body = {
-      //   sheet1: {
-      //     consignorname: data.Consignorname,
-      //     consignorphonenumber: data.Consignornumber,
-      //     consignorlocation: data.Consignorlocation,
-      //     consigneename: data.consigneename,
-      //     consigneephonenumber: data.consigneenumber,
-      //     consigneelocation: data.consigneelocation,
-      //     content: data.Content,
-      //     email: data.email,
-      //     phonenumber: data.number,
-      //     longitude: data.longitude,
-      //     latitude: data.latitude,
-      //     pincode: data.pincode,
-      //     destination: destinationCountryName, // Use full country name here
-      //     weightapx: data.weight + " KG",
-      //     pickupInstructions: data.instructions,
-      //     pickupDatetime:
-      //       formatDate(data.pickupDate) +
-      //       " " +
-      //       " " +
-      //       "&" +
-      //       data.pickupHour +
-      //       " " +
-      //       data.pickupPeriod,
-      //     vendorName: data.vendor,
-      //     status: "RUN SHEET",
-      //     Pickuparea: data.pickuparea,
-      //     pickupBookedBy: username,
-      //     franchise:frachise
-      //   },
-      // };
-
-      // const response = await fetch(apiURL.CHENNAI, {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify(body),
-      // });
-
-      // const json = await response.json();
-      // console.log(json.sheet1);
-
       reset();
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
     }
-
     setShowModal(true);
   };
 
