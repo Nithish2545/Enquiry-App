@@ -9,7 +9,7 @@ function PaymentConfirm() {
   const [activeTab, setActiveTab] = useState("PAYMENT PENDING");
 
   useEffect(() => {
-    const url = apiURL.SHEETYAPI;
+    const url = apiURL.CHENNAI;
     fetch(url)
       .then((response) => response.json())
       .then((json) => {

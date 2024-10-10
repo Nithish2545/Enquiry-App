@@ -47,11 +47,12 @@ const RateCardForm = () => {
       responses.forEach((response, index) => {
         const sheetName = sheets[index].name;
         const data = response.data.data;
-
+        console.log(data)
         newRateData[sheetName] = data.map((item) => ({
           Weight_slab: item["Weight_slab(" + sheetName + ")"],
           Economy: item.Economy,
           Express: item.Express,
+          EcoDutyFree :item.EcoDutyFree
         }));
       });
 
@@ -152,6 +153,9 @@ const RateCardForm = () => {
                         <th className="py-3 px-4 border-b text-left">
                           Express
                         </th>
+                        <th className="py-3 px-4 border-b text-left">
+                        EcoDutyFree
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -164,6 +168,9 @@ const RateCardForm = () => {
                         </td>
                         <td className="py-3 px-4 border-b">
                           {selectedRate.Express}
+                        </td>
+                        <td className="py-3 px-4 border-b">
+                          {selectedRate.EcoDutyFree}
                         </td>
                       </tr>
                     </tbody>

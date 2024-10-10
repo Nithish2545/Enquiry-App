@@ -3,24 +3,30 @@ import apiURL from "./apiURL";
 import Nav from "./Nav";
 import ResheduleCard from "./ResheduleCard"
 import CancelCard from "./CancelCard"
+import axios from "axios";
 function CancelOrReschedule() {
+
   const [data, setData] = useState([]);
   const [activeTab, setActiveTab] = useState("CANCEL");
 
   useEffect(() => {
-    const url = apiURL.SHEETYAPI;
-    fetch(url)
-      .then((response) => response.json())
+    const url = apiURL.CHENNAI;
+    axios.get(url)
       .then((json) => {
-        setData(json.sheet1);
+        setData(json.data.sheet1);
       });
   }, []);
 
-  // Filter data based on the active tab
-  const filteredData = data.filter(item =>
-    activeTab === "CANCEL" ?   data  : activeTab === "RESCHEDULE" ? data :  null
-  );
+  console.log(data)
 
+  // Filter data based on the active tab
+  const filteredData = data?.filter(item => {
+    if (activeTab === "CANCEL" || activeTab === "RESCHEDULE") {
+      return item.status === "RUN SHEET"; // Filter only items with status "RUN SHEET"
+    }
+    return null; // No filtering for other tabs
+  });
+  
   return (
     <div className="min-h-screen bg-gray-100">
       <Nav />

@@ -2,13 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { getData } from "country-list";
 import Nav from "./Nav";
-import apiURL from "./apiURL";
 import { db, storage } from "./firebase";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
-import SavePDF from "./savePDF";
-import jsPDF from "jspdf";
-import JsBarcode from "jsbarcode";
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, getDocs } from "firebase/firestore";
 
 function PickupBooking() {
   const [loading, setLoading] = useState(false);
@@ -31,10 +27,6 @@ function PickupBooking() {
     reset,
   } = useForm();
   const barcodeRef = useRef(null);
-  const todayDate = new Date().toLocaleDateString();
-  const generateAWBNumber = () => {
-    return String(Math.floor(100000 + Math.random() * 900000)).padStart(4, "0");
-  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -101,55 +93,69 @@ function PickupBooking() {
   }, []);
 
   const onSubmit = async (data) => {
-    console.log(frachise);
-    setLoading(true);
-    const result = generateAWBNumber();
-    setawbNumber(result);
-    setClientName(data.Consignorname);
-    const uploadedImageURLs = await uploadImages(files, data.Consignorname);
-    console.log(uploadedImageURLs);
-
     try {
+      setLoading(true);
       const destinationCountryName =
         countryCodeToName[data.country] || data.country;
-      console.log(data);
-      const formData = {
-          consignorname: data.Consignorname,
-          consignorphonenumber: data.Consignornumber,
-          consignorlocation: data.Consignorlocation,
-          consigneename: data.consigneename,
-          consigneephonenumber: data.consigneenumber,
-          consigneelocation: data.consigneelocation,
-          content: data.Content,
-          longitude: data.longitude,
-          latitude: data.latitude,
-          pincode: data.pincode,
-          destination: destinationCountryName, // Use full country name here
-          weightapx: data.weight + " KG",
-          pickupInstructions: data.instructions,
-          pickupDatetime:
-            formatDate(data.pickupDate) +
-            " " +
-            " " +
-            "&" +
-            data.pickupHour +
-            " " +
-            data.pickupPeriod,
-          vendorName: data.vendor,
-          status: "RUN SHEET",
-          pickuparea: data.pickuparea,
-          pickupBookedBy: username,
-          franchise: frachise,
-          service: service,
-      };
+      // Step 1: Fetch current maximum awbNumber
+      const pickupsRef = collection(db, "pickup");
+      const snapshot = await getDocs(pickupsRef);
+      let maxAwbNumber = 1000; // Initialize to 0
 
-      const docRef = await addDoc(collection(db, "pickups"), formData);
-      console.log("Document written with ID: ", docRef.id);
+      if (!snapshot.empty) {
+        snapshot.forEach((doc) => {
+          const pickupData = doc.data();
+          if (pickupData.awbNumber) {
+            maxAwbNumber = Math.max(
+              maxAwbNumber,
+              parseInt(pickupData.awbNumber)
+            );
+          }
+        });
+      }
+
+      // Step 2: Increment awbNumber
+      const newAwbNumber = maxAwbNumber + 1;
+      const uploadedImageURLs = await uploadImages(files, newAwbNumber);
+      console.log(uploadedImageURLs);
+      // Step 3: Store new document
+      await addDoc(pickupsRef, {
+        consignorname: data.Consignorname,
+        consignorphonenumber: data.Consignornumber,
+        consignorlocation: data.Consignorlocation,
+        consigneename: data.consigneename,
+        consigneephonenumber: data.consigneenumber,
+        consigneelocation: data.consigneelocation,
+        content: data.Content,
+        longitude: data.longitude,
+        latitude: data.latitude,
+        pincode: data.pincode,
+        destination: destinationCountryName, // Use full country name here
+        weightapx: data.weight + " KG",
+        pickupInstructions: data.instructions,
+        pickupDatetime:
+          formatDate(data.pickupDate) +
+          " " +
+          "&" +
+          data.pickupHour +
+          " " +
+          data.pickupPeriod,
+        vendorName: data.vendor,
+        status: "RUN SHEET",
+        pickuparea: data.pickuparea,
+        pickupBookedBy: username,
+        franchise: frachise,
+        service: service,
+        awbNumber: newAwbNumber, // Add the new awbNumber here
+        pickUpPersonName: "Unassigned",
+      });
+
+      console.log(`New pickup added with AWB Number: ${newAwbNumber}`);
       setShowModal(true);
-
+      setFiles([])
       reset();
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error("Error adding document: ", error);
     } finally {
       setLoading(false);
     }
@@ -159,11 +165,11 @@ function PickupBooking() {
     setShowModal(false);
   };
 
-  const uploadImages = async (images, name) => {
+  const uploadImages = async (images, awbnumber) => {
     const uploadedURLs = [];
-    console.log(`Consignor name: ${name}`);
+    console.log(`AWB Number: ${awbnumber}`);
     const uploadPromises = images.map((image, index) => {
-      const imageRef = ref(storage, `${name}/KYC/${image.name}`);
+      const imageRef = ref(storage, `${awbnumber}/KYC/${image.name}`);
       const uploadTask = uploadBytesResumable(imageRef, image);
 
       return new Promise((resolve, reject) => {
@@ -600,7 +606,6 @@ function PickupBooking() {
                 </p>
               )}
             </div>
-
             <div>
               <p>Frachise</p>
               <select
@@ -656,12 +661,15 @@ function PickupBooking() {
               ></textarea>
             </div>
           </div>
-          {/* <div className="mb-4">
+          <div className="mb-4">
             <label className="block text-gray-700 font-semibold mb-2">
-              Upload KYC & Product Images (max 5):
+              Upload KYC & Product Images:
             </label>
             <input
               type="file"
+              {...register("KycImages", {
+                required: "KYC & Product Images is required",
+              })}
               multiple
               onChange={(e) => {
                 const files = Array.from(e.target.files).slice(0, 5); // Limit to 5 files
@@ -669,6 +677,11 @@ function PickupBooking() {
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#8847D9]"
             />
+              {errors.KycImages && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.KycImages.message}
+                </p>
+              )}
             {files.length > 0 && (
               <div className="mt-2">
                 {files.map((file, index) => (
@@ -678,7 +691,7 @@ function PickupBooking() {
                 ))}
               </div>
             )}
-          </div> */}
+          </div>
           <div className="flex justify-center">
             <button
               type="submit"

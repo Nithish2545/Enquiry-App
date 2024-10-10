@@ -5,7 +5,7 @@ import axios from "axios";
 
 function CancelCard({ item, index }) {
   const navigate = useNavigate();
-  const API_URL = apiURL.SHEETYAPI;
+  const API_URL = apiURL.CHENNAI;
   const [details, setDetails] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");

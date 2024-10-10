@@ -2,11 +2,10 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import apiURL from "./apiURL";
 import axios from "axios";
-import DateTimePicker from "react-datetime-picker"; // Import DateTimePicker
 
 function CancelCard({ item, index }) {
   const navigate = useNavigate();
-  const API_URL = apiURL.SHEETYAPI;
+  const API_URL = apiURL.CHENNAI;
   const [details, setDetails] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
   const [selectedDate, setSelectedDate] = useState(); // DateTime state
@@ -22,11 +21,11 @@ function CancelCard({ item, index }) {
     const body = {
       sheet1: {
         pickupDatetime:
-          selectedDate + " "  + "&" + " " + Hour + " " + Timeperiod,
+          selectedDate+" "+"&"+Hour+" "+Timeperiod,
       },
     };
 
-    const response = await fetch(`${apiURL.SHEETYAPI}/${item.id}`, {
+    const response = await fetch(`${apiURL.CHENNAI}/${item.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -198,7 +197,7 @@ function CancelCard({ item, index }) {
               <strong className="text-gray-800">
                 Current Pickup Date and Time:
               </strong>{" "}
-              {new Date(item.pickupDatetime).toLocaleString()}
+              {item.pickupDatetime.toLocaleString()}
             </p>
 
             {/* Date Picker */}
@@ -209,7 +208,12 @@ function CancelCard({ item, index }) {
               <input
                 type="date"
                 className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent mb-4"
-                onChange={(e) => setSelectedDate(e.target.value)}
+                onChange={(e) => {
+                  const date = new Date(e.target.value);
+                  const day = date.getDate(); // Get day without leading zero
+                  const month = date.getMonth() + 1; // Get month (0-indexed, so +1) without leading zero
+                  setSelectedDate(`${day}-${month}`);
+                }}
               />
             </div>
 
