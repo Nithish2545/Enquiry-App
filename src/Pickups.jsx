@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import Nav from "./Nav";
 import apiURL from "./apiURL";
+import { getFirestore, collection, query, onSnapshot } from "firebase/firestore"; 
+import { db } from "./firebase";
 
 function Pickups() {
   const [username, setUsername] = useState(null);
@@ -34,36 +36,39 @@ function Pickups() {
   // Fetch pickup data from the API and filter based on the username
   useEffect(() => {
     if (username) {
-      const fetchData = async () => {
-        try {
-          const response = await fetch(apiURL.SHEETYAPI);
-          const data = await response.json();
-
-          // Filter the data based on the username
-          const filteredData = data.sheet1.filter(
-            (pickup) => pickup.pickupBookedBy === username
-          );
-
-          const sortedData = filteredData.sort((a, b) => {
-            const dateTimeA = parsePickupDateTime(a.pickupDatetime);
-            const dateTimeB = parsePickupDateTime(b.pickupDatetime);
-            return dateTimeA - dateTimeB; // Sort by date and time
-          });
-
-          console.log(sortedData);
-
-          setPickups(sortedData);
-          setLoading(false);
-        } catch (error) {
-          setError("Failed to fetch data: " + error.message);
-          setLoading(false);
-        }
-      };
-
-      fetchData();
+      const pickupsRef = collection(db, "pickups"); // Adjust collection name as necessary
+      const q = query(pickupsRef); // You can add filters here if needed
+  
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const fetchedPickups = [];
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          fetchedPickups.push({ id: doc.id, ...data }); // Include the document ID
+        });
+  
+        // Filter and sort the data based on the username
+        const filteredData = fetchedPickups.filter(
+          (pickup) => pickup.pickupBookedBy === username
+        );
+  
+        const sortedData = filteredData.sort((a, b) => {
+          const dateTimeA = parsePickupDateTime(a.pickupDatetime);
+          const dateTimeB = parsePickupDateTime(b.pickupDatetime);
+          return dateTimeA - dateTimeB; // Sort by date and time
+        });
+  
+        console.log(sortedData);
+        setPickups(sortedData);
+        setLoading(false);
+      }, (error) => {
+        setError("Failed to fetch data: " + error.message);
+        setLoading(false);
+      });
+  
+      return () => unsubscribe(); // Clean up the subscription on unmount
     }
   }, [username]);
-
+  
   // Filter pickups based on search terms
   const filteredPickups = pickups.filter((pickup) => {
     const awbMatch = pickup.awbNumber

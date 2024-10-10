@@ -2,8 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { getData } from "country-list";
 import Nav from "./Nav";
-import { storage } from "./firebase";
+import apiURL from "./apiURL";
+import { db, storage } from "./firebase";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import SavePDF from "./savePDF";
+import jsPDF from "jspdf";
+import JsBarcode from "jsbarcode";
+import { addDoc, collection } from "firebase/firestore";
 
 function PickupBooking() {
   const [loading, setLoading] = useState(false);
@@ -16,6 +21,8 @@ function PickupBooking() {
   const [files, setFiles] = useState([]);
   const [awbNumber, setawbNumber] = useState();
   const [frachise, setfrachise] = useState("");
+  const [clientName, setClientName] = useState("");
+  const [service, setservice] = useState("");
 
   const {
     register,
@@ -23,7 +30,6 @@ function PickupBooking() {
     formState: { errors },
     reset,
   } = useForm();
-
   const barcodeRef = useRef(null);
   const todayDate = new Date().toLocaleDateString();
   const generateAWBNumber = () => {
@@ -51,6 +57,7 @@ function PickupBooking() {
     countryData.push({ code: "EU", name: "Europe" });
     countryData.push({ code: "GB", name: "UK" });
     countryData.push({ code: "US", name: "USA" });
+
     const topCountries = [
       "USA",
       "UK",
@@ -63,59 +70,100 @@ function PickupBooking() {
       "New Zealand",
       "China",
     ];
+
     // Sort countries alphabetically
     const sortedCountries = countryData.sort((a, b) =>
       a.name.localeCompare(b.name)
     );
+
     // Map top countries to their data
     const topCountryData = topCountries
       .map((name) => sortedCountries.find((country) => country.name === name))
       .filter(Boolean); // Remove any undefined entries
+
     // Filter out top countries from sorted list
     const remainingCountries = sortedCountries.filter(
       (country) => !topCountries.includes(country.name)
     );
+
     // Combine top countries with remaining countries
     const orderedCountries = [...topCountryData, ...remainingCountries];
+
     setCountries(orderedCountries);
+
     // Create a map of country codes to names
     const codeToNameMap = orderedCountries.reduce((acc, country) => {
       acc[country.code] = country.name;
       return acc;
     }, {});
+
     setCountryCodeToName(codeToNameMap);
   }, []);
 
   const onSubmit = async (data) => {
     console.log(frachise);
     setLoading(true);
-    const awbNumber = generateAWBNumber();
-    setawbNumber(awbNumber);
-    console.log(`Generated AWB Number: ${awbNumber}`);
-    const uploadedImageURLs = await uploadImages(files);
+    const result = generateAWBNumber();
+    setawbNumber(result);
+    setClientName(data.Consignorname);
+    const uploadedImageURLs = await uploadImages(files, data.Consignorname);
     console.log(uploadedImageURLs);
+
     try {
       const destinationCountryName =
         countryCodeToName[data.country] || data.country;
       console.log(data);
+      const formData = {
+          consignorname: data.Consignorname,
+          consignorphonenumber: data.Consignornumber,
+          consignorlocation: data.Consignorlocation,
+          consigneename: data.consigneename,
+          consigneephonenumber: data.consigneenumber,
+          consigneelocation: data.consigneelocation,
+          content: data.Content,
+          longitude: data.longitude,
+          latitude: data.latitude,
+          pincode: data.pincode,
+          destination: destinationCountryName, // Use full country name here
+          weightapx: data.weight + " KG",
+          pickupInstructions: data.instructions,
+          pickupDatetime:
+            formatDate(data.pickupDate) +
+            " " +
+            " " +
+            "&" +
+            data.pickupHour +
+            " " +
+            data.pickupPeriod,
+          vendorName: data.vendor,
+          status: "RUN SHEET",
+          pickuparea: data.pickuparea,
+          pickupBookedBy: username,
+          franchise: frachise,
+          service: service,
+      };
+
+      const docRef = await addDoc(collection(db, "pickups"), formData);
+      console.log("Document written with ID: ", docRef.id);
+      setShowModal(true);
+
       reset();
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
     }
-    setShowModal(true);
   };
 
   const closeModal = () => {
     setShowModal(false);
   };
 
-  const uploadImages = async (images) => {
+  const uploadImages = async (images, name) => {
     const uploadedURLs = [];
-    console.log(awbNumber);
+    console.log(`Consignor name: ${name}`);
     const uploadPromises = images.map((image, index) => {
-      const imageRef = ref(storage, `${awbNumber}/${image.name}`);
+      const imageRef = ref(storage, `${name}/KYC/${image.name}`);
       const uploadTask = uploadBytesResumable(imageRef, image);
 
       return new Promise((resolve, reject) => {
@@ -160,145 +208,157 @@ function PickupBooking() {
             Submit Pickup Details
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div className="mb-4">
-              <label className="block text-gray-700 font-semibold mb-2">
-                Consignor Name:
-              </label>
-              <input
-                type="text"
-                placeholder="Enter consignor name"
-                {...register("Consignorname", {
-                  required: "Consignor name is required",
-                })}
-                className={`w-full px-3 py-2 border ${
-                  errors.Consignorname ? "border-red-500" : "border-gray-300"
-                } rounded-md focus:outline-none focus:border-[#8847D9]`}
-              />
-              {errors.Consignorname && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.Consignorname.message}
-                </p>
-              )}
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 font-semibold mb-2">
-                Consignor Phone Number:
-              </label>
-              <input
-                type="text"
-                placeholder="Enter consignor phone number"
-                {...register("Consignornumber", {
-                  required: "Consignor phone number is required",
-                  pattern: {
-                    value: /^[0-9]+$/,
-                    message: "Please enter a valid phone number",
-                  },
-                  onChange: (e) => {
-                    // Remove non-numeric characters
-                    e.target.value = e.target.value.replace(/[^0-9]/g, "");
-                  },
-                })}
-                className={`w-full px-3 py-2 border ${
-                  errors.Consignornumber ? "border-red-500" : "border-gray-300"
-                } rounded-md focus:outline-none focus:border-[#8847D9]`}
-              />
-              {errors.Consignornumber && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.Consignornumber.message}
-                </p>
-              )}
-            </div>
+            {/* Consignee */}
+            <div>
+              <div className="mb-4">
+                <label className="block text-gray-700 font-semibold mb-2">
+                  Consignor Name:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter consignor name"
+                  {...register("Consignorname", {
+                    required: "Consignor name is required",
+                  })}
+                  className={`w-full px-3 py-2 border ${
+                    errors.Consignorname ? "border-red-500" : "border-gray-300"
+                  } rounded-md focus:outline-none focus:border-[#8847D9]`}
+                />
+                {errors.Consignorname && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.Consignorname.message}
+                  </p>
+                )}
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 font-semibold mb-2">
+                  Consignor Phone Number:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter consignor phone number"
+                  {...register("Consignornumber", {
+                    required: "Consignor phone number is required",
+                    pattern: {
+                      value: /^[0-9]+$/,
+                      message: "Please enter a valid phone number",
+                    },
+                    onChange: (e) => {
+                      // Remove non-numeric characters
+                      e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                    },
+                  })}
+                  className={`w-full px-3 py-2 border ${
+                    errors.Consignornumber
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  } rounded-md focus:outline-none focus:border-[#8847D9]`}
+                />
+                {errors.Consignornumber && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.Consignornumber.message}
+                  </p>
+                )}
+              </div>
 
-            <div className="mb-4">
-              <label className="block text-gray-700 font-semibold mb-2">
-                Consignor location:
-              </label>
-              <input
-                type="text"
-                placeholder="Enter Consignor location"
-                {...register("Consignorlocation", {
-                  required: "Enter Consignor location",
-                })}
-                className={`w-full px-3 py-2 border ${
-                  errors.Consignorlocation
-                    ? "border-red-500"
-                    : "border-gray-300"
-                } rounded-md focus:outline-none focus:border-[#8847D9]`}
-              />
-              {errors.Consignorlocation && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.Consignorlocation.message}
-                </p>
-              )}
+              <div className="mb-4">
+                <label className="block text-gray-700 font-semibold mb-2">
+                  Consignor address:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter Consignor location"
+                  {...register("Consignorlocation", {
+                    required: "Enter Consignor location",
+                  })}
+                  className={`w-full px-3 py-2 border ${
+                    errors.Consignorlocation
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  } rounded-md focus:outline-none focus:border-[#8847D9]`}
+                />
+                {errors.Consignorlocation && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.Consignorlocation.message}
+                  </p>
+                )}
+              </div>
             </div>
+            {/* Consignee */}
+            <div>
+              <div className="mb-4">
+                <label className="block text-gray-700 font-semibold mb-2">
+                  Consignee Name{" "}
+                  <span className="text-gray-500"> (optional)</span>:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter consignee name"
+                  {...register("consigneename", {
+                    // required: "Consignee name is required",
+                  })}
+                  className={`w-full px-3 py-2 border ${
+                    errors.consigneename ? "border-red-500" : "border-gray-300"
+                  } rounded-md focus:outline-none focus:border-[#8847D9]`}
+                />
+                {errors.consigneename && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.consigneename.message}
+                  </p>
+                )}
+              </div>
 
-            <div className="mb-4">
-              <label className="block text-gray-700 font-semibold mb-2">
-                consignee Name:
-              </label>
-              <input
-                type="text"
-                placeholder="Enter consignee name"
-                {...register("consigneename", {
-                  required: "Consignee name is required",
-                })}
-                className={`w-full px-3 py-2 border ${
-                  errors.consigneename ? "border-red-500" : "border-gray-300"
-                } rounded-md focus:outline-none focus:border-[#8847D9]`}
-              />
-              {errors.consigneename && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.consigneename.message}
-                </p>
-              )}
-            </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 font-semibold mb-2">
+                  Consignee Phone Number{" "}
+                  <span className="text-gray-500"> (optional)</span>:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter consignee phone number"
+                  {...register("consigneenumber", {
+                    // required: "consignee phone number is required",
+                    // pattern: {
+                    //   value: /^[0-9]+$/,
+                    //   message: "Please enter a valid phone number",
+                    // },
+                  })}
+                  className={`w-full px-3 py-2 border ${
+                    errors.consigneenumber
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  } rounded-md focus:outline-none focus:border-[#8847D9]`}
+                />
+                {errors.consigneenumber && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.consigneenumber.message}
+                  </p>
+                )}
+              </div>
 
-            <div className="mb-4">
-              <label className="block text-gray-700 font-semibold mb-2">
-                consignee Phone Number:
-              </label>
-              <input
-                type="text"
-                placeholder="Enter consignee phone number"
-                {...register("consigneenumber", {
-                  required: "consignee phone number is required",
-                  pattern: {
-                    value: /^[0-9]+$/,
-                    message: "Please enter a valid phone number",
-                  },
-                })}
-                className={`w-full px-3 py-2 border ${
-                  errors.consigneenumber ? "border-red-500" : "border-gray-300"
-                } rounded-md focus:outline-none focus:border-[#8847D9]`}
-              />
-              {errors.consigneenumber && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.consigneenumber.message}
-                </p>
-              )}
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-gray-700 font-semibold mb-2">
-                consignee location:
-              </label>
-              <input
-                type="text"
-                placeholder="Enter consignee location"
-                {...register("consigneelocation", {
-                  required: "Enter consignee location",
-                })}
-                className={`w-full px-3 py-2 border ${
-                  errors.consigneelocation
-                    ? "border-red-500"
-                    : "border-gray-300"
-                } rounded-md focus:outline-none focus:border-[#8847D9]`}
-              />
-              {errors.consigneelocation && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.consigneelocation.message}
-                </p>
-              )}
+              <div className="mb-4">
+                <label className="block text-gray-700 font-semibold mb-2">
+                  Consignee address{" "}
+                  <span className="text-gray-500"> (optional)</span>:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter consignee location"
+                  {...register("consigneelocation", {
+                    // required: "Enter consignee location",
+                  })}
+                  className={`w-full px-3 py-2 border ${
+                    errors.consigneelocation
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  } rounded-md focus:outline-none focus:border-[#8847D9]`}
+                />
+                {errors.consigneelocation && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.consigneelocation.message}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="mb-4">
@@ -498,9 +558,7 @@ function PickupBooking() {
                 Pickup Time:
               </label>
 
-              {/* Time Dropdown */}
               <div className="flex space-x-2">
-                {/* Hour Dropdown */}
                 <select
                   {...register("pickupHour", {
                     required: "Pickup hour is required",
@@ -517,7 +575,6 @@ function PickupBooking() {
                   ))}
                 </select>
 
-                {/* AM/PM Dropdown */}
                 <select
                   {...register("pickupPeriod", {
                     required: "AM/PM is required",
@@ -532,7 +589,6 @@ function PickupBooking() {
                 </select>
               </div>
 
-              {/* Error messages */}
               {errors.pickupHour && (
                 <p className="text-red-500 text-sm mt-1">
                   {errors.pickupHour.message}
@@ -545,9 +601,52 @@ function PickupBooking() {
               )}
             </div>
 
+            <div>
+              <p>Frachise</p>
+              <select
+                className="w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:border-[#8847D9]"
+                {...register("franchise", {
+                  required: "Franchise is required",
+                })}
+                onChange={(e) => {
+                  setfrachise(e.target.value);
+                }}
+              >
+                <option value="">Select</option>
+                <option value="CHENNAI">CHENNAI</option>
+                <option value="COIMBATORE">COIMBATORE</option>
+                <option value="PONDY">PONDY</option>
+              </select>
+              {errors.franchise && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.franchise.message}
+                </p>
+              )}
+            </div>
+            <div>
+              <p>Service</p>
+              <select
+                className="w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:border-[#8847D9]"
+                {...register("service", {
+                  required: "service is required",
+                })}
+                onChange={(e) => {
+                  setservice(e.target.value);
+                }}
+              >
+                <option value="">Select</option>
+                <option value="Express">Express</option>
+                <option value="Economy">Economy</option>
+              </select>
+              {errors.service && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.service.message}
+                </p>
+              )}
+            </div>
             <div className="mb-4">
               <label className="block text-gray-700 font-semibold mb-2">
-                Special Instructions:{" "}
+                Special Instructions{" "}
                 <span className="text-gray-500">(optional)</span>:
               </label>
               <textarea
@@ -556,26 +655,10 @@ function PickupBooking() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#8847D9]"
               ></textarea>
             </div>
-            <div>
-              <p>Frachise</p>
-              <select
-                className={`w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:border-[#8847D9]`}
-                onChange={(e) => {
-                  setfrachise(e.target.value);
-                  console.log(e.target.value);
-                }}
-              >
-                <option value="select">select</option>
-                <option value="CHENNAI">CHENNAI</option>
-                <option value="COIMBATORE">KOVAI</option>
-                <option value="PONDY">PONDY</option>
-              </select>
-            </div>
           </div>
-
-          <div className="mb-4">
+          {/* <div className="mb-4">
             <label className="block text-gray-700 font-semibold mb-2">
-              Upload Images (max 5):
+              Upload KYC & Product Images (max 5):
             </label>
             <input
               type="file"
@@ -595,7 +678,7 @@ function PickupBooking() {
                 ))}
               </div>
             )}
-          </div>
+          </div> */}
           <div className="flex justify-center">
             <button
               type="submit"
