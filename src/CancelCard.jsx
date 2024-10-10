@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 function CancelCard({ item, index }) {
-  const navigate = useNavigate();
   const API_URL = apiURL.CHENNAI;
   const [details, setDetails] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
