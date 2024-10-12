@@ -148,6 +148,7 @@ function PickupBooking() {
         service: service,
         awbNumber: newAwbNumber, // Add the new awbNumber here
         pickUpPersonName: "Unassigned",
+        logisticCost:null
       });
 
       console.log(`New pickup added with AWB Number: ${newAwbNumber}`);

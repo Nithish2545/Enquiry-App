@@ -1,15 +1,21 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import apiURL from "./apiURL";
 import axios from "axios";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  updateDoc,
+  doc,
+} from "firebase/firestore";
+import { db } from "./firebase";
 
 function CancelCard({ item, index }) {
-  const navigate = useNavigate();
+
   const API_URL = apiURL.CHENNAI;
-  const [details, setDetails] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
   const [selectedDate, setSelectedDate] = useState(); // DateTime state
-  const [selectedTime, setSelectedTime] = useState(""); // DateTime state
   const [loading, setloading] = useState(false);
   const [Hour, setHour] = useState(""); // DateTime state
   const [Timeperiod, setTimeperiod] = useState(""); // DateTime state
@@ -18,22 +24,27 @@ function CancelCard({ item, index }) {
   const handleAcceptClick = async (awbNumber) => {
     setloading(true);
     // pickupDatetime
-    const body = {
-      sheet1: {
-        pickupDatetime:
-          selectedDate+" "+"&"+Hour+" "+Timeperiod,
-      },
+
+    const q = query(
+      collection(db, "pickup"),
+      where("awbNumber", "==", awbNumber)
+    );
+
+    const querySnapshot = await getDocs(q);
+    let final_result = [];
+
+    querySnapshot.forEach((doc) => {
+      final_result.push({ id: doc.id, ...doc.data() });
+    });
+
+    const docRef = doc(db, "pickup", final_result[0].id); // db is your Firestore instance
+
+    const updatedFields = {
+      pickupDatetime: selectedDate + " " + "&" + Hour + " " + Timeperiod,
     };
 
-    const response = await fetch(`${apiURL.CHENNAI}/${item.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-    const json = await response.json();
-    console.log(json.sheet1);
+    updateDoc(docRef, updatedFields);
+
     setloading(false);
     setIsModalOpen(false); // Close the modal after submission
   };
@@ -43,7 +54,6 @@ function CancelCard({ item, index }) {
       try {
         const result = await axios.get(API_URL);
         const userDetails = result.data.sheet1;
-        setDetails(userDetails);
       } catch (error) {
         console.log(error);
       }
@@ -91,17 +101,6 @@ function CancelCard({ item, index }) {
           </p>
         )}
       </div>
-
-      {item.actualWeight != "" ? (
-        <div className="flex flex-col mb-4 gap-2">
-          <p className="text-base font-medium text-gray-800">
-            <strong className="text-gray-900">Final Weight:</strong>{" "}
-            {item.actualWeight + " KG" || "-"}
-          </p>
-        </div>
-      ) : (
-        <></>
-      )}
 
       <div className="flex flex-col mb-4 gap-2">
         {item.pickUpPersonName != "" ? (
