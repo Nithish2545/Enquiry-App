@@ -159,6 +159,7 @@ function PickupBooking() {
       console.log(json.sheet1);
 
       reset();
+      setFiles([])
     } catch (e) {
       console.error(e);
     } finally {
