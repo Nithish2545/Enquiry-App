@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import apiURL from "./apiURL";
 import Nav from "./Nav";
 import PaymentConfirmCard from "./PaymentConfirmCard";
+import { collection, onSnapshot } from "firebase/firestore";
+import {db} from  "./firebase"
 
 function PaymentConfirm() {
   
@@ -9,12 +10,19 @@ function PaymentConfirm() {
   const [activeTab, setActiveTab] = useState("PAYMENT PENDING");
 
   useEffect(() => {
-    const url = apiURL.CHENNAI;
-    fetch(url)
-      .then((response) => response.json())
-      .then((json) => {
-        setData(json.sheet1);
-      });
+    // Set up a real-time listener for Firestore data using onSnapshot
+    const unsubscribe = onSnapshot(collection(db, "pickup"), (snapshot) => {
+      const documents = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setData(documents); // Update the state with the latest data from Firestore
+    }, (error) => {
+      console.error("Error fetching Firestore data: ", error);
+    });
+
+    // Cleanup listener on component unmount to prevent memory leaks
+    return () => unsubscribe();
   }, []);
 
   const filteredData = data.filter((item) => item.status === activeTab);

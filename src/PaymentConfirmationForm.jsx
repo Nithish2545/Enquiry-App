@@ -3,10 +3,18 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import apiURL from "./apiURL";
-import { storage } from "./firebase"; // Import storage from your Firebase config
+import { db, storage } from "./firebase"; // Import storage from your Firebase config
 import JsBarcode from "jsbarcode";
 import { jsPDF } from "jspdf";
 import { useForm } from "react-hook-form";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 
 const API_URL = apiURL.CHENNAI;
 
@@ -105,7 +113,7 @@ function PaymentConfirmationForm() {
     doc.setFontSize(12);
     doc.text(`Weight (kg): ${details.actualWeight} kg`, 20, 125);
     doc.text(
-      `Pce/Shpt: ${details.actualNoOfPackages} / ${details.actualNoOfPackages}`,
+      `Number Of Boxes: ${details.actualNoOfPackages} / ${details.actualNoOfPackages}`,
       20,
       135
     );
@@ -126,21 +134,36 @@ function PaymentConfirmationForm() {
   useEffect(() => {
     const fetchDetails = async () => {
       try {
-        const result = await axios.get(API_URL);
-        const userDetails = result.data.sheet1.find(
-          (item) =>
-            item.status === "PAYMENT PENDING" && item.awbNumber == awbnumber
+        console.log();
+        // Create a query to fetch documents with status "PAYMENT PENDING" and the given awbNumber
+        const q = query(
+          collection(db, "pickup"),
+          where("awbNumber", "==", parseInt(awbnumber))
         );
-        console.log(userDetails);
-        setDetails(userDetails);
+
+        // Fetch the query results
+        const querySnapshot = await getDocs(q);
+        const userDetails = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        console.log("userDetails", userDetails);
+
+        // Assuming you want only one result (in case there are multiple matches)
+        if (userDetails.length > 0) {
+          setDetails(userDetails[0]);
+        } else {
+          setDetails(null); // No data matched
+        }
       } catch (error) {
-        handleError(error);
+        console.error("Error fetching Firestore data:", error);
       } finally {
-        setLoading(false);
+        setLoading(false); // Stop the loading state
       }
     };
+
     fetchDetails();
-  }, [awbnumber]);
+  }, [awbnumber]); // Dependency array to refetch when awbnumber changes
 
   const uploadFileToFirebase = async (file, folder) => {
     const storageRef = ref(storage, `${awbnumber}/${folder}/${file.name}`);
@@ -180,12 +203,28 @@ function PaymentConfirmationForm() {
         "PAYMENT PROOF"
       );
 
-      await axios.put(`${API_URL}/${details.id}`, {
-        sheet1: {
-          status: "PAYMENT DONE",
-          logisticsCost: data.logisticsCost,
-        },
+      const q = query(
+        collection(db, "pickup"),
+        where("awbNumber", "==", parseInt(awbnumber))
+      );
+  
+      const querySnapshot = await getDocs(q);
+      let final_result = [];
+  
+      querySnapshot.forEach((doc) => {
+        final_result.push({ id: doc.id, ...doc.data() });
       });
+  
+
+      const docRef = doc(db, "pickup", final_result[0].id); // db is your Firestore instance
+
+      const updatedFields = {
+        status: "PAYMENT DONE",
+        logisticCost: data.logisticsCost,
+      };
+  
+      updateDoc(docRef, updatedFields);
+
       setShowPopup(true);
     } catch (error) {
       handleError(error);

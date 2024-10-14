@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Nav from "./Nav";
 import ResheduleCard from "./ResheduleCard"
 import CancelCard from "./CancelCard"
-import { collection, getDocs } from "firebase/firestore";
+import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
 function CancelOrReschedule() {
 
@@ -10,20 +10,21 @@ function CancelOrReschedule() {
   const [activeTab, setActiveTab] = useState("CANCEL");
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "pickup")); // Replace 'chennai' with your collection name
-        const documents = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setData(documents); // Update the state with Firestore data
-      } catch (error) {
-        console.error("Error fetching Firestore data: ", error);
-      }
-    };
-    fetchData();
+    // Real-time listener for Firestore data using onSnapshot
+    const unsubscribe = onSnapshot(collection(db, "pickup"), (snapshot) => {
+      const documents = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setData(documents); // Update the state with real-time Firestore data
+    }, (error) => {
+      console.error("Error fetching Firestore data: ", error);
+    });
+
+    // Cleanup the listener on component unmount
+    return () => unsubscribe();
   }, []);
+
 
 console.log(data)
 
