@@ -43,13 +43,15 @@ function PickupBooking() {
   }, []);
 
   useEffect(() => {
-    const countryData = getData();
-    console.log(countryData);
+    var countryData = getData();
     countryData.push({ code: "UAE", name: "United Arab Emirates" });
-    countryData.push({ code: "EU", name: "Europe" });
-    countryData.push({ code: "GB", name: "UK" });
+    countryData.push({ code: "EU", name: "Singapore" });
     countryData.push({ code: "US", name: "USA" });
 
+    countryData = countryData.map(country => 
+      country.code == "GB" ? { ...country, name: "United Kingdom" } : country
+  );
+  console.log(countryData);
     const topCountries = [
       "USA",
       "UK",
@@ -62,7 +64,7 @@ function PickupBooking() {
       "New Zealand",
       "China",
     ];
-
+console.log()
     // Sort countries alphabetically
     const sortedCountries = countryData.sort((a, b) =>
       a.name.localeCompare(b.name)
