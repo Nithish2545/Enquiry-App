@@ -54,7 +54,7 @@ function PickupBooking() {
   console.log(countryData);
     const topCountries = [
       "USA",
-      "UK",
+      "United Kingdom",
       "Canada",
       "Europe",
       "Singapore",
