@@ -120,19 +120,23 @@ function PickupBooking() {
       console.log(uploadedImageURLs);
       // Step 3: Store new document
       await addDoc(pickupsRef, {
+        // Consignor Data
         consignorname: data.Consignorname,
         consignorphonenumber: data.Consignornumber,
         consignorlocation: data.Consignorlocation,
+
+        // Consignee Data
         consigneename: data.consigneename,
         consigneephonenumber: data.consigneenumber,
         consigneelocation: data.consigneelocation,
+
         content: data.Content,
         longitude: data.longitude,
         latitude: data.latitude,
         pincode: data.pincode,
         destination: destinationCountryName, // Use full country name here
-        weightapx: data.weight + " KG",
         pickupInstructions: data.instructions,
+        weightapx: data.weight + " KG",
         pickupDatetime:
           formatDate(data.pickupDate) +
           " " +
@@ -140,20 +144,35 @@ function PickupBooking() {
           data.pickupHour +
           " " +
           data.pickupPeriod,
-        vendorName: data.vendor,
-        status: "RUN SHEET",
-        pickuparea: data.pickuparea,
-        pickupBookedBy: username,
         franchise: frachise,
-        service: service,
         awbNumber: newAwbNumber, // Add the new awbNumber here
+        vendorName: data.vendor,
+        service: service,
+        imageUrLs: null,
+
+        pickupCompletedDatatime: null,
         pickUpPersonName: "Unassigned",
-        logisticCost:null
+
+        postNumberOfPackages: null,
+        postPickupWeight: null,
+
+        actualNoOfPackages: null,
+        actualWeight: null,
+
+        status: "RUN SHEET",
+        
+        pickupBookedBy: username,
+        vendorAwbnumber: null,
+        pickUpPersonNameStatus: null,
+        pickuparea: data.pickuparea,
+        rtoIfAny: null,
+        packageConnectedDataTime: null,
+        logisticCost: null,
       });
 
       console.log(`New pickup added with AWB Number: ${newAwbNumber}`);
       setShowModal(true);
-      setFiles([])
+      setFiles([]);
       reset();
     } catch (error) {
       console.error("Error adding document: ", error);
@@ -678,11 +697,11 @@ function PickupBooking() {
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#8847D9]"
             />
-              {errors.KycImages && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.KycImages.message}
-                </p>
-              )}
+            {errors.KycImages && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.KycImages.message}
+              </p>
+            )}
             {files.length > 0 && (
               <div className="mt-2">
                 {files.map((file, index) => (
