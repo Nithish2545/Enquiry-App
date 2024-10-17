@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import apiURL from "./apiURL";
 import { db, storage } from "./firebase"; // Import storage from your Firebase config
 import JsBarcode from "jsbarcode";
 import { jsPDF } from "jspdf";
@@ -16,12 +14,11 @@ import {
   updateDoc,
 } from "firebase/firestore";
 
-const API_URL = apiURL.CHENNAI;
-
 function PaymentConfirmationForm() {
   const { awbnumber } = useParams();
   const [details, setDetails] = useState(null);
   const [paymentProof, setPaymentProof] = useState(null);
+  const [KycImage, setKycImage] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [formError, setFormError] = useState("");
@@ -32,7 +29,6 @@ function PaymentConfirmationForm() {
     register,
     handleSubmit,
     formState: { errors },
-    reset,
   } = useForm();
   const navigate = useNavigate();
 
@@ -178,10 +174,18 @@ function PaymentConfirmationForm() {
       setPaymentProof(file);
     }
   };
+  const handleKYCFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setKycImage(file);
+    }
+  };
 
   const validateForm = () => {
-    if (!paymentProof) {
-      setFormError("Payment proof image is required.");
+    console.log("paymentProof", paymentProof);
+    console.log("KycImage", KycImage);
+    if (!paymentProof && !KycImage) {
+      setFormError("Payment proof and KYC Image is required.");
       return false;
     }
     setFormError("");
@@ -190,39 +194,33 @@ function PaymentConfirmationForm() {
 
   const onSubmit = async (data) => {
     if (!validateForm()) return;
-
     setSubmitLoading(true);
 
     try {
       if (!details) {
         throw new Error("User details not found");
       }
-
-      const paymentProofUrl = await uploadFileToFirebase(
-        paymentProof,
-        "PAYMENT PROOF"
-      );
-
       const q = query(
         collection(db, "pickup"),
         where("awbNumber", "==", parseInt(awbnumber))
       );
-  
+
       const querySnapshot = await getDocs(q);
       let final_result = [];
-  
+
       querySnapshot.forEach((doc) => {
         final_result.push({ id: doc.id, ...doc.data() });
       });
-  
 
       const docRef = doc(db, "pickup", final_result[0].id); // db is your Firestore instance
 
       const updatedFields = {
         status: "PAYMENT DONE",
         logisticCost: data.logisticsCost,
+        paymentProof: await uploadFileToFirebase(paymentProof, "PAYMENT PROOF"),
+        KycImage: await uploadFileToFirebase(KycImage, "KYC"),
       };
-  
+
       updateDoc(docRef, updatedFields);
 
       setShowPopup(true);
@@ -395,7 +393,7 @@ function PaymentConfirmationForm() {
               value={details.logisticsCost}
               placeholder="Enter Logistic Cost"
               {...register("logisticsCost", {
-                required: "Consignor phone number is required",
+                required: "Logistics cost is required",
                 pattern: {
                   value: /^[0-9]+$/,
                   message:
@@ -424,6 +422,33 @@ function PaymentConfirmationForm() {
               className="p-2 border rounded"
             />
           </div>
+          {errors.Paymentproof && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.Paymentproof.message}
+            </p>
+          )}
+          {details.KycImage ==null ? (
+            <>
+              <div className="flex flex-col mb-4">
+                <label className="text-gray-700 font-medium mb-1">
+                  Upload KYC & Product Images:{" "}
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleKYCFileChange}
+                  className="p-2 border rounded"
+                />
+              </div>
+              {errors.KYCimage && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.KYCimage.message}
+                </p>
+              )}
+            </>
+          ) : (
+            <></>
+          )}
           {formError && <p className="text-red-500 text-sm">{formError}</p>}
           <button
             type="submit"

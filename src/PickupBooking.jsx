@@ -170,6 +170,7 @@ console.log()
         rtoIfAny: null,
         packageConnectedDataTime: null,
         logisticCost: null,
+        KycImage:uploadedImageURLs
       });
 
       console.log(`New pickup added with AWB Number: ${newAwbNumber}`);
@@ -508,10 +509,12 @@ console.log()
               >
                 <option value="">Select a vendor</option>
                 <option value="DHL">DHL</option>
-                <option value="Aramex">Aramex</option>
+                <option value="Aramex">ARAMEX</option>
                 <option value="UPS">UPS</option>
                 <option value="FedEx">FedEx</option>
-                <option value="Self">Self</option>
+                <option value="SELF">SELF</option>
+                <option value="BOMBINO">BOMBINO</option>
+                <option value="ARLANTIC">ARLANTIC</option>
               </select>
               {errors.vendor && (
                 <p className="text-red-500 text-sm mt-1">
@@ -643,6 +646,7 @@ console.log()
                 <option value="CHENNAI">CHENNAI</option>
                 <option value="COIMBATORE">COIMBATORE</option>
                 <option value="PONDY">PONDY</option>
+                
               </select>
               {errors.franchise && (
                 <p className="text-red-500 text-sm mt-1">
@@ -685,13 +689,13 @@ console.log()
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 font-semibold mb-2">
-              Upload KYC & Product Images:
+              Upload KYC Image:
             </label>
             <input
               type="file"
-              {...register("KycImages", {
-                required: "KYC & Product Images is required",
-              })}
+              // {...register("KycImages", {
+              //   required: "KYC & Product Images is required",
+              // })}
               multiple
               onChange={(e) => {
                 const files = Array.from(e.target.files).slice(0, 5); // Limit to 5 files
@@ -699,11 +703,7 @@ console.log()
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#8847D9]"
             />
-            {errors.KycImages && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.KycImages.message}
-              </p>
-            )}
+          
             {files.length > 0 && (
               <div className="mt-2">
                 {files.map((file, index) => (

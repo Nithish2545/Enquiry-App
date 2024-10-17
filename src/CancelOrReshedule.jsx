@@ -25,9 +25,6 @@ function CancelOrReschedule() {
     return () => unsubscribe();
   }, []);
 
-
-console.log(data)
-
   // Filter data based on the active tab
   const filteredData = data?.filter(item => {
     if (activeTab === "CANCEL" || activeTab === "RESCHEDULE") {

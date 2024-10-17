@@ -40,7 +40,7 @@ function Pickups() {
       const fetchData = () => {
         try {
           const q =
-            role === "sales admin"
+            role === "sales admin" ||  role==="Manager"
               ? query(collection(db, "pickup")) // Fetch all pickups for sales admin
               : query(
                   collection(db, "pickup"),
@@ -159,6 +159,7 @@ function Pickups() {
                 <th className="py-3 px-4 border">Destination</th>
                 <th className="py-3 px-4 border">Weight (Apx)</th>
                 <th className="py-3 px-4 border">Vendor</th>
+                <th className="py-3 px-4 border">Pickup Area</th>
                 <th className="py-3 px-4  border">Pickup Date & Time</th>
                 <th className="py-3 px-4 border">Status</th>
                 <th className="py-3 px-4 border"> Pickup Booked by</th>
@@ -179,6 +180,7 @@ function Pickups() {
                     <td className="py-10 px-4 border">{pickup.destination}</td>
                     <td className="py-10 px-4 border">{pickup.weightapx} kg</td>
                     <td className="py-10 px-4 border">{pickup.vendorName}</td>
+                    <td className="py-10 px-4 border">{pickup.pickuparea}</td>
                     <td className="py-10 px-4 border">
                       {pickup.pickupDatetime}
                     </td>
