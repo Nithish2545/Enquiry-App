@@ -48,10 +48,10 @@ function PickupBooking() {
     countryData.push({ code: "EU", name: "Singapore" });
     countryData.push({ code: "US", name: "USA" });
 
-    countryData = countryData.map(country => 
+    countryData = countryData.map((country) =>
       country.code == "GB" ? { ...country, name: "United Kingdom" } : country
-  );
-  console.log(countryData);
+    );
+    console.log(countryData);
     const topCountries = [
       "USA",
       "United Kingdom",
@@ -63,8 +63,10 @@ function PickupBooking() {
       "Australia",
       "New Zealand",
       "China",
+      "Germany",
+      "France",
     ];
-console.log()
+    console.log();
     // Sort countries alphabetically
     const sortedCountries = countryData.sort((a, b) =>
       a.name.localeCompare(b.name)
@@ -162,7 +164,7 @@ console.log()
         actualWeight: null,
 
         status: "RUN SHEET",
-        
+
         pickupBookedBy: username,
         vendorAwbnumber: null,
         pickUpPersonNameStatus: null,
@@ -170,7 +172,7 @@ console.log()
         rtoIfAny: null,
         packageConnectedDataTime: null,
         logisticCost: null,
-        KycImage:uploadedImageURLs
+        KycImage: uploadedImageURLs,
       });
 
       console.log(`New pickup added with AWB Number: ${newAwbNumber}`);
@@ -317,8 +319,7 @@ console.log()
             <div>
               <div className="mb-4">
                 <label className="block text-gray-700 font-semibold mb-2">
-                  Consignee Name{" "}
-                  <span className="text-gray-500"> (optional)</span>:
+                  Consignee Name:
                 </label>
                 <input
                   type="text"
@@ -339,8 +340,7 @@ console.log()
 
               <div className="mb-4">
                 <label className="block text-gray-700 font-semibold mb-2">
-                  Consignee Phone Number{" "}
-                  <span className="text-gray-500"> (optional)</span>:
+                  Consignee Phone Number:
                 </label>
                 <input
                   type="text"
@@ -367,8 +367,7 @@ console.log()
 
               <div className="mb-4">
                 <label className="block text-gray-700 font-semibold mb-2">
-                  Consignee address{" "}
-                  <span className="text-gray-500"> (optional)</span>:
+                  Consignee address:
                 </label>
                 <input
                   type="text"
@@ -514,7 +513,7 @@ console.log()
                 <option value="FedEx">FedEx</option>
                 <option value="SELF">SELF</option>
                 <option value="BOMBINO">BOMBINO</option>
-                <option value="ARLANTIC">ARLANTIC</option>
+                <option value="ARLANTIC">ATLANTIC</option>
               </select>
               {errors.vendor && (
                 <p className="text-red-500 text-sm mt-1">
@@ -583,12 +582,10 @@ console.log()
                 </p>
               )}
             </div>
-
             <div className="mb-4">
               <label className="block text-gray-700 font-semibold mb-2">
                 Pickup Time:
               </label>
-
               <div className="flex space-x-2">
                 <select
                   {...register("pickupHour", {
@@ -605,7 +602,6 @@ console.log()
                     </option>
                   ))}
                 </select>
-
                 <select
                   {...register("pickupPeriod", {
                     required: "AM/PM is required",
@@ -632,7 +628,7 @@ console.log()
               )}
             </div>
             <div>
-              <p>Frachise</p>
+              <p>Franchise</p>
               <select
                 className="w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:border-[#8847D9]"
                 {...register("franchise", {
@@ -646,7 +642,6 @@ console.log()
                 <option value="CHENNAI">CHENNAI</option>
                 <option value="COIMBATORE">COIMBATORE</option>
                 <option value="PONDY">PONDY</option>
-                
               </select>
               {errors.franchise && (
                 <p className="text-red-500 text-sm mt-1">
@@ -668,6 +663,7 @@ console.log()
                 <option value="">Select</option>
                 <option value="Express">Express</option>
                 <option value="Economy">Economy</option>
+                <option value="Duty Free">Duty Free</option>
               </select>
               {errors.service && (
                 <p className="text-red-500 text-sm mt-1">
@@ -677,8 +673,7 @@ console.log()
             </div>
             <div className="mb-4">
               <label className="block text-gray-700 font-semibold mb-2">
-                Special Instructions{" "}
-                <span className="text-gray-500">(optional)</span>:
+                Special Instructions
               </label>
               <textarea
                 placeholder="Enter any special instructions"
@@ -703,7 +698,7 @@ console.log()
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#8847D9]"
             />
-          
+
             {files.length > 0 && (
               <div className="mt-2">
                 {files.map((file, index) => (
