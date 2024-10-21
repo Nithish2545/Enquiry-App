@@ -603,7 +603,6 @@ function PickupBooking() {
                   <option value="PM">PM</option>
                 </select>
               </div>
-
               {/* Error messages */}
               {errors.pickupHour && (
                 <p className="text-red-500 text-sm mt-1">
@@ -740,4 +739,4 @@ function PickupBooking() {
   );
 }
 
-export default PickupBooking;
+export default PickupBooking; 
