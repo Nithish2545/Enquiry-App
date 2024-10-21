@@ -1,12 +1,202 @@
+import jsPDF from "jspdf";
 import { useNavigate } from "react-router-dom";
-
+import { useRef } from "react";
+import JsBarcode from "jsbarcode";
+import "jspdf-autotable";
 function PaymentConfirmCard({ item, index }) {
   const navigate = useNavigate();
+  const barcodeRef = useRef(null); // Ref for barcode generation
 
   const handleAcceptClick = () => {
     const url = `/payment-confirmation-form/${item.awbNumber}`; // Use item.vendorAwbnumber if that's the correct field
     navigate(url);
   };
+
+  function generate_AWBNUMBER_PDF() {
+    const doc = new jsPDF();
+
+    // Format date as day/month/year
+    const todayDate = new Date().toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+
+    // Generate barcode
+    JsBarcode(barcodeRef.current, item.awbNumber, {
+      format: "CODE128",
+      displayValue: true,
+      width: 2, // Adjust width as needed
+      height: 40, // Adjust height as needed
+      fontOptions: "bold", // Make the text bold
+      fontSize: 16, // Increase font size for the barcode text
+      textMargin: 5, // Space between the barcode and text
+      margin: 10, // Margin around the barcode
+      background: "#ffffff", // Background color of the barcode
+      lineColor: "#000000", // Color of the bars
+      scale: 4, // Higher scale for better quality
+    });
+
+    const barcodeImage = barcodeRef.current.toDataURL();
+
+    // Add logo with adjusted size (height will auto-adjust)
+    const logoUrl = "/shiphtlogo.png";
+    doc.addImage(logoUrl, "PNG", 140, 10, 50, 0); // Increased width to 50, height auto-adjusts
+
+    // Add title and date
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${item.service} Service`, 20, 30);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Date: ${item.pickupCompletedDatatime}`, 20, 40);
+
+    // Set line width for borders
+    doc.setLineWidth(0.5);
+
+    // From section
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("From:", 20, 60);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.text(`Name: ${item.consignorname}`, 20, 70);
+    doc.text(`Phone Number: ${item.consignorphonenumber}`, 20, 80);
+    const fromLocation = doc.splitTextToSize(
+      `Location: ${item.consignorlocation}`,
+      85
+    );
+    doc.text(fromLocation, 20, 90);
+
+    // Horizontal line between "From" and "To" sections
+    doc.line(10, 107, 200, 107);
+
+    // To section
+    doc.setFont("helvetica", "bold");
+    doc.text("To:", 110, 60);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Name: ${item.consigneename}`, 110, 70);
+    doc.text(`Phone Number: ${item.consigneephonenumber}`, 110, 80);
+    const toLocation = doc.splitTextToSize(
+      `Location: ${item.consigneelocation}`,
+      85
+    );
+    doc.text(toLocation, 110, 90);
+
+    // Shipment item section
+    doc.setFont("helvetica", "bold");
+    doc.text("Shipment item:", 20, 115); // Adjustsssssssssed Y position to place below the line
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.text(`Weight (kg): ${item.actualWeight} kg`, 20, 125);
+    doc.text(
+      `Number Of Boxes: ${item.actualNoOfPackages} / ${item.actualNoOfPackages}`,
+      20,
+      135
+    );
+    doc.text(`Content: ${item.content}`, 20, 145);
+
+    // Horizontal line above "AWB Number" section
+    doc.line(10, 154, 200, 154); // Border above "AWB Number"
+
+    // Add barcode section with improved quality
+    doc.setFont("helvetica", "bold");
+    doc.text(`AWB Number: ${item.awbNumber}`, 20, 165);
+    doc.addImage(barcodeImage, "PNG", 20, 175, 100, 30);
+
+    // Save PDF
+    doc.save(`AWB NUMBER_${item.consignorname}_${item.destination}.pdf`);
+  }
+
+  function generate_Invoice_PDF() {
+    const doc = new jsPDF("p", "pt");
+
+    // Add business name and logo
+    doc.setFontSize(20);
+    doc.addImage("/shiphtlogo.png", "PNG", 40, 60, 100, 40); // Replace with your logo
+   
+    const maxWidth = 200; // Set the maximum width (in points) for the text
+
+    // Bill from and bill to section
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Bill from:", 40, 140);
+    doc.setFont("helvetica", "normal");
+    doc.text("Shiphit", 40, 160);
+    const splitText1 = doc.splitTextToSize("No. 74, Tiny Sector Industrial Estate, Ekkatuthangal, Chennai", maxWidth);
+    doc.text(splitText1, 40, 180);
+    // doc.text("No. 74, Tiny Sector Industrial Estate, Ekkatuthangal, Chennai", 40, 175);
+    doc.text("9159 688 688", 40, 240);
+    doc.setFont("helvetica", "bold");
+
+    doc.text("Bill to:", 350, 140);
+    doc.setFont("helvetica", "normal");
+    doc.text(item.consignorname, 350, 160);
+    const splitText = doc.splitTextToSize(item.consignorlocation.toLowerCase(), maxWidth);
+    doc.text(splitText, 350, 180);
+    // doc.text("Street Address, Zip Code", 350, 175);
+    doc.text(item.consignorphonenumber, 350, 240);
+
+    // Align invoice details at the top-right corner
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const rightMargin = pageWidth - 40; // Right margin of 40 units
+
+    doc.setFont("helvetica", "normal");
+    doc.text(`Invoice Number: INV-001`, rightMargin, 40, { align: "right" });
+    doc.text(`Date: 02/02/2022`, rightMargin, 61, { align: "right" });
+    doc.setFont("helvetica", "bold");
+    doc.text(`Total: 10,000.00 Rs`, rightMargin, 80, { align: "right" });
+
+    // Draw a line for separation
+    doc.line(40, 250, 570, 250);
+
+    // Invoice Table
+    // Invoice Table
+    doc.autoTable({
+      startY: 270,
+      head: [["Country Name", "Mode", "Weight (KG):", "Cost/KG", "Total"]],
+      body: [
+        ["USA", "Express Service", "4 KG", "799.00 Rs", "10,000.00 Rs"],
+        // Add more rows as needed
+      ],
+      theme: "grid", // Adds borders
+      headStyles: {
+        fillColor: [147, 51, 234], // Purple background color (RGB)
+        textColor: [255, 255, 255], // White text
+        fontSize: 12, // Increase font size by 2px (default is 10)
+      },
+      bodyStyles: {
+        fontSize: 12, // Increase font size by 2px (default is 10)
+      },
+      margin: { top: 20 },
+    });
+    // Terms and Conditions
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Terms & Conditions:", 40, doc.lastAutoTable.finalY + 30);
+    doc.setFont("helvetica", "normal");
+    doc.text("Subtotal: 0.00 Rs", 400, doc.lastAutoTable.finalY + 60);
+    doc.text("Discount: 0.00 Rs", 400, doc.lastAutoTable.finalY + 79);
+    // doc.text("Tax: 0.00", 400, doc.lastAutoTable.finalY + 99);
+    // doc.setFont("helvetica", "bold");
+    doc.text("Total: 10,000.00 Rs", 400, doc.lastAutoTable.finalY + 100);
+    doc.setFont("helvetica", "normal");
+
+    // Footer
+    doc.setFontSize(10);
+    doc.text(
+      "Thank you for your business!",
+      40,
+      doc.internal.pageSize.height - 40
+    );
+    doc.text(
+      "Company Contact Info: info@shiphit.in | +91 - 9159 688 688",
+      40,
+      doc.internal.pageSize.height - 30
+    );
+    // Save the PDF
+    doc.save("invoice.pdf");
+  }
 
   return (
     <div
@@ -16,7 +206,8 @@ function PaymentConfirmCard({ item, index }) {
       <div className="flex flex-col mb-4 gap-2">
         {item.consignorname && (
           <p className="text-base font-medium text-gray-800">
-            <strong className="text-gray-900">Name:</strong> {item.consignorname}
+            <strong className="text-gray-900">Name:</strong>{" "}
+            {item.consignorname}
           </p>
         )}
         <p className="text-base font-medium text-gray-800">
@@ -25,7 +216,6 @@ function PaymentConfirmCard({ item, index }) {
         </p>
       </div>
       <div className="flex flex-col mb-4 gap-2">
-        
         {item.consignorphonenumber && (
           <p className="text-base font-medium text-gray-800">
             <strong className="text-gray-900">Phone Number:</strong>{" "}
@@ -57,7 +247,7 @@ function PaymentConfirmCard({ item, index }) {
       </div>
 
       <div className="flex flex-col mb-4 gap-2">
-      <p className="text-base font-medium text-gray-800">
+        <p className="text-base font-medium text-gray-800">
           <strong className="text-gray-900">PickUp Person Name:</strong>{" "}
           {item.pickUpPersonName || "-"}
         </p>
@@ -98,8 +288,23 @@ function PaymentConfirmCard({ item, index }) {
       ) : (
         ""
       )}
+      <div className="flex gap-10">
+        <button
+          onClick={() => generate_Invoice_PDF()}
+          className="p-2 rounded-md bg-purple-600  text-white"
+        >
+          Invoice
+        </button>
+        <button
+          onClick={() => generate_AWBNUMBER_PDF()}
+          className="p-2 rounded-md bg-purple-600  text-white"
+        >
+          AWB Number
+        </button>
+      </div>
+      <canvas ref={barcodeRef} style={{ display: "none" }} />
+      <canvas ref={barcodeRef} style={{ display: "none" }} />
     </div>
   );
 }
-
 export default PaymentConfirmCard;
