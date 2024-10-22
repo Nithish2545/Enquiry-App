@@ -12,6 +12,7 @@ import {
   getDocs,
   doc,
   updateDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 
 function PaymentConfirmationForm() {
@@ -192,7 +193,16 @@ function PaymentConfirmationForm() {
     return true;
   };
 
+  async function getTodayDate() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0"); // Months are zero-indexed
+    const day = String(today.getDate()).padStart(2, "0");
+    return `${day}/${month}/${year}`; // Returns date in "YYYY-MM-DD" format
+  }
+
   const onSubmit = async (data) => {
+    console.log(await getTodayDate());
     if (!validateForm()) return;
     setSubmitLoading(true);
 
@@ -213,12 +223,24 @@ function PaymentConfirmationForm() {
       });
 
       const docRef = doc(db, "pickup", final_result[0].id); // db is your Firestore instance
-
+      console.log(data.consigneename1);
       const updatedFields = {
         status: "PAYMENT DONE",
         logisticCost: data.logisticsCost,
+        discountCost: data.discountCost,
         paymentProof: await uploadFileToFirebase(paymentProof, "PAYMENT PROOF"),
         KycImage: await uploadFileToFirebase(KycImage, "KYC"),
+        PaymentComfirmedDate: await getTodayDate(),
+        consigneename: !data.consigneename1
+          ? details.consigneename
+          : data.consigneename1,
+        consigneephonenumber: !data.consigneenumber1
+          ? details.consigneephonenumber
+          : data.consigneenumber1,
+        consigneelocation: !data.consigneelocation1
+          ? details.consigneelocation
+          : data.consigneelocation1,
+          costKg:data.costKg
       };
 
       updateDoc(docRef, updatedFields);
@@ -287,7 +309,18 @@ function PaymentConfirmationForm() {
           </button>
           <div className="flex flex-col mb-4">
             <label className="text-gray-700 font-medium mb-1">
-              Phone Number:
+              Consignor Name:
+            </label>
+            <input
+              type="text"
+              value={details.consignorname}
+              readOnly
+              className="p-2 border rounded bg-gray-100"
+            />
+          </div>
+          <div className="flex flex-col mb-4">
+            <label className="text-gray-700 font-medium mb-1">
+              Consignor Phone Number:
             </label>
             <input
               type="text"
@@ -296,15 +329,64 @@ function PaymentConfirmationForm() {
               className="p-2 border rounded bg-gray-100"
             />
           </div>
+          {/* TO */}
           <div className="flex flex-col mb-4">
-            <label className="text-gray-700 font-medium mb-1">Name:</label>
+            <label className="text-gray-700 font-medium mb-1">
+              From Address:
+            </label>
             <input
               type="text"
-              value={details.consignorname}
+              value={details.consignorlocation}
               readOnly
               className="p-2 border rounded bg-gray-100"
             />
           </div>
+          {/* consignee data */}
+          {details.consigneename ? (
+            <div className="flex flex-col mb-4">
+              <label className="text-gray-700 font-medium mb-1">
+                Consignee Name:
+              </label>
+              <input
+                type="text"
+                value={details.consigneename}
+                readOnly
+                className="p-2 border rounded bg-gray-100"
+              />
+            </div>
+          ) : (
+            ""
+          )}
+          {details.consigneephonenumber ? (
+            <div className="flex flex-col mb-4">
+              <label className="text-gray-700 font-medium mb-1">
+                Consignee Phone Number:
+              </label>
+              <input
+                type="text"
+                value={details.consigneephonenumber}
+                readOnly
+                className="p-2 border rounded bg-gray-100"
+              />
+            </div>
+          ) : (
+            ""
+          )}
+          {details.consigneelocation ? (
+            <div className="flex flex-col mb-4">
+              <label className="text-gray-700 font-medium mb-1">
+              Consignor Address:
+              </label>
+              <input
+                type="text"
+                value={details.consigneelocation}
+                readOnly
+                className="p-2 border rounded bg-gray-100"
+              />
+            </div>
+          ) : (
+            ""
+          )}
           <div className="flex flex-col mb-4">
             <label className="text-gray-700 font-medium mb-1">
               Destination:
@@ -349,31 +431,9 @@ function PaymentConfirmationForm() {
               className="p-2 border rounded bg-gray-100"
             />
           </div>
-
-          {/* FROM */}
-          <div className="flex flex-col mb-4">
-            <label className="text-gray-700 font-medium mb-1">From:</label>
-            <input
-              type="text"
-              value={details.consignorlocation}
-              readOnly
-              className="p-2 border rounded bg-gray-100"
-            />
-          </div>
-          {/* TO */}
-          <div className="flex flex-col mb-4">
-            <label className="text-gray-700 font-medium mb-1">To:</label>
-            <input
-              type="text"
-              value={details.consigneelocation}
-              readOnly
-              className="p-2 border rounded bg-gray-100"
-            />
-          </div>
-
           <div className="flex flex-col mb-4">
             <label className="text-gray-700 font-medium mb-1">
-              Pickup connected datetime
+              Pickup Completed Datatime
             </label>
             <input
               type="text"
@@ -382,8 +442,84 @@ function PaymentConfirmationForm() {
               className="p-2 border rounded bg-gray-100"
             />
           </div>
-
-          <div className="flex flex-col mb-4">
+          {/* consignee data */}
+          {!details.consigneename1 == "" ? (
+            <>
+              <div className="flex flex-col mb-2">
+                <label className="text-gray-700 font-medium mb-1">
+                  Consignee Name:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter Consignee Name"
+                  className="p-2 border rounded bg-gray-100"
+                  {...register("consigneename1", {
+                    required: "Consignee name is required",
+                  })}
+                />
+              </div>
+              {errors.consigneename1 && (
+                <p className="text-red-500 text-sm mb-4">
+                  {errors.consigneename1.message}
+                </p>
+              )}
+            </>
+          ) : (
+            ""
+          )}
+          {!details.consigneephonenumber1 == "" ? (
+            <>
+              <div className="flex flex-col mb-2">
+                <label className="text-gray-700 font-medium mb-1">
+                  Consignee Phone Number:
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter Consignee Phone Number"
+                  className="p-2 border rounded bg-gray-100"
+                  {...register("consigneenumber1", {
+                    required: "Consignee phone number is required",
+                    pattern: {
+                      value: /^[0-9]+$/,
+                      message: "Please enter a valid phone number",
+                    },
+                  })}
+                />
+              </div>
+              {errors.consigneenumber1 && (
+                <p className="text-red-500 text-sm mb-4">
+                  {errors.consigneenumber1.message}
+                </p>
+              )}
+            </>
+          ) : (
+            ""
+          )}
+          {!details.consigneelocation1 =="" ? (
+            <>
+              <div className="flex flex-col mb-2">
+                <label className="text-gray-700 font-medium mb-1">
+                  Consignee Address:
+                </label>
+                <input
+                  {...register("consigneelocation1", {
+                    required: "Consignee location required",
+                  })}
+                  type="text"
+                  placeholder="Enter Consignee Address"
+                  className="p-2 border rounded bg-gray-100"
+                />
+              </div>
+              {errors.consigneelocation1 && (
+                <p className="text-red-500 text-sm mb-4">
+                  {errors.consigneelocation1.message}
+                </p>
+              )}
+            </>
+          ) : (
+            ""
+          )}
+          <div className="flex flex-col mb-1">
             <label className="text-gray-700 font-medium mb-1">
               Enter Logistics Cost
             </label>
@@ -407,8 +543,58 @@ function PaymentConfirmationForm() {
             />
           </div>
           {errors.logisticsCost && (
-            <p className="text-red-500 text-sm mt-1">
+            <p className="text-red-500 text-sm mb-4">
               {errors.logisticsCost.message}
+            </p>
+          )}
+          <div className="flex flex-col mt-3 mb-3">
+            <label className="text-gray-700 font-medium mb-1">Cost/KG</label>
+            <input
+              type="text"
+              className="p-2 border rounded bg-gray-100"
+              placeholder="Enter Cost/KG"
+              {...register("costKg", {
+                required: "Cost/KG is required",
+                pattern: {
+                  value: /^[0-9]+$/,
+                  message: "Please enter a Cost/KG consisting of digits only",
+                },
+                valueAsNumber: true, // Converts input value to an integer
+                validate: (value) =>
+                  Number.isInteger(value) ||
+                  "Please enter a valid integer number",
+              })}
+            />
+          </div>
+          {errors.costKg && (
+            <p className="text-red-500 text-sm mb-4">{errors.costKg.message}</p>
+          )}
+          <div className="flex flex-col mb-1">
+            <label className="text-gray-700 font-medium mb-1">
+              Enter Discount Amount
+            </label>
+            <input
+              type="text"
+              className="p-2 border rounded bg-gray-100"
+              value={details.logisticsCost}
+              placeholder="Enter Discount Amount"
+              {...register("discountCost", {
+                required: "Please enter the discount amount.",
+                pattern: {
+                  value: /^[0-9]+$/,
+                  message:
+                    "Please enter a valid discount number consisting of digits only.",
+                },
+                valueAsNumber: true, // Converts input value to an integer
+                validate: (value) =>
+                  Number.isInteger(value) ||
+                  "Please enter a valid integer number",
+              })}
+            />
+          </div>
+          {errors.discountCost && (
+            <p className="text-red-500 text-sm mb-4">
+              {errors.discountCost.message}
             </p>
           )}
           <div className="flex flex-col mb-4">
@@ -427,7 +613,7 @@ function PaymentConfirmationForm() {
               {errors.Paymentproof.message}
             </p>
           )}
-          {details.KycImage ==null ? (
+          {details.KycImage == null ? (
             <>
               <div className="flex flex-col mb-4">
                 <label className="text-gray-700 font-medium mb-1">
@@ -463,20 +649,17 @@ function PaymentConfirmationForm() {
           No details found for the given AWB number.
         </div>
       )}
-
       {showPopup && (
-        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h3 className="text-lg font-semibold mb-4">Payment Submitted</h3>
-            <p className="mb-4">Click below to generate your PDF.</p>
+        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-70">
+          <div className="bg-white p-8 rounded-lg shadow-lg transition-transform transform scale-95 hover:scale-100 duration-300">
+            <h3 className="text-xl font-bold text-center text-gray-800 mb-6">
+              Payment Submitted
+            </h3>
+            <p className="text-center text-gray-600 mb-4">
+              Thank you for your payment!
+            </p>
             <button
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              onClick={generatePDF}
-            >
-              Generate PDF
-            </button>
-            <button
-              className="mt-4 px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+              className="mt-4 w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition duration-200"
               onClick={() => {
                 setShowPopup(false);
                 navigate("/Payment-confirm");
@@ -487,11 +670,9 @@ function PaymentConfirmationForm() {
           </div>
         </div>
       )}
-
       {/* Hidden canvas for generating barcode */}
       <canvas ref={barcodeRef} style={{ display: "none" }} />
     </div>
   );
 }
-
 export default PaymentConfirmationForm;

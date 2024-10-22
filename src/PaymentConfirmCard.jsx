@@ -14,7 +14,6 @@ function PaymentConfirmCard({ item, index }) {
 
   function generate_AWBNUMBER_PDF() {
     const doc = new jsPDF();
-
     // Format date as day/month/year
     const todayDate = new Date().toLocaleDateString("en-GB", {
       day: "2-digit",
@@ -110,77 +109,124 @@ function PaymentConfirmCard({ item, index }) {
 
   function generate_Invoice_PDF() {
     const doc = new jsPDF("p", "pt");
+    const subtotal = item.costKg * item.actualWeight;
+    const nettotal = subtotal - item.discountCost;
 
     // Add business name and logo
     doc.setFontSize(20);
-    doc.addImage("/shiphtlogo.png", "PNG", 40, 60, 100, 40); // Replace with your logo
-   
-    const maxWidth = 200; // Set the maximum width (in points) for the text
+    doc.addImage("/shiphtlogo.png", "PNG", 40, 30, 180, 60); // Replace with your logo
+
+    const maxWidth = 210; // Set the maximum width (in points) for the text
 
     // Bill from and bill to section
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
     doc.text("Bill from:", 40, 140);
+    doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
     doc.text("Shiphit", 40, 160);
-    const splitText1 = doc.splitTextToSize("No. 74, Tiny Sector Industrial Estate, Ekkatuthangal, Chennai", maxWidth);
-    doc.text(splitText1, 40, 180);
-    // doc.text("No. 74, Tiny Sector Industrial Estate, Ekkatuthangal, Chennai", 40, 175);
-    doc.text("9159 688 688", 40, 240);
-    doc.setFont("helvetica", "bold");
 
+    const address = `No. 74, Tiny Sector Industrial Estate, Ekkatuthangal, Chennai - 600032. Tamilnadu, India.`;
+    const phoneNumber = `\n9159 688 688`; // Add a newline before the phone number
+
+    const fullText = address + phoneNumber; // Combine address and phone number
+    const splitText1 = doc.splitTextToSize(fullText, maxWidth);
+    doc.text(splitText1, 40, 180);
+
+    // Bill To
+    doc.setFont("helvetica", "bold");
     doc.text("Bill to:", 350, 140);
+    doc.setFontSize(12);
+
     doc.setFont("helvetica", "normal");
     doc.text(item.consignorname, 350, 160);
-    const splitText = doc.splitTextToSize(item.consignorlocation.toLowerCase(), maxWidth);
+
+    const consignorLocation = item.consignorlocation.toLowerCase();
+    const fullText1 = consignorLocation + "\n" + "9159 688 688";
+    const splitText = doc.splitTextToSize(fullText1, maxWidth);
     doc.text(splitText, 350, 180);
-    // doc.text("Street Address, Zip Code", 350, 175);
-    doc.text(item.consignorphonenumber, 350, 240);
 
     // Align invoice details at the top-right corner
     const pageWidth = doc.internal.pageSize.getWidth();
     const rightMargin = pageWidth - 40; // Right margin of 40 units
 
     doc.setFont("helvetica", "normal");
-    doc.text(`Invoice Number: INV-001`, rightMargin, 40, { align: "right" });
-    doc.text(`Date: 02/02/2022`, rightMargin, 61, { align: "right" });
+    doc.text(`Invoice Number: INV-${item.awbNumber}`, rightMargin, 40, {
+      align: "right",
+    });
+    doc.text(`Date: ${item.PaymentComfirmedDate}`, rightMargin, 61, {
+      align: "right",
+    });
     doc.setFont("helvetica", "bold");
-    doc.text(`Total: 10,000.00 Rs`, rightMargin, 80, { align: "right" });
+    doc.text(`Total: ${nettotal}.00 Rs`, rightMargin, 80, { align: "right" });
 
     // Draw a line for separation
     doc.line(40, 250, 570, 250);
 
     // Invoice Table
-    // Invoice Table
     doc.autoTable({
       startY: 270,
       head: [["Country Name", "Mode", "Weight (KG):", "Cost/KG", "Total"]],
       body: [
-        ["USA", "Express Service", "4 KG", "799.00 Rs", "10,000.00 Rs"],
-        // Add more rows as needed
+        [
+          item.destination,
+          item.service + " " + "Service",
+          item.actualWeight + " KG",
+          `${item.costKg} Rs`,
+          `${subtotal}.00 Rs`,
+        ],
       ],
-      theme: "grid", // Adds borders
+      theme: "grid",
       headStyles: {
         fillColor: [147, 51, 234], // Purple background color (RGB)
         textColor: [255, 255, 255], // White text
-        fontSize: 12, // Increase font size by 2px (default is 10)
+        fontSize: 12,
       },
       bodyStyles: {
-        fontSize: 12, // Increase font size by 2px (default is 10)
+        fontSize: 12,
       },
       margin: { top: 20 },
     });
+
     // Terms and Conditions
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
     doc.text("Terms & Conditions:", 40, doc.lastAutoTable.finalY + 30);
     doc.setFont("helvetica", "normal");
-    doc.text("Subtotal: 0.00 Rs", 400, doc.lastAutoTable.finalY + 60);
-    doc.text("Discount: 0.00 Rs", 400, doc.lastAutoTable.finalY + 79);
-    // doc.text("Tax: 0.00", 400, doc.lastAutoTable.finalY + 99);
-    // doc.setFont("helvetica", "bold");
-    doc.text("Total: 10,000.00 Rs", 400, doc.lastAutoTable.finalY + 100);
-    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    const terms = `* This invoice is only valid for ${item.actualWeight} Kg.
+* Shipments exceeding ${item.actualWeight} KG will attract additional costs.
+* All shipments sent are subject to customs clearance only.
+* Customs duty applicable (if any).`;
+    const splitTerms = doc.splitTextToSize(terms, maxWidth + 300);
+    doc.text(splitTerms, 40, doc.lastAutoTable.finalY + 50);
+
+    // Subtotal, Discount, and Total
+    if (item.discountCost > 1) {
+      // Set Subtotal text to bold
+      doc.text(`Subtotal: ${subtotal}.00 Rs`, 400, doc.lastAutoTable.finalY + 120);
+
+      // Set Discount text to normal
+      doc.setFont("helvetica", "normal");
+      doc.text(
+        `Discount: ${item.discountCost}.00 Rs`,
+        400,
+        doc.lastAutoTable.finalY + 139
+      );
+
+      // Set Total text to bold
+      doc.text(`Total: ${nettotal}.00 Rs`, 400, doc.lastAutoTable.finalY + 159);
+
+      // Set back to normal after this section if needed
+      doc.setFont("helvetica", "normal");
+    } else {
+      doc.text(`Subtotal: ${subtotal}.00 Rs`, 400, doc.lastAutoTable.finalY + 120);
+      doc.text(
+        `Net Total: ${nettotal}.00 Rs`,
+        400,
+        doc.lastAutoTable.finalY + 139
+      );
+    }
 
     // Footer
     doc.setFontSize(10);
@@ -194,6 +240,7 @@ function PaymentConfirmCard({ item, index }) {
       40,
       doc.internal.pageSize.height - 30
     );
+
     // Save the PDF
     doc.save("invoice.pdf");
   }
@@ -288,20 +335,25 @@ function PaymentConfirmCard({ item, index }) {
       ) : (
         ""
       )}
-      <div className="flex gap-10">
-        <button
-          onClick={() => generate_Invoice_PDF()}
-          className="p-2 rounded-md bg-purple-600  text-white"
-        >
-          Invoice
-        </button>
-        <button
-          onClick={() => generate_AWBNUMBER_PDF()}
-          className="p-2 rounded-md bg-purple-600  text-white"
-        >
-          AWB Number
-        </button>
-      </div>
+      {item.status == "PAYMENT DONE" ? (
+        <div className="flex gap-10">
+          <button
+            onClick={() => generate_Invoice_PDF()}
+            className="p-2 rounded-md bg-purple-600  text-white"
+          >
+            Invoice
+          </button>
+          <button
+            onClick={() => generate_AWBNUMBER_PDF()}
+            className="p-2 rounded-md bg-purple-600  text-white"
+          >
+            AWB Number
+          </button>
+        </div>
+      ) : (
+        ""
+      )}
+
       <canvas ref={barcodeRef} style={{ display: "none" }} />
       <canvas ref={barcodeRef} style={{ display: "none" }} />
     </div>

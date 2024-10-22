@@ -178,7 +178,7 @@ function Pickups() {
                       {pickup.consignorphonenumber}
                     </td>
                     <td className="py-10 px-4 border">{pickup.destination}</td>
-                    <td className="py-10 px-4 border">{pickup.weightapx} kg</td>
+                    <td className="py-10 px-4 border">{pickup.weightapx}</td>
                     <td className="py-10 px-4 border">{pickup.vendorName}</td>
                     <td className="py-10 px-4 border">{pickup.pickuparea}</td>
                     <td className="py-10 px-4 border">
