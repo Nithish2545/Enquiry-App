@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
 import JsBarcode from "jsbarcode";
 import "jspdf-autotable";
+
 function PaymentConfirmCard({ item, index }) {
   const navigate = useNavigate();
   const barcodeRef = useRef(null); // Ref for barcode generation
@@ -121,7 +122,7 @@ function PaymentConfirmCard({ item, index }) {
     // Bill from and bill to section
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text("Bill from:", 40, 140);
+    doc.text("Receipt from:", 40, 140);
     doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
     doc.text("Shiphit", 40, 160);
@@ -135,7 +136,7 @@ function PaymentConfirmCard({ item, index }) {
 
     // Bill To
     doc.setFont("helvetica", "bold");
-    doc.text("Bill to:", 350, 140);
+    doc.text("Receipt to:", 350, 140);
     doc.setFontSize(12);
 
     doc.setFont("helvetica", "normal");
@@ -151,7 +152,7 @@ function PaymentConfirmCard({ item, index }) {
     const rightMargin = pageWidth - 40; // Right margin of 40 units
 
     doc.setFont("helvetica", "normal");
-    doc.text(`Invoice Number: INV-${item.awbNumber}`, rightMargin, 40, {
+    doc.text(`Receipt Number: RCPT-${item.awbNumber}`, rightMargin, 40, {
       align: "right",
     });
     doc.text(`Date: ${item.PaymentComfirmedDate}`, rightMargin, 61, {
@@ -204,7 +205,11 @@ function PaymentConfirmCard({ item, index }) {
     // Subtotal, Discount, and Total
     if (item.discountCost > 1) {
       // Set Subtotal text to bold
-      doc.text(`Subtotal: ${subtotal}.00 Rs`, 400, doc.lastAutoTable.finalY + 120);
+      doc.text(
+        `Subtotal: ${subtotal}.00 Rs`,
+        400,
+        doc.lastAutoTable.finalY + 120
+      );
 
       // Set Discount text to normal
       doc.setFont("helvetica", "normal");
@@ -220,7 +225,11 @@ function PaymentConfirmCard({ item, index }) {
       // Set back to normal after this section if needed
       doc.setFont("helvetica", "normal");
     } else {
-      doc.text(`Subtotal: ${subtotal}.00 Rs`, 400, doc.lastAutoTable.finalY + 120);
+      doc.text(
+        `Subtotal: ${subtotal}.00 Rs`,
+        400,
+        doc.lastAutoTable.finalY + 120
+      );
       doc.text(
         `Net Total: ${nettotal}.00 Rs`,
         400,
@@ -242,7 +251,7 @@ function PaymentConfirmCard({ item, index }) {
     );
 
     // Save the PDF
-    doc.save("invoice.pdf");
+    doc.save(`Receipt_${item.consignorname}.pdf`);
   }
 
   return (
@@ -262,6 +271,7 @@ function PaymentConfirmCard({ item, index }) {
           {item.awbNumber || "-"}
         </p>
       </div>
+
       <div className="flex flex-col mb-4 gap-2">
         {item.consignorphonenumber && (
           <p className="text-base font-medium text-gray-800">
