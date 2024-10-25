@@ -19,6 +19,16 @@ function PickupBooking() {
   const [frachise, setfrachise] = useState("");
   const [clientName, setClientName] = useState("");
   const [service, setservice] = useState("");
+  const [latitudelongitude, setlatitudelongitude] = useState("");
+  const [error, seterror] = useState("");
+
+  function splitLati_Logi(value) {
+    const [lat, long] = value.split(",").map(Number);
+    // Format the latitude and longitude to match the output precision
+    const formattedLat = lat.toFixed(12);
+    const formattedLong = long.toFixed(11);
+    return { latitude: formattedLat, longitude: formattedLong };
+  }
 
   const {
     register,
@@ -36,7 +46,6 @@ function PickupBooking() {
   };
 
   // Example usage
-
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem("enquiryAuthToken")).name;
     setUsername(data);
@@ -98,7 +107,15 @@ function PickupBooking() {
 
   const onSubmit = async (data) => {
     try {
+      console.log(latitudelongitude);
+      if (latitudelongitude == "") {
+        console.log("okk");
+        seterror("Latitude & Longitude  Is Required!");
+        return;
+      }
       setLoading(true);
+      seterror("");
+      const result = splitLati_Logi(latitudelongitude);
       const destinationCountryName =
         countryCodeToName[data.country] || data.country;
       // Step 1: Fetch current maximum awbNumber
@@ -135,8 +152,8 @@ function PickupBooking() {
         consigneelocation: data.consigneelocation,
 
         content: data.Content,
-        longitude: data.longitude,
-        latitude: data.latitude,
+        longitude: result.longitude,
+        latitude: result.latitude,
         pincode: data.pincode,
         destination: destinationCountryName, // Use full country name here
         pickupInstructions: data.instructions,
@@ -225,6 +242,13 @@ function PickupBooking() {
     await Promise.all(uploadPromises);
     return uploadedURLs;
   };
+
+  function openMap() {
+    const result = splitLati_Logi(latitudelongitude);
+    console.log(result);
+    const googleMapsUrl = `https://www.google.com/maps?q=${result.latitude},${result.longitude}`;
+    window.open(googleMapsUrl, "_blank");
+  }
 
   return (
     <div className="">
@@ -501,7 +525,8 @@ function PickupBooking() {
                 Vendor:
               </label>
               <select
-                {...register("vendor", 
+                {...register(
+                  "vendor"
                   // { required: "Vendor is required" }
                 )}
                 className={`w-full px-3 py-2 border ${
@@ -524,47 +549,30 @@ function PickupBooking() {
               )}
             </div>
             <div className="mb-4">
-              <label className="block text-gray-700 font-semibold mb-2">
-                Longitude:
-              </label>
+              <div className="flex gap-2 items-center mb-3 ">
+                <label className="block text-gray-700 font-semibold mb-2">
+                  Latitude & Longitude
+                </label>
+                {latitudelongitude ? (
+                  <div
+                    onClick={() => openMap()}
+                    className="px-3 py-1 rounded-sm text-white bg-red-500 cursor-pointer"
+                  >
+                    Check
+                  </div>
+                ) : (
+                  ""
+                )}
+              </div>
               <input
                 type="text"
-                placeholder="Enter your longitude"
-                {...register("longitude", {
-                  required: "Longitude is required",
-                })}
-                className={`w-full px-3 py-2 border ${
-                  errors.longitude ? "border-red-500" : "border-gray-300"
-                } rounded-md focus:outline-none focus:border-[#8847D9]`}
+                placeholder="Enter Your Longitude & Latitude"
+                className={`w-full px-3 py-2 border "border-gray-300 rounded-md focus:outline-none focus:border-[#8847D9]`}
+                onChange={(e) => setlatitudelongitude(e.target.value)}
               />
-              {errors.longitude && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.longitude.message}
-                </p>
-              )}
+              {console.log(error)}
+              {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
             </div>
-
-            <div className="mb-4">
-              <label className="block text-gray-700 font-semibold mb-2">
-                Latitude:
-              </label>
-              <input
-                type="text"
-                placeholder="Enter your latitude"
-                {...register("latitude", {
-                  required: "Latitude is required",
-                })}
-                className={`w-full px-3 py-2 border ${
-                  errors.latitude ? "border-red-500" : "border-gray-300"
-                } rounded-md focus:outline-none focus:border-[#8847D9]`}
-              />
-              {errors.latitude && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.latitude.message}
-                </p>
-              )}
-            </div>
-
             <div className="mb-4">
               <label className="block text-gray-700 font-semibold mb-2">
                 Pickup Date:
