@@ -189,10 +189,8 @@ function PickupBooking() {
         rtoIfAny: null,
         packageConnectedDataTime: null,
         logisticCost: null,
-        KycImage: uploadedImageURLs,
+        KycImage: uploadedImageURLs.length == 0 ? "" : uploadedImageURLs[0],
       });
-
-      console.log(`New pickup added with AWB Number: ${newAwbNumber}`);
       setShowModal(true);
       setFiles([]);
       reset();
@@ -638,7 +636,7 @@ function PickupBooking() {
               )}
             </div>
             <div>
-              <p>Franchise</p>
+              <p className="text-gray-700 font-semibold mb-2">Franchise</p>
               <select
                 className="w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:border-[#8847D9]"
                 {...register("franchise", {
@@ -660,7 +658,7 @@ function PickupBooking() {
               )}
             </div>
             <div>
-              <p>Service</p>
+              <p className="text-gray-700 font-semibold mb-2">Service</p>
               <select
                 className="w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:border-[#8847D9]"
                 {...register("service", {
@@ -694,28 +692,25 @@ function PickupBooking() {
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 font-semibold mb-2">
-              Upload KYC Image:
+            Upload KYC Image (PDF Only):
             </label>
             <input
               type="file"
-              // {...register("KycImages", {
-              //   required: "KYC & Product Images is required",
-              // })}
-              multiple
+              accept=".pdf"
               onChange={(e) => {
-                const files = Array.from(e.target.files).slice(0, 5); // Limit to 5 files
-                setFiles(files);
+                const file = e.target.files[0]; // Get the first selected file
+                if (file) {
+                  setFiles([file]); // Set the state to an array containing the selected file
+                } else {
+                  setFiles([]); // Clear files if no file is selected
+                }
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#8847D9]"
             />
-
             {files.length > 0 && (
               <div className="mt-2">
-                {files.map((file, index) => (
-                  <p key={index} className="text-gray-700">
-                    {file.name}
-                  </p>
-                ))}
+                <p className="text-gray-700">{files[0].name}</p>{" "}
+                {/* Display the name of the uploaded file */}
               </div>
             )}
           </div>
@@ -762,5 +757,4 @@ function PickupBooking() {
     </div>
   );
 }
-
 export default PickupBooking;
