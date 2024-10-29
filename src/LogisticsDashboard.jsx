@@ -15,7 +15,6 @@ const LogisticsDashboard = () => {
         const pickupCollection = collection(db, "pickup");
         const snapshot = await getDocs(pickupCollection);
         const documents = snapshot.docs.map((doc) => doc.data());
-
         setTotalPickups(documents.length);
         setWarehouseCount(
           documents.filter((doc) => doc.status === "INCOMING MANIFEST").length
@@ -49,12 +48,18 @@ const LogisticsDashboard = () => {
           <p className="text-3xl font-bold text-purple-600">{warehouseCount}</p>
         </div>
         <div className="stat-card bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold text-gray-700">Payment Pending</h3>
-          <p className="text-3xl font-bold text-yellow-500">{paymentPendingCount}</p>
+          <h3 className="text-lg font-semibold text-gray-700">
+            Payment Pending
+          </h3>
+          <p className="text-3xl font-bold text-yellow-500">
+            {paymentPendingCount}
+          </p>
         </div>
         <div className="stat-card bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold text-gray-700">Payment Done</h3>
-          <p className="text-3xl font-bold text-green-500">{paymentDoneCount}</p>
+          <p className="text-3xl font-bold text-green-500">
+            {paymentDoneCount}
+          </p>
         </div>
         <div className="stat-card bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold text-gray-700">Shipped</h3>
