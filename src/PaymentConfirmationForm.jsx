@@ -14,6 +14,7 @@ import {
   updateDoc,
   serverTimestamp,
 } from "firebase/firestore";
+import axios from "axios";
 
 function PaymentConfirmationForm() {
   const { awbnumber } = useParams();
@@ -245,6 +246,30 @@ function PaymentConfirmationForm() {
 
       updateDoc(docRef, updatedFields);
 
+      const options = {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "content-type": "application/json",
+          Authorization: "key_z6hIuLo8GC" // Add your authorization token here
+        },
+        data: {
+          messages: [
+            {
+              content: { language: "en", templateName: "pickup_done" },
+              from: "+919087786986",
+              to: `+91${details.consignorphonenumber}`
+            }
+          ]
+        }
+      };
+  
+      const response = await axios.post("https://public.doubletick.io/whatsapp/message/template", options.data, {
+        headers: options.headers
+      });
+
+      console.log("WhatsApp message sent: ", response.data);
+      
       setShowPopup(true);
     } catch (error) {
       handleError(error);
