@@ -184,6 +184,7 @@ function PaymentConfirmationForm() {
   };
 
   const validateForm = () => {
+    
     console.log("paymentProof", paymentProof);
     console.log("KycImage", KycImage);
     if (!paymentProof && !KycImage) {
@@ -203,6 +204,7 @@ function PaymentConfirmationForm() {
   }
 
   const onSubmit = async (data) => {
+
     console.log(await getTodayDate());
     if (!validateForm()) return;
     setSubmitLoading(true);
