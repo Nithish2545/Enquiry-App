@@ -1,64 +1,74 @@
-import { useNavigate } from "react-router-dom";
-import apiURL from "./apiURL";
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useState } from "react";
+import { doc, getDocs, addDoc, deleteDoc, collection, query, where, serverTimestamp } from "firebase/firestore";
+import { db } from "./firebase";
 
 function CancelCard({ item, index }) {
-  const navigate = useNavigate();
-  const API_URL = apiURL.CHENNAI;
-  const [details, setDetails] = useState(null);
+
+  // const [details, setDetails] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false); // State for button loading
 
   const handleAcceptClick = async (awbNumber) => {
+
     setIsSubmitting(true); // Start loading when submitting
+  
     try {
-      const result = await axios.get(API_URL);
-      const userDetails = result.data.sheet1;
-      const final_result = userDetails.filter(
-        (user) => user.awbNumber === awbNumber
-      );
-
-      const body = {
-        sheet1: {
-          ...final_result[0],
-          cancelReason: cancelReason,
-        },
-      };
-
-      const response = await fetch(apiURL.CANCELSHEETYAPI, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
+      // Step 1: Query the "pickups" collection to get the document that matches the awbNumber
+      const q = query(collection(db, "pickup"), where("awbNumber", "==", awbNumber));
+      const querySnapshot = await getDocs(q);
+      let final_result = [];
+  
+      querySnapshot.forEach((doc) => {
+        final_result.push({ id: doc.id, ...doc.data() });
       });
-      const json = await response.json();
-      console.log(json.sheet1);
-
-      await axios.delete(`${API_URL}/${final_result[0].id}`);
-      console.log("Deleted successfully");
+  
+      if (final_result.length === 0) {
+        throw new Error("No matching AWB number found in the pickups collection");
+      }
+  
+      const matchedData = final_result[0];
+  
+      // Step 2: Push the matched data into the "cancelled_data" collection
+      const cancelledData = {
+        ...matchedData, // All existing data from the matched document
+        cancelReason: cancelReason, // Add the cancelReason field
+        cancelledAt: serverTimestamp(), // Add a cancellation timestamp if needed
+      };
+  
+      await addDoc(collection(db, "cancelled_data"), cancelledData);
+      console.log("Data successfully added to 'cancelled_data' collection");
+  
+      // Step 3: Delete the matched document from the "pickups" collection
+      const userDocRef = doc(db, "pickup", matchedData.id);
+      await deleteDoc(userDocRef);
+      console.log("Data successfully deleted from 'pickups' collection");
+  
       setIsModalOpen(false); // Close the modal after cancellation
+
     } catch (error) {
-      console.error("Error in canceling booking:", error);
+
+      console.error("Error in handling booking cancellation:", error);
+
     } finally {
+
       setIsSubmitting(false); // Stop loading after completion
+
     }
   };
 
-  useEffect(() => {
-    const fetchDetails = async () => {
-      try {
-        const result = await axios.get(API_URL);
-        const userDetails = result.data.sheet1;
-        setDetails(userDetails);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    fetchDetails();
-  }, [API_URL]);
+  // useEffect(() => {
+  //   const fetchDetails = async () => {
+  //     try {
+  //       const result = await axios.get(API_URL);
+  //       const userDetails = result.data.sheet1;
+  //       setDetails(userDetails);
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   };
+  //   fetchDetails();
+  // }, [API_URL]);
 
   const handleCancelClick = () => {
     setIsModalOpen(true); // Open the modal when the cancel button is clicked

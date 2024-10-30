@@ -1,23 +1,29 @@
 import { useState, useEffect } from "react";
-import apiURL from "./apiURL";
 import Nav from "./Nav";
 import ResheduleCard from "./ResheduleCard"
 import CancelCard from "./CancelCard"
-import axios from "axios";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "./firebase";
 function CancelOrReschedule() {
 
   const [data, setData] = useState([]);
   const [activeTab, setActiveTab] = useState("CANCEL");
 
   useEffect(() => {
-    const url = apiURL.CHENNAI;
-    axios.get(url)
-      .then((json) => {
-        setData(json.data.sheet1);
-      });
-  }, []);
+    // Real-time listener for Firestore data using onSnapshot
+    const unsubscribe = onSnapshot(collection(db, "pickup"), (snapshot) => {
+      const documents = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setData(documents); // Update the state with real-time Firestore data
+    }, (error) => {
+      console.error("Error fetching Firestore data: ", error);
+    });
 
-  console.log(data)
+    // Cleanup the listener on component unmount
+    return () => unsubscribe();
+  }, []);
 
   // Filter data based on the active tab
   const filteredData = data?.filter(item => {
@@ -60,7 +66,6 @@ function CancelOrReschedule() {
               <p className="text-sm text-gray-400">There are no records to display for the selected status.</p>
             </div>
           ) : 
-
           activeTab === "CANCEL"?
             filteredData.map((item, index) => (
               <CancelCard  key={index} item={item} index={index} />

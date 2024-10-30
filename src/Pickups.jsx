@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Nav from "./Nav";
-import apiURL from "./apiURL";
+import { collection, query, onSnapshot, where } from "firebase/firestore";
+import { db } from "./firebase";
 
 function Pickups() {
   const [username, setUsername] = useState(null);
@@ -33,30 +34,37 @@ function Pickups() {
     return date;
   };
 
-  // Fetch pickup data from the API and filter based on the username
+  // Fetch pickup data from Firestore and filter based on the username
   useEffect(() => {
     if (username) {
-      const fetchData = async () => {
+      const fetchData = () => {
         try {
-          const response = await fetch(apiURL.CHENNAI);
-          const data = await response.json();
-          // Filter the data based on the username
-          const filteredData = data.sheet1.filter((pickup) => {
-            if (role == "sales admin") {
-              return data;
-            }
-            if (role == "sales associate ")
-              return pickup.pickupBookedBy == username;
+          const q =
+            role === "sales admin" ||  role==="Manager"
+              ? query(collection(db, "pickup")) // Fetch all pickups for sales admin
+              : query(
+                  collection(db, "pickup"),
+                  where("pickupBookedBy", "==", username)
+                ); // Fetch only user's pickups
+
+          const unsubscribe = onSnapshot(q, (snapshot) => {
+            const filteredData = snapshot.docs.map((doc) => ({
+              ...doc.data(),
+              id: doc.id,
+            }));
+            // Sort data by date and time
+            const sortedData = filteredData.sort((a, b) => {
+              const dateTimeA = parsePickupDateTime(a.pickupDatetime);
+              const dateTimeB = parsePickupDateTime(b.pickupDatetime);
+              return dateTimeA - dateTimeB;
+            });
+
+            setPickups(sortedData);
+            setLoading(false);
           });
 
-          const sortedData = filteredData.sort((a, b) => {
-            const dateTimeA = parsePickupDateTime(a.pickupDatetime);
-            const dateTimeB = parsePickupDateTime(b.pickupDatetime);
-            return dateTimeA - dateTimeB; // Sort by date and time
-          });
-
-          setPickups(sortedData);
-          setLoading(false);
+          // Cleanup subscription on unmount
+          return () => unsubscribe();
         } catch (error) {
           setError("Failed to fetch data: " + error.message);
           setLoading(false);
@@ -65,11 +73,10 @@ function Pickups() {
 
       fetchData();
     }
-  }, [username]);
+  }, [username, role]);
 
   // Filter pickups based on search terms
   const filteredPickups = pickups.filter((pickup) => {
-    console.log(typeof String(pickup.awbNumber));
     const awbMatch = String(pickup.awbNumber)
       .toLowerCase()
       .includes(awbSearchTerm.toLowerCase());
@@ -99,7 +106,7 @@ function Pickups() {
       <Nav />
       <div className="container mx-auto p-6 rounded-lg">
         <h1 className="text-3xl font-bold mb-6 text-purple-700">
-          {role != "sales admin" ? (
+          {role !== "sales admin" ? (
             <>Pickups Booked by {username}</>
           ) : (
             "All Booked Pickups"
@@ -121,7 +128,6 @@ function Pickups() {
               const dateValue = e.target.value; // e.g., "2024-10-07"
               const [year, month, day] = dateValue.split("-");
               const result = `${parseInt(day)}-${parseInt(month)}`;
-              console.log(result);
               setDateSearchTerm(result);
             }}
             className="border border-gray-300 rounded py-2 px-4 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-purple-600"
@@ -153,6 +159,7 @@ function Pickups() {
                 <th className="py-3 px-4 border">Destination</th>
                 <th className="py-3 px-4 border">Weight (Apx)</th>
                 <th className="py-3 px-4 border">Vendor</th>
+                <th className="py-3 px-4 border">Pickup Area</th>
                 <th className="py-3 px-4  border">Pickup Date & Time</th>
                 <th className="py-3 px-4 border">Status</th>
                 <th className="py-3 px-4 border"> Pickup Booked by</th>
@@ -162,7 +169,7 @@ function Pickups() {
             <tbody>
               {filteredPickups.length > 0 ? (
                 filteredPickups.map((pickup) => (
-                  <tr key={pickup.awbNumber}>
+                  <tr key={pickup.id}>
                     <td className="py-10 px-4 border">{pickup.awbNumber}</td>
                     <td className="py-10 px-4 border">
                       {pickup.consignorname}
@@ -171,8 +178,9 @@ function Pickups() {
                       {pickup.consignorphonenumber}
                     </td>
                     <td className="py-10 px-4 border">{pickup.destination}</td>
-                    <td className="py-10 px-4 border">{pickup.weightapx} kg</td>
+                    <td className="py-10 px-4 border">{pickup.weightapx}</td>
                     <td className="py-10 px-4 border">{pickup.vendorName}</td>
+                    <td className="py-10 px-4 border">{pickup.pickuparea}</td>
                     <td className="py-10 px-4 border">
                       {pickup.pickupDatetime}
                     </td>
@@ -181,16 +189,16 @@ function Pickups() {
                       {pickup.pickupBookedBy}
                     </td>
                     <td className="py-10 px-4 border">
-                      {pickup.pickUpPersonName == "" ||
-                      pickup.pickUpPersonName == "Unassigned"
-                        ? "Unassigned"
-                        : pickup.pickUpPersonName}
+                      {pickup.pickUpPersonName}
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="8" className="py-4 text-center text-gray-500">
+                  <td
+                    colSpan="10"
+                    className="text-center py-4 font-semibold text-gray-600"
+                  >
                     No pickups found.
                   </td>
                 </tr>

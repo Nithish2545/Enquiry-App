@@ -2,12 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { getData } from "country-list";
 import Nav from "./Nav";
-import apiURL from "./apiURL";
-import { storage } from "./firebase";
+import { db, storage } from "./firebase";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
-import SavePDF from "./savePDF";
-import jsPDF from "jspdf";
-import JsBarcode from "jsbarcode";
+import { addDoc, collection, getDocs } from "firebase/firestore";
 
 function PickupBooking() {
   const [loading, setLoading] = useState(false);
@@ -22,6 +19,16 @@ function PickupBooking() {
   const [frachise, setfrachise] = useState("");
   const [clientName, setClientName] = useState("");
   const [service, setservice] = useState("");
+  const [latitudelongitude, setlatitudelongitude] = useState("");
+  const [error, seterror] = useState("");
+
+  function splitLati_Logi(value) {
+    const [lat, long] = value.split(",").map(Number);
+    // Format the latitude and longitude to match the output precision
+    const formattedLat = lat.toFixed(12);
+    const formattedLong = long.toFixed(11);
+    return { latitude: formattedLat, longitude: formattedLong };
+  }
 
   const {
     register,
@@ -30,10 +37,6 @@ function PickupBooking() {
     reset,
   } = useForm();
   const barcodeRef = useRef(null);
-  const todayDate = new Date().toLocaleDateString();
-  const generateAWBNumber = () => {
-    return String(Math.floor(100000 + Math.random() * 900000)).padStart(4, "0");
-  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -43,23 +46,24 @@ function PickupBooking() {
   };
 
   // Example usage
-
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem("enquiryAuthToken")).name;
     setUsername(data);
   }, []);
 
   useEffect(() => {
-    const countryData = getData();
-    console.log(countryData);
+    var countryData = getData();
     countryData.push({ code: "UAE", name: "United Arab Emirates" });
-    countryData.push({ code: "EU", name: "Europe" });
-    countryData.push({ code: "GB", name: "UK" });
+    countryData.push({ code: "EU", name: "Singapore" });
     countryData.push({ code: "US", name: "USA" });
 
+    countryData = countryData.map((country) =>
+      country.code == "GB" ? { ...country, name: "United Kingdom" } : country
+    );
+    console.log(countryData);
     const topCountries = [
       "USA",
-      "UK",
+      "United Kingdom",
       "Canada",
       "Europe",
       "Singapore",
@@ -68,8 +72,10 @@ function PickupBooking() {
       "Australia",
       "New Zealand",
       "China",
+      "Germany",
+      "France",
     ];
-
+    console.log();
     // Sort countries alphabetically
     const sortedCountries = countryData.sort((a, b) =>
       a.name.localeCompare(b.name)
@@ -100,68 +106,96 @@ function PickupBooking() {
   }, []);
 
   const onSubmit = async (data) => {
-    console.log(frachise);
-    setLoading(true);
-    const result = generateAWBNumber();
-    setawbNumber(result);
-    setClientName(data.Consignorname);
-    const uploadedImageURLs = await uploadImages(files, data.Consignorname);
-    console.log(uploadedImageURLs);
-
     try {
+      console.log(latitudelongitude);
+      if (latitudelongitude == "") {
+        console.log("okk");
+        seterror("Latitude & Longitude  Is Required!");
+        return;
+      }
+      setLoading(true);
+      seterror("");
+      const result = splitLati_Logi(latitudelongitude);
       const destinationCountryName =
         countryCodeToName[data.country] || data.country;
-      console.log(data);
-      const body = {
-        sheet1: {
-          consignorname: data.Consignorname,
-          consignorphonenumber: data.Consignornumber,
-          consignorlocation: data.Consignorlocation,
-          consigneename: data.consigneename,
-          consigneephonenumber: data.consigneenumber,
-          consigneelocation: data.consigneelocation,
-          content: data.Content,
-          email: data.email,
-          phonenumber: data.number,
-          longitude: data.longitude,
-          latitude: data.latitude,
-          pincode: data.pincode,
-          destination: destinationCountryName, // Use full country name here
-          weightapx: data.weight + " KG",
-          pickupInstructions: data.instructions,
-          pickupDatetime:
-            formatDate(data.pickupDate) +
-            " " +
-            " " +
-            "&" +
-            data.pickupHour +
-            " " +
-            data.pickupPeriod,
-          vendorName: data.vendor,
-          status: "RUN SHEET",
-          pickuparea: data.pickuparea,
-          pickupBookedBy: username,
-          franchise: frachise,
-          service: service,
-        },
-      };
+      // Step 1: Fetch current maximum awbNumber
+      const pickupsRef = collection(db, "pickup");
+      const snapshot = await getDocs(pickupsRef);
+      let maxAwbNumber = 1000; // Initialize to 0
 
-      const response = await fetch(apiURL.CHENNAI, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
+      if (!snapshot.empty) {
+        snapshot.forEach((doc) => {
+          const pickupData = doc.data();
+          if (pickupData.awbNumber) {
+            maxAwbNumber = Math.max(
+              maxAwbNumber,
+              parseInt(pickupData.awbNumber)
+            );
+          }
+        });
+      }
+
+      // Step 2: Increment awbNumber
+      const newAwbNumber = maxAwbNumber + 1;
+      const uploadedImageURLs = await uploadImages(files, newAwbNumber);
+      console.log(uploadedImageURLs);
+      // Step 3: Store new document
+      await addDoc(pickupsRef, {
+        // Consignor Data
+        consignorname: data.Consignorname,
+        consignorphonenumber: data.Consignornumber,
+        consignorlocation: data.Consignorlocation,
+
+        // Consignee Data
+        consigneename: data.consigneename,
+        consigneephonenumber: data.consigneenumber,
+        consigneelocation: data.consigneelocation,
+
+        content: data.Content,
+        longitude: result.longitude,
+        latitude: result.latitude,
+        pincode: data.pincode,
+        destination: destinationCountryName, // Use full country name here
+        pickupInstructions: data.instructions,
+        weightapx: data.weight + " KG",
+        pickupDatetime:
+          formatDate(data.pickupDate) +
+          " " +
+          "&" +
+          data.pickupHour +
+          " " +
+          data.pickupPeriod,
+        franchise: frachise,
+        awbNumber: newAwbNumber, // Add the new awbNumber here
+        vendorName: data.vendor,
+        service: service,
+        imageUrLs: null,
+
+        pickupCompletedDatatime: null,
+        pickUpPersonName: "Unassigned",
+
+        postNumberOfPackages: null,
+        postPickupWeight: null,
+
+        actualNoOfPackages: null,
+        actualWeight: null,
+
+        status: "RUN SHEET",
+
+        pickupBookedBy: username,
+        vendorAwbnumber: null,
+        pickUpPersonNameStatus: null,
+        pickuparea: data.pickuparea,
+        rtoIfAny: null,
+        packageConnectedDataTime: null,
+        logisticCost: null,
+        KycImage: uploadedImageURLs.length == 0 ? "" : uploadedImageURLs[0],
       });
       setShowModal(true);
-
-      const json = await response.json();
-      console.log(json.sheet1);
-
+      setFiles([]);
       reset();
-      setFiles([])
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error("Error adding document: ", error);
     } finally {
       setLoading(false);
     }
@@ -171,11 +205,11 @@ function PickupBooking() {
     setShowModal(false);
   };
 
-  const uploadImages = async (images, name) => {
+  const uploadImages = async (images, awbnumber) => {
     const uploadedURLs = [];
-    console.log(`Consignor name: ${name}`);
+    console.log(`AWB Number: ${awbnumber}`);
     const uploadPromises = images.map((image, index) => {
-      const imageRef = ref(storage, `${name}/KYC/${image.name}`);
+      const imageRef = ref(storage, `${awbnumber}/KYC/${image.name}`);
       const uploadTask = uploadBytesResumable(imageRef, image);
 
       return new Promise((resolve, reject) => {
@@ -206,6 +240,13 @@ function PickupBooking() {
     await Promise.all(uploadPromises);
     return uploadedURLs;
   };
+
+  function openMap() {
+    const result = splitLati_Logi(latitudelongitude);
+    console.log(result);
+    const googleMapsUrl = `https://www.google.com/maps?q=${result.latitude},${result.longitude}`;
+    window.open(googleMapsUrl, "_blank");
+  }
 
   return (
     <div className="">
@@ -300,8 +341,7 @@ function PickupBooking() {
             <div>
               <div className="mb-4">
                 <label className="block text-gray-700 font-semibold mb-2">
-                  Consignee Name{" "}
-                  <span className="text-gray-500"> (optional)</span>:
+                  Consignee Name:
                 </label>
                 <input
                   type="text"
@@ -322,8 +362,7 @@ function PickupBooking() {
 
               <div className="mb-4">
                 <label className="block text-gray-700 font-semibold mb-2">
-                  Consignee Phone Number{" "}
-                  <span className="text-gray-500"> (optional)</span>:
+                  Consignee Phone Number:
                 </label>
                 <input
                   type="text"
@@ -350,8 +389,7 @@ function PickupBooking() {
 
               <div className="mb-4">
                 <label className="block text-gray-700 font-semibold mb-2">
-                  Consignee address{" "}
-                  <span className="text-gray-500"> (optional)</span>:
+                  Consignee address:
                 </label>
                 <input
                   type="text"
@@ -485,17 +523,22 @@ function PickupBooking() {
                 Vendor:
               </label>
               <select
-                {...register("vendor", { required: "Vendor is required" })}
+                {...register(
+                  "vendor"
+                  // { required: "Vendor is required" }
+                )}
                 className={`w-full px-3 py-2 border ${
                   errors.vendor ? "border-red-500" : "border-gray-300"
                 } rounded-md focus:outline-none focus:border-[#8847D9]`}
               >
                 <option value="">Select a vendor</option>
                 <option value="DHL">DHL</option>
-                <option value="Aramex">Aramex</option>
+                <option value="Aramex">ARAMEX</option>
                 <option value="UPS">UPS</option>
                 <option value="FedEx">FedEx</option>
-                <option value="Self">Self</option>
+                <option value="SELF">SELF</option>
+                <option value="BOMBINO">BOMBINO</option>
+                <option value="ARLANTIC">ATLANTIC</option>
               </select>
               {errors.vendor && (
                 <p className="text-red-500 text-sm mt-1">
@@ -504,47 +547,30 @@ function PickupBooking() {
               )}
             </div>
             <div className="mb-4">
-              <label className="block text-gray-700 font-semibold mb-2">
-                Longitude:
-              </label>
+              <div className="flex gap-2 items-center mb-3 ">
+                <label className="block text-gray-700 font-semibold mb-2">
+                  Latitude & Longitude
+                </label>
+                {latitudelongitude ? (
+                  <div
+                    onClick={() => openMap()}
+                    className="px-3 py-1 rounded-sm text-white bg-red-500 cursor-pointer"
+                  >
+                    Check
+                  </div>
+                ) : (
+                  ""
+                )}
+              </div>
               <input
                 type="text"
-                placeholder="Enter your longitude"
-                {...register("longitude", {
-                  required: "Longitude is required",
-                })}
-                className={`w-full px-3 py-2 border ${
-                  errors.longitude ? "border-red-500" : "border-gray-300"
-                } rounded-md focus:outline-none focus:border-[#8847D9]`}
+                placeholder="Enter Your Longitude & Latitude"
+                className={`w-full px-3 py-2 border "border-gray-300 rounded-md focus:outline-none focus:border-[#8847D9]`}
+                onChange={(e) => setlatitudelongitude(e.target.value)}
               />
-              {errors.longitude && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.longitude.message}
-                </p>
-              )}
+              {console.log(error)}
+              {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
             </div>
-
-            <div className="mb-4">
-              <label className="block text-gray-700 font-semibold mb-2">
-                Latitude:
-              </label>
-              <input
-                type="text"
-                placeholder="Enter your latitude"
-                {...register("latitude", {
-                  required: "Latitude is required",
-                })}
-                className={`w-full px-3 py-2 border ${
-                  errors.latitude ? "border-red-500" : "border-gray-300"
-                } rounded-md focus:outline-none focus:border-[#8847D9]`}
-              />
-              {errors.latitude && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.latitude.message}
-                </p>
-              )}
-            </div>
-
             <div className="mb-4">
               <label className="block text-gray-700 font-semibold mb-2">
                 Pickup Date:
@@ -564,15 +590,11 @@ function PickupBooking() {
                 </p>
               )}
             </div>
-
             <div className="mb-4">
               <label className="block text-gray-700 font-semibold mb-2">
                 Pickup Time:
               </label>
-
-              {/* Time Dropdown */}
               <div className="flex space-x-2">
-                {/* Hour Dropdown */}
                 <select
                   {...register("pickupHour", {
                     required: "Pickup hour is required",
@@ -588,8 +610,6 @@ function PickupBooking() {
                     </option>
                   ))}
                 </select>
-
-                {/* AM/PM Dropdown */}
                 <select
                   {...register("pickupPeriod", {
                     required: "AM/PM is required",
@@ -603,7 +623,6 @@ function PickupBooking() {
                   <option value="PM">PM</option>
                 </select>
               </div>
-              {/* Error messages */}
               {errors.pickupHour && (
                 <p className="text-red-500 text-sm mt-1">
                   {errors.pickupHour.message}
@@ -615,10 +634,8 @@ function PickupBooking() {
                 </p>
               )}
             </div>
-
-           
             <div>
-              <p>Frachise</p>
+              <p className="text-gray-700 font-semibold mb-2">Franchise</p>
               <select
                 className="w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:border-[#8847D9]"
                 {...register("franchise", {
@@ -640,7 +657,7 @@ function PickupBooking() {
               )}
             </div>
             <div>
-              <p>Service</p>
+              <p className="text-gray-700 font-semibold mb-2">Service</p>
               <select
                 className="w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:border-[#8847D9]"
                 {...register("service", {
@@ -653,6 +670,7 @@ function PickupBooking() {
                 <option value="">Select</option>
                 <option value="Express">Express</option>
                 <option value="Economy">Economy</option>
+                <option value="Duty Free">Duty Free</option>
               </select>
               {errors.service && (
                 <p className="text-red-500 text-sm mt-1">
@@ -662,8 +680,7 @@ function PickupBooking() {
             </div>
             <div className="mb-4">
               <label className="block text-gray-700 font-semibold mb-2">
-                Special Instructions{" "}
-                <span className="text-gray-500">(optional)</span>:
+                Special Instructions
               </label>
               <textarea
                 placeholder="Enter any special instructions"
@@ -674,24 +691,25 @@ function PickupBooking() {
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 font-semibold mb-2">
-              Upload KYC & Product Images (max 5):
+            Upload KYC Image (PDF Only):
             </label>
             <input
               type="file"
-              multiple
+              accept=".pdf"
               onChange={(e) => {
-                const files = Array.from(e.target.files).slice(0, 5); // Limit to 5 files
-                setFiles(files);
+                const file = e.target.files[0]; // Get the first selected file
+                if (file) {
+                  setFiles([file]); // Set the state to an array containing the selected file
+                } else {
+                  setFiles([]); // Clear files if no file is selected
+                }
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#8847D9]"
             />
             {files.length > 0 && (
               <div className="mt-2">
-                {files.map((file, index) => (
-                  <p key={index} className="text-gray-700">
-                    {file.name}
-                  </p>
-                ))}
+                <p className="text-gray-700">{files[0].name}</p>{" "}
+                {/* Display the name of the uploaded file */}
               </div>
             )}
           </div>
@@ -738,5 +756,4 @@ function PickupBooking() {
     </div>
   );
 }
-
-export default PickupBooking; 
+export default PickupBooking;
