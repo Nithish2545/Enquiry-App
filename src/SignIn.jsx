@@ -41,7 +41,7 @@ const SignIn = () => {
           "enquiryAuthToken",
           JSON.stringify({
             email: "smitha@gmail.com",
-            role: "sales associate ",
+            role: "sales associate",
             name: "smitha",
           })
         );
@@ -72,6 +72,20 @@ const SignIn = () => {
         navigate("/PickupBooking");
         return;
       }
+
+      if (auth.currentUser.email === "mohammed@gmail.com") {
+        localStorage.setItem(
+          "enquiryAuthToken",
+          JSON.stringify({
+            email: "mohammed@gmail.com",
+            role: "sales associate",
+            name: "mohammed",
+          })
+        );
+        navigate("/PickupBooking");
+        return;
+      }
+
 
     } catch (error) {
       console.log(error.code)

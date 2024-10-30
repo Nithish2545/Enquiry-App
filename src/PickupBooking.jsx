@@ -203,7 +203,7 @@ function PickupBooking() {
         data: {
           messages: [
             {
-              content: { language: "en", templateName: "pickup_confirmation" },
+              content: { language: "en", templateName: "pickup_confirm" },
               from: "+919087786986",
               to: `+91${data.Consignornumber}`
             }

@@ -2,8 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "./firebase"; // Import storage from your Firebase config
-import JsBarcode from "jsbarcode";
-import { jsPDF } from "jspdf";
 import { useForm } from "react-hook-form";
 import {
   collection,
@@ -12,7 +10,6 @@ import {
   getDocs,
   doc,
   updateDoc,
-  serverTimestamp,
 } from "firebase/firestore";
 import axios from "axios";
 
@@ -33,101 +30,6 @@ function PaymentConfirmationForm() {
     formState: { errors },
   } = useForm();
   const navigate = useNavigate();
-
-  const generatePDF = () => {
-    const doc = new jsPDF();
-
-    // Format date as day/month/year
-    const todayDate = new Date().toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-
-    // Generate barcode
-    JsBarcode(barcodeRef.current, awbnumber, {
-      format: "CODE128",
-      displayValue: true,
-      width: 2, // Adjust width as needed
-      height: 40, // Adjust height as needed
-      fontOptions: "bold", // Make the text bold
-      fontSize: 16, // Increase font size for the barcode text
-      textMargin: 5, // Space between the barcode and text
-      margin: 10, // Margin around the barcode
-      background: "#ffffff", // Background color of the barcode
-      lineColor: "#000000", // Color of the bars
-      scale: 4, // Higher scale for better quality
-    });
-    const barcodeImage = barcodeRef.current.toDataURL();
-
-    // Add logo with adjusted size (height will auto-adjust)
-    const logoUrl = "/shiphtlogo.png";
-    doc.addImage(logoUrl, "PNG", 140, 10, 50, 0); // Increased width to 50, height auto-adjusts
-
-    // Add title and date
-    doc.setFontSize(20);
-    doc.setFont("helvetica", "bold");
-    doc.text(`${details.service} Service`, 20, 30);
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Date: ${todayDate}`, 20, 40);
-
-    // Set line width for borders
-    doc.setLineWidth(0.5);
-
-    // From section
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("From:", 20, 60);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
-    doc.text(`Name: ${details.consignorname}`, 20, 70);
-    doc.text(`Phone Number: ${details.consignorphonenumber}`, 20, 80);
-    const fromLocation = doc.splitTextToSize(
-      `Location: ${details.consignorlocation}`,
-      85
-    );
-    doc.text(fromLocation, 20, 90);
-
-    // Horizontal line between "From" and "To" sections
-    doc.line(10, 107, 200, 107);
-
-    // To section
-    doc.setFont("helvetica", "bold");
-    doc.text("To:", 110, 60);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Name: ${details.consigneename}`, 110, 70);
-    doc.text(`Phone Number: ${details.consigneephonenumber}`, 110, 80);
-    const toLocation = doc.splitTextToSize(
-      `Location: ${details.consigneelocation}`,
-      85
-    );
-    doc.text(toLocation, 110, 90);
-
-    // Shipment Details section
-    doc.setFont("helvetica", "bold");
-    doc.text("Shipment Details:", 20, 115); // Adjusted Y position to place below the line
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
-    doc.text(`Weight (kg): ${details.actualWeight} kg`, 20, 125);
-    doc.text(
-      `Number Of Boxes: ${details.actualNoOfPackages} / ${details.actualNoOfPackages}`,
-      20,
-      135
-    );
-    doc.text(`Content: ${details.content}`, 20, 145);
-
-    // Horizontal line above "AWB Number" section
-    doc.line(10, 154, 200, 154); // Border above "AWB Number"
-
-    // Add barcode section with improved quality
-    doc.setFont("helvetica", "bold");
-    doc.text(`AWB Number: ${awbnumber}`, 20, 165);
-    doc.addImage(barcodeImage, "PNG", 20, 175, 100, 30);
-
-    // Save PDF
-    doc.save(`${details.consignorname}-client-form.pdf`);
-  };
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -258,7 +160,7 @@ function PaymentConfirmationForm() {
         data: {
           messages: [
             {
-              content: { language: "en", templateName: "pickup_done" },
+              content: { language: "en", templateName: "payment_done" },
               from: "+919087786986",
               to: `+91${details.consignorphonenumber}`
             }
