@@ -1,32 +1,43 @@
 import { useState, useEffect } from "react";
 import Nav from "./Nav";
 import PaymentConfirmCard from "./PaymentConfirmCard";
-import { collection, onSnapshot } from "firebase/firestore";
-import {db} from  "./firebase"
-
+import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { db } from "./firebase";
+import collectionName_BaseAwb from "./functions/collectionName";
 function PaymentConfirm() {
-  
   const [data, setData] = useState([]);
   const [activeTab, setActiveTab] = useState("PAYMENT PENDING");
 
   useEffect(() => {
     // Set up a real-time listener for Firestore data using onSnapshot
-    const unsubscribe = onSnapshot(collection(db, "pickup"), (snapshot) => {
-      const documents = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setData(documents); // Update the state with the latest data from Firestore
-    }, (error) => {
-      console.error("Error fetching Firestore data: ", error);
-    });
-
+    const unsubscribe = onSnapshot(
+      query(
+        collection(
+          db,
+          collectionName_BaseAwb.getCollection(
+            JSON.parse(localStorage.getItem("LoginCredentials")).Location
+          )
+        ),
+        where("pickupBookedBy", "==", "sana")
+      ),
+      (snapshot) => {
+        const documents = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setData(documents); // Update the state with the latest data from Firestore
+      },
+      (error) => {
+        console.error("Error fetching Firestore data: ", error);
+      }
+    );
+    
     // Cleanup listener on component unmount to prevent memory leaks
     return () => unsubscribe();
   }, []);
 
-  const filteredData = data.filter((item) => item.status === activeTab);
-  console.log(data);
+  const filteredData = data.filter((item) => item.status === activeTab );
+  console.log("filteredData" , filteredData);
 
   return (
     <div className="min-h-screen bg-gray-100">

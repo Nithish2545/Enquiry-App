@@ -11,7 +11,7 @@ function Nav() {
   const [sidebarOpen, setSidebarOpen] = useState(false); // State to control sidebar visibility
 
   useEffect(() => {
-    setUser(JSON.parse(localStorage.getItem("enquiryAuthToken")));
+    setUser(JSON.parse(localStorage.getItem("LoginCredentials")));
   }, []);
 
   return (
@@ -116,10 +116,16 @@ function Nav() {
       {/* Right Section */}
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-3">
-          <Avatar>{user?.name?.slice(0, 1)}</Avatar>
+          <Avatar>{user?.name?.slice(0, 1) || "?"}</Avatar>
           <div className="text-black hidden sm:block">
-            <p className="font-medium">{user?.email}</p>
-            <p>{user?.name}</p>
+            {user ? (
+              <>
+                <p className="font-medium">{user.email}</p>
+                <p>{user.name}</p>
+              </>
+            ) : (
+              <p>Loading user info...</p> // Display loading text or spinner
+            )}
           </div>
         </div>
         <div

@@ -10,9 +10,8 @@ import {
   doc,
 } from "firebase/firestore";
 import { db } from "./firebase";
-
+import collectionName_BaseAwb from "./functions/collectionName";
 function CancelCard({ item, index }) {
-
   const API_URL = apiURL.CHENNAI;
   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
   const [selectedDate, setSelectedDate] = useState(); // DateTime state
@@ -26,7 +25,12 @@ function CancelCard({ item, index }) {
     // pickupDatetime
 
     const q = query(
-      collection(db, "pickup"),
+      collection(
+        db,
+        collectionName_BaseAwb.getCollection(
+          JSON.parse(localStorage.getItem("LoginCredentials")).Location
+        )
+      ),
       where("awbNumber", "==", awbNumber)
     );
 
@@ -37,7 +41,11 @@ function CancelCard({ item, index }) {
       final_result.push({ id: doc.id, ...doc.data() });
     });
 
-    const docRef = doc(db, "pickup", final_result[0].id); // db is your Firestore instance
+    const docRef = doc(db, 
+      collectionName_BaseAwb.getCollection(
+        JSON.parse(localStorage.getItem("LoginCredentials")).Location
+      )
+      , final_result[0].id); // db is your Firestore instance
 
     const updatedFields = {
       pickupDatetime: selectedDate + " " + "&" + Hour + " " + Timeperiod,

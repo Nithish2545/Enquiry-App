@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Nav from "./Nav";
 import { collection, query, onSnapshot, where } from "firebase/firestore";
 import { db } from "./firebase";
-
+import collectionName_BaseAwb from "./functions/collectionName"
 function Pickups() {
   const [username, setUsername] = useState(null);
   const [role, setRole] = useState("");
@@ -16,8 +16,8 @@ function Pickups() {
 
   // Fetch user info from localStorage
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("enquiryAuthToken"));
-    console.log(JSON.parse(localStorage.getItem("enquiryAuthToken")));
+    const storedUser = JSON.parse(localStorage.getItem("LoginCredentials"));
+    console.log(JSON.parse(localStorage.getItem("LoginCredentials")));
     setUsername(storedUser?.name);
     setRole(storedUser.role);
   }, []);
@@ -41,9 +41,17 @@ function Pickups() {
         try {
           const q =
             role === "sales admin" ||  role==="Manager"
-              ? query(collection(db, "pickup")) // Fetch all pickups for sales admin
+              ? query(collection(db, 
+                collectionName_BaseAwb.getCollection(
+                  JSON.parse(localStorage.getItem("LoginCredentials")).Location
+                )
+              )) // Fetch all pickups for sales admin
               : query(
-                  collection(db, "pickup"),
+                  collection(db, 
+                    collectionName_BaseAwb.getCollection(
+                      JSON.parse(localStorage.getItem("LoginCredentials")).Location
+                    )
+                  ),
                   where("pickupBookedBy", "==", username)
                 ); // Fetch only user's pickups
 

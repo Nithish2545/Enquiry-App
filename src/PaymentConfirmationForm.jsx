@@ -14,7 +14,7 @@ import {
   updateDoc,
   serverTimestamp,
 } from "firebase/firestore";
-
+import collectionName_BaseAwb from "./functions/collectionName";
 function PaymentConfirmationForm() {
   const { awbnumber } = useParams();
   const [details, setDetails] = useState(null);
@@ -134,7 +134,12 @@ function PaymentConfirmationForm() {
         console.log();
         // Create a query to fetch documents with status "PAYMENT PENDING" and the given awbNumber
         const q = query(
-          collection(db, "pickup"),
+          collection(
+            db,
+            collectionName_BaseAwb.getCollection(
+              JSON.parse(localStorage.getItem("LoginCredentials")).Location
+            )
+          ),
           where("awbNumber", "==", parseInt(awbnumber))
         );
 
@@ -211,7 +216,12 @@ function PaymentConfirmationForm() {
         throw new Error("User details not found");
       }
       const q = query(
-        collection(db, "pickup"),
+        collection(
+          db,
+          collectionName_BaseAwb.getCollection(
+            JSON.parse(localStorage.getItem("LoginCredentials")).Location
+          )
+        ),
         where("awbNumber", "==", parseInt(awbnumber))
       );
 
@@ -222,7 +232,13 @@ function PaymentConfirmationForm() {
         final_result.push({ id: doc.id, ...doc.data() });
       });
 
-      const docRef = doc(db, "pickup", final_result[0].id); // db is your Firestore instance
+      const docRef = doc(
+        db,
+        collectionName_BaseAwb.getCollection(
+          JSON.parse(localStorage.getItem("LoginCredentials")).Location
+        ),
+        final_result[0].id
+      ); // db is your Firestore instance
       console.log(data.consigneename1);
       const updatedFields = {
         status: "PAYMENT DONE",
@@ -240,7 +256,7 @@ function PaymentConfirmationForm() {
         consigneelocation: !data.consigneelocation1
           ? details.consigneelocation
           : data.consigneelocation1,
-          costKg:data.costKg
+        costKg: data.costKg,
       };
 
       updateDoc(docRef, updatedFields);
@@ -375,7 +391,7 @@ function PaymentConfirmationForm() {
           {details.consigneelocation ? (
             <div className="flex flex-col mb-4">
               <label className="text-gray-700 font-medium mb-1">
-              Consignor Address:
+                Consignor Address:
               </label>
               <input
                 type="text"
@@ -495,7 +511,7 @@ function PaymentConfirmationForm() {
           ) : (
             ""
           )}
-          {!details.consigneelocation1 =="" ? (
+          {!details.consigneelocation1 == "" ? (
             <>
               <div className="flex flex-col mb-2">
                 <label className="text-gray-700 font-medium mb-1">
@@ -613,7 +629,7 @@ function PaymentConfirmationForm() {
               {errors.Paymentproof.message}
             </p>
           )}
-          {details.KycImage == null ? (
+          {details.KycImage == null || details.KycImage == "" ? (
             <>
               <div className="flex flex-col mb-4">
                 <label className="text-gray-700 font-medium mb-1">

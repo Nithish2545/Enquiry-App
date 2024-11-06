@@ -5,10 +5,11 @@ import PaymentConfirm from './PaymentConfirm';
 import PaymentConfirmationForm from './PaymentConfirmationForm';
 import SignIn from "./SignIn";
 import { useEffect, useState } from "react";
-import { auth } from "./firebase";
+import { auth, db } from "./firebase";
 import CancelOrReshedule from './CancelOrReshedule';
 import Pickups from './Pickups';
 import LogisticsDashboard from './LogisticsDashboard';
+import { collection, getDocs, query } from 'firebase/firestore';
 
 function App() {
 
@@ -16,8 +17,25 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
+        const q = query(collection(db, "LoginCredentials"));
+        const querySnapshot = await getDocs(q);
+        for (const doc of querySnapshot.docs) {
+          const result = doc.data();
+          // Check if the document has an array named after the email
+          if (result[user.email]) {
+            console.log(result[user.email]);
+            const dataset = {
+              name: result[user.email][0],
+              email: result[user.email][1],
+              role: result[user.email][2],
+              Location: result[user.email][3],
+            };
+            // Store user data in localStorage and wait until it's stored
+            localStorage.setItem("LoginCredentials", JSON.stringify(dataset));
+          }
+        }
         setUser(user);
       } else {
         setUser(null);
