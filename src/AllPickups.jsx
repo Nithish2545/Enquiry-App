@@ -122,7 +122,7 @@ function Pickups() {
       <div className="container mx-auto p-6 rounded-lg">
         <h1 className="text-3xl font-bold mb-6 text-purple-700">
           {role !== "sales admin" ? (
-            <>Pickups Booked by {username}</>
+            <>Pickups Booked by HQ {username}</>
           ) : (
             "All Booked Pickups"
           )}

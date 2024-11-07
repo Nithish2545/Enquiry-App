@@ -2,21 +2,29 @@ import { useState, useEffect } from "react";
 import Nav from "./Nav";
 import ResheduleCard from "./ResheduleCard";
 import CancelCard from "./CancelCard";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "./firebase";
 import collectionName_BaseAwb from "./functions/collectionName";
 function CancelOrReschedule() {
+  
   const [data, setData] = useState([]);
   const [activeTab, setActiveTab] = useState("CANCEL");
 
   useEffect(() => {
+
     // Real-time listener for Firestore data using onSnapshot
+
     const unsubscribe = onSnapshot(
-      collection(
-        db,
-        collectionName_BaseAwb.getCollection(
-          JSON.parse(localStorage.getItem("LoginCredentials")).Location
-        )
+      query(
+        collection(
+          db,
+          collectionName_BaseAwb.getCollection(
+            JSON.parse(localStorage.getItem("LoginCredentials")).Location
+          )
+        ),
+        where("pickupBookedBy", "==", 
+            JSON.parse(localStorage.getItem("LoginCredentials")).name
+        ) // Apply the where filter
       ),
       (snapshot) => {
         const documents = snapshot.docs.map((doc) => ({
@@ -41,7 +49,7 @@ function CancelOrReschedule() {
     }
     return null; // No filtering for other tabs
   });
-
+  
   return (
     <div className="min-h-screen bg-gray-100">
       <Nav />

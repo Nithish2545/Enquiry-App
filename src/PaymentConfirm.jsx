@@ -18,7 +18,11 @@ function PaymentConfirm() {
             JSON.parse(localStorage.getItem("LoginCredentials")).Location
           )
         ),
-        where("pickupBookedBy", "==", "sana")
+        where(
+          "pickupBookedBy",
+          "==",
+          JSON.parse(localStorage.getItem("LoginCredentials")).name
+        )
       ),
       (snapshot) => {
         const documents = snapshot.docs.map((doc) => ({
@@ -31,13 +35,13 @@ function PaymentConfirm() {
         console.error("Error fetching Firestore data: ", error);
       }
     );
-    
+
     // Cleanup listener on component unmount to prevent memory leaks
     return () => unsubscribe();
   }, []);
 
-  const filteredData = data.filter((item) => item.status === activeTab );
-  console.log("filteredData" , filteredData);
+  const filteredData = data.filter((item) => item.status === activeTab);
+  console.log("filteredData", filteredData);
 
   return (
     <div className="min-h-screen bg-gray-100">

@@ -19,7 +19,6 @@ function Nav() {
       {/* Left Section */}
       <div className="flex items-center gap-4">
         <img src="/logo.png" className="h-10" alt="Logo" />
-
         {/* Hamburger icon for mobile */}
         <button
           className="lg:hidden block text-white"
@@ -83,19 +82,36 @@ function Nav() {
               Cancel - Reschedule
             </Link>
           </li>
-          <li>
-            <Link
-              to="/Pickups"
-              className={`text-white rounded transition-colors ${
-                location.pathname === "/Pickups"
-                  ? "text-purple-900 font-semibold"
-                  : "bg-transparent"
-              }`}
-              style={{ minHeight: "40px" }}
-            >
-              Pickups
-            </Link>
-          </li>
+          {JSON.parse(localStorage.getItem("LoginCredentials")).email ==
+          "dinesh@gmail.com" ? (
+            <li>
+              <Link
+                to="/allpickups"
+                className={`text-white rounded transition-colors ${
+                  location.pathname === "/allpickups"
+                    ? "text-purple-900 font-semibold"
+                    : "bg-transparent"
+                }`}
+                style={{ minHeight: "40px" }}
+              >
+                Pickups
+              </Link>
+            </li>
+          ) : (
+            <li>
+              <Link
+                to="/Pickups"
+                className={`text-white rounded transition-colors ${
+                  location.pathname === "/Pickups"
+                    ? "text-purple-900 font-semibold"
+                    : "bg-transparent"
+                }`}
+                style={{ minHeight: "40px" }}
+              >
+                Pickups
+              </Link>
+            </li>
+          )}
           {user.email == "dinesh@gmail.com" && (
             <li>
               <Link

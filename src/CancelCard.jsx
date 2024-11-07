@@ -26,7 +26,6 @@ function CancelCard({ item, index }) {
       const q = query(
         collection(
           db,
-
           collectionName_BaseAwb.getCollection(
             JSON.parse(localStorage.getItem("LoginCredentials")).Location
           )

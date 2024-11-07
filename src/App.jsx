@@ -10,7 +10,7 @@ import CancelOrReshedule from './CancelOrReshedule';
 import Pickups from './Pickups';
 import LogisticsDashboard from './LogisticsDashboard';
 import { collection, getDocs, query } from 'firebase/firestore';
-
+import AllPickups from "./AllPickups"
 function App() {
 
   const [user, setUser] = useState(null);
@@ -61,6 +61,7 @@ function App() {
           <Route path="/PickupBooking" element={user ? <PickupBooking /> : <Navigate to="/signin" />} />
           <Route path="/Cancel-reschedule" element={user ? <CancelOrReshedule /> : <Navigate to="/signin" />} />
           <Route path="/Pickups" element={user ? <Pickups /> : <Navigate to="/signin" />} />
+          <Route path="/allPickups" element={user ? <AllPickups /> : <Navigate to="/signin" />} />
           <Route path="/Sale-rates" element={user ? <RateCardForm /> : <Navigate to="/signin" />} />
           <Route path="/Payment-confirm" element={user ? <PaymentConfirm /> : <Navigate to="/signin" />} />
           <Route path="/logisticsDashboard" element={user ? <LogisticsDashboard /> : <Navigate to="/signin" />} />
