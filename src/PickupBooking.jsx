@@ -524,8 +524,8 @@ function PickupBooking() {
               </label>
               <select
                 {...register(
-                  "vendor"
-                  // { required: "Vendor is required" }
+                  "vendor",
+                  { required: "Vendor is required" }
                 )}
                 className={`w-full px-3 py-2 border ${
                   errors.vendor ? "border-red-500" : "border-gray-300"
