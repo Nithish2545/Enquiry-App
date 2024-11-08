@@ -14,7 +14,7 @@ function Pickups() {
   const [dateSearchTerm, setDateSearchTerm] = useState("");
   const [consignorPhoneSearchTerm, setConsignorPhoneSearchTerm] = useState("");
   const [PickupPersonName, setPickUpPersonName] = useState("");
-
+  const [Location, setLocation] = useState("CHENNAI");
   // Fetch user info from localStorage
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("LoginCredentials"));
@@ -22,7 +22,7 @@ function Pickups() {
     setUsername(storedUser?.name);
     setRole(storedUser.role);
   }, []);
-
+  console.log(Location);
   const parsePickupDateTime = (dateTimeString) => {
     const [datePart, timePart] = dateTimeString.split("&"); // Split date and time
     const [year, month, day] = datePart.split("-"); // Get year, month, day
@@ -43,13 +43,7 @@ function Pickups() {
           const q =
             role === "sales admin" || role === "Manager"
               ? query(
-                  collection(
-                    db,
-                    collectionName_BaseAwb.getCollection(
-                      JSON.parse(localStorage.getItem("LoginCredentials"))
-                        .Location
-                    )
-                  )
+                  collection(db, collectionName_BaseAwb.getCollection(Location))
                 ) // Fetch all pickups for sales admin
               : query(
                   collection(
@@ -88,7 +82,7 @@ function Pickups() {
 
       fetchData();
     }
-  }, [username, role]);
+  }, [username, role, Location]);
 
   // Filter pickups based on search terms
   const filteredPickups = pickups.filter((pickup) => {
@@ -116,17 +110,31 @@ function Pickups() {
     return <div className="text-center text-red-600">{error}</div>;
   }
 
+  function capitalizeFirstLetter(string) {
+    return [...string][0].toUpperCase() + [...string].slice(1).join("");
+  }
+
   return (
     <>
       <Nav />
       <div className="container mx-auto p-6 rounded-lg">
         <h1 className="text-3xl font-bold mb-6 text-purple-700">
           {role !== "sales admin" ? (
-            <>Pickups Booked by HQ {username}</>
+            <>Pickups Booked By {capitalizeFirstLetter(username)}</>
           ) : (
             "All Booked Pickups"
           )}
         </h1>
+        <select
+          value={Location}
+          onChange={(e) => setLocation(e.target.value)}
+          className="border w-fit mb-6 border-gray-300 rounded py-2 px-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+        >
+          <option value="">Select Location</option>
+          <option value="CHENNAI">HQ CHENNAI</option>
+          <option value="PONDY">PONDY</option>
+          <option value="COIMBATORE">COIMBATORE</option>
+        </select>
         {/* Search Inputs */}
         <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
           <input
@@ -162,7 +170,9 @@ function Pickups() {
             className="border border-gray-300 rounded py-2 px-4 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-purple-600"
           />
         </div>
-
+        <h1 className="text-2xl font-bold mb-6 text-purple-700">
+          {Location}
+        </h1>
         {/* Scrollable Table Wrapper */}
         <div className="overflow-auto border scrollbar-hide">
           <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow overflow-hidden">
@@ -182,7 +192,9 @@ function Pickups() {
                 <th className="py-3 px-4  border">
                   Payment Comfirmed Date & Time
                 </th>
-                <th className="py-3 px-4  border">Package Connected Data & Time</th>
+                <th className="py-3 px-4  border">
+                  Package Connected Data & Time
+                </th>
                 <th className="py-3 px-4 border">Status</th>
                 <th className="py-3 px-4 border"> Pickup Booked by</th>
                 <th className="py-3 px-4 border">PickUp Person</th>
@@ -225,9 +237,13 @@ function Pickups() {
                       </td>
                     )}
                     <td className="py-10 px-4 border text-nowrap">
-                      {pickup.packageConnectedDataTime ? pickup.packageConnectedDataTime : "NA" }
-                    </td> 
-                    <td className="py-10 px-4 border text-nowrap">{pickup.status}</td>
+                      {pickup.packageConnectedDataTime
+                        ? pickup.packageConnectedDataTime
+                        : "NA"}
+                    </td>
+                    <td className="py-10 px-4 border text-nowrap">
+                      {pickup.status}
+                    </td>
                     <td className="py-10 px-4 border">
                       {pickup.pickupBookedBy}
                     </td>
