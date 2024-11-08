@@ -14,7 +14,6 @@ const SignIn = () => {
     handleSubmit,
     formState: { errors },
   } = useForm();
-  const navigate = useNavigate();
 
   const onSubmit = async (data) => {
     setLoading(true);
@@ -22,57 +21,6 @@ const SignIn = () => {
     try {
       await signInWithEmailAndPassword(auth, data.email, data.password);
       console.log("You are signed in successfully!");
-
-      if (auth.currentUser.email === "dhanush@gmail.com") {
-        localStorage.setItem(
-          "enquiryAuthToken",
-          JSON.stringify({
-            email: "dhanush@gmail.com",
-            role: "sales admin",
-            name: "dhanush",
-          })
-        );
-        navigate("/PickupBooking");
-        return;
-      }
-
-      if (auth.currentUser.email === "smitha@gmail.com") {
-        localStorage.setItem(
-          "enquiryAuthToken",
-          JSON.stringify({
-            email: "smitha@gmail.com",
-            role: "sales associate ",
-            name: "smitha",
-          })
-        );
-        navigate("/PickupBooking");
-        return;
-      }
-      if (auth.currentUser.email === "dinesh@gmail.com") {
-        localStorage.setItem(
-          "enquiryAuthToken",
-          JSON.stringify({
-            email: "dinesh@gmail.com",
-            role: "Manager",
-            name: "dinesh",
-          })
-        );
-        navigate("/PickupBooking");
-        return;
-      }
-      if (auth.currentUser.email === "sana@gmail.com") {
-        localStorage.setItem(
-          "enquiryAuthToken",
-          JSON.stringify({
-            email: "sana@gmail.com",
-            role: "coordinator",
-            name: "sana",
-          })
-        );
-        navigate("/PickupBooking");
-        return;
-      }
-
     } catch (error) {
       console.log(error.code)
       // Set the error message for inline display

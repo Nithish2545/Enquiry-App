@@ -11,7 +11,7 @@ function Nav() {
   const [sidebarOpen, setSidebarOpen] = useState(false); // State to control sidebar visibility
 
   useEffect(() => {
-    setUser(JSON.parse(localStorage.getItem("enquiryAuthToken")));
+    setUser(JSON.parse(localStorage.getItem("LoginCredentials")));
   }, []);
 
   return (
@@ -19,7 +19,6 @@ function Nav() {
       {/* Left Section */}
       <div className="flex items-center gap-4">
         <img src="/logo.png" className="h-10" alt="Logo" />
-
         {/* Hamburger icon for mobile */}
         <button
           className="lg:hidden block text-white"
@@ -83,19 +82,36 @@ function Nav() {
               Cancel - Reschedule
             </Link>
           </li>
-          <li>
-            <Link
-              to="/Pickups"
-              className={`text-white rounded transition-colors ${
-                location.pathname === "/Pickups"
-                  ? "text-purple-900 font-semibold"
-                  : "bg-transparent"
-              }`}
-              style={{ minHeight: "40px" }}
-            >
-              Pickups
-            </Link>
-          </li>
+          {JSON.parse(localStorage.getItem("LoginCredentials")).email ==
+          "dinesh@gmail.com" ? (
+            <li>
+              <Link
+                to="/allpickups"
+                className={`text-white rounded transition-colors ${
+                  location.pathname === "/allpickups"
+                    ? "text-purple-900 font-semibold"
+                    : "bg-transparent"
+                }`}
+                style={{ minHeight: "40px" }}
+              >
+                Pickups
+              </Link>
+            </li>
+          ) : (
+            <li>
+              <Link
+                to="/Pickups"
+                className={`text-white rounded transition-colors ${
+                  location.pathname === "/Pickups"
+                    ? "text-purple-900 font-semibold"
+                    : "bg-transparent"
+                }`}
+                style={{ minHeight: "40px" }}
+              >
+                Pickups
+              </Link>
+            </li>
+          )}
           {user.email == "dinesh@gmail.com" && (
             <li>
               <Link
@@ -116,10 +132,16 @@ function Nav() {
       {/* Right Section */}
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-3">
-          <Avatar>{user?.name?.slice(0, 1)}</Avatar>
+          <Avatar>{user?.name?.slice(0, 1) || "?"}</Avatar>
           <div className="text-black hidden sm:block">
-            <p className="font-medium">{user?.email}</p>
-            <p>{user?.name}</p>
+            {user ? (
+              <>
+                <p className="font-medium">{user.email}</p>
+                <p>{user.name}</p>
+              </>
+            ) : (
+              <p>Loading user info...</p> // Display loading text or spinner
+            )}
           </div>
         </div>
         <div

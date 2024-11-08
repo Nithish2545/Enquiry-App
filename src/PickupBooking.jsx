@@ -5,6 +5,7 @@ import Nav from "./Nav";
 import { db, storage } from "./firebase";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { addDoc, collection, getDocs } from "firebase/firestore";
+import collectionName_baseAwb from "./functions/collectionName";
 
 function PickupBooking() {
   const [loading, setLoading] = useState(false);
@@ -16,7 +17,7 @@ function PickupBooking() {
   const [username, setUsername] = useState("");
   const [files, setFiles] = useState([]);
   const [awbNumber, setawbNumber] = useState();
-  const [frachise, setfrachise] = useState("");
+  const [frachise, setfrachise] = useState(null);
   const [clientName, setClientName] = useState("");
   const [service, setservice] = useState("");
   const [latitudelongitude, setlatitudelongitude] = useState("");
@@ -47,7 +48,7 @@ function PickupBooking() {
 
   // Example usage
   useEffect(() => {
-    const data = JSON.parse(localStorage.getItem("enquiryAuthToken")).name;
+    const data = JSON.parse(localStorage.getItem("LoginCredentials")).name;
     setUsername(data);
   }, []);
 
@@ -109,7 +110,6 @@ function PickupBooking() {
     try {
       console.log(latitudelongitude);
       if (latitudelongitude == "") {
-        console.log("okk");
         seterror("Latitude & Longitude  Is Required!");
         return;
       }
@@ -119,9 +119,16 @@ function PickupBooking() {
       const destinationCountryName =
         countryCodeToName[data.country] || data.country;
       // Step 1: Fetch current maximum awbNumber
-      const pickupsRef = collection(db, "pickup");
+      const pickupsRef = collection(
+        db,
+        collectionName_baseAwb.getCollection(
+          frachise ? frachise  :  JSON.parse(localStorage.getItem("LoginCredentials")).Location
+        )
+      );
       const snapshot = await getDocs(pickupsRef);
-      let maxAwbNumber = 1000; // Initialize to 0
+      let maxAwbNumber = collectionName_baseAwb.getFranchiseBasedAWb(
+        frachise ? frachise  :  JSON.parse(localStorage.getItem("LoginCredentials")).Location
+      ); // Initialize to 0
 
       if (!snapshot.empty) {
         snapshot.forEach((doc) => {
@@ -165,7 +172,9 @@ function PickupBooking() {
           data.pickupHour +
           " " +
           data.pickupPeriod,
-        franchise: frachise,
+        franchise: frachise
+          ? frachise
+          : JSON.parse(localStorage.getItem("LoginCredentials")).Location,
         awbNumber: newAwbNumber, // Add the new awbNumber here
         vendorName: data.vendor,
         service: service,
@@ -634,28 +643,33 @@ function PickupBooking() {
                 </p>
               )}
             </div>
-            <div>
-              <p className="text-gray-700 font-semibold mb-2">Franchise</p>
-              <select
-                className="w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:border-[#8847D9]"
-                {...register("franchise", {
-                  required: "Franchise is required",
-                })}
-                onChange={(e) => {
-                  setfrachise(e.target.value);
-                }}
-              >
-                <option value="">Select</option>
-                <option value="CHENNAI">CHENNAI</option>
-                <option value="COIMBATORE">COIMBATORE</option>
-                <option value="PONDY">PONDY</option>
-              </select>
-              {errors.franchise && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.franchise.message}
-                </p>
-              )}
-            </div>
+            {JSON.parse(localStorage.getItem("LoginCredentials")).Location ==
+            "CHENNAI" ? (
+              <div>
+                <p className="text-gray-700 font-semibold mb-2">Franchise</p>
+                <select
+                  className="w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:border-[#8847D9]"
+                  {...register("franchise", {
+                    required: "Franchise is required",
+                  })}
+                  onChange={(e) => {
+                    setfrachise(e.target.value);
+                  }}
+                >
+                  <option value="">Select</option>
+                  <option value="CHENNAI">CHENNAI</option>
+                  <option value="COIMBATORE">COIMBATORE</option>
+                  <option value="PONDY">PONDY</option>
+                </select>
+                {errors.franchise && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.franchise.message}
+                  </p>
+                )}
+              </div>
+            ) : (
+              ""
+            )}
             <div>
               <p className="text-gray-700 font-semibold mb-2">Service</p>
               <select
@@ -691,7 +705,7 @@ function PickupBooking() {
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 font-semibold mb-2">
-            Upload KYC Image (PDF Only):
+              Upload KYC Image (PDF Only):
             </label>
             <input
               type="file"

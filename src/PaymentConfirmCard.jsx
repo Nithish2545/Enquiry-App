@@ -351,7 +351,7 @@ function PaymentConfirmCard({ item, index }) {
             onClick={() => generate_Invoice_PDF()}
             className="p-2 rounded-md bg-purple-600  text-white"
           >
-            Invoice
+            Receipt
           </button>
           <button
             onClick={() => generate_AWBNUMBER_PDF()}
