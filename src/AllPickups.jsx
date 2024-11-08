@@ -130,7 +130,6 @@ function Pickups() {
           onChange={(e) => setLocation(e.target.value)}
           className="border w-fit mb-6 border-gray-300 rounded py-2 px-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
         >
-          <option value="">Select Location</option>
           <option value="CHENNAI">HQ CHENNAI</option>
           <option value="PONDY">PONDY</option>
           <option value="COIMBATORE">COIMBATORE</option>
