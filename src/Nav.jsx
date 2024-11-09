@@ -234,6 +234,21 @@ function Nav() {
               Pickups
             </Link>
           </li>
+          {/* {user.email == "dinesh@gmail.com" && ( */}
+          <li>
+            <Link
+              to="/logisticsDashboard"
+              className={`py-2 px-4 text-gray-700 rounded transition-colors block ${
+                location.pathname === "/logisticsDashboard"
+                  ? "text-purple-900 font-semibold"
+                  : "bg-transparent"
+              }`}
+              style={{ minHeight: "40px" }}
+            >
+              Logistics Dashboard
+            </Link>
+          </li>
+          {/* )} */}
         </ul>
       </div>
 

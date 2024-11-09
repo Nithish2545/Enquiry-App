@@ -14,7 +14,7 @@ function Pickups() {
   const [dateSearchTerm, setDateSearchTerm] = useState("");
   const [consignorPhoneSearchTerm, setConsignorPhoneSearchTerm] = useState("");
   const [PickupPersonName, setPickUpPersonName] = useState("");
-  const [Location, setLocation] = useState("CHENNAI");
+  const [Location, setLocation] = useState("ALL");
   // Fetch user info from localStorage
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("LoginCredentials"));
@@ -36,52 +36,111 @@ function Pickups() {
   };
 
   // Fetch pickup data from Firestore and filter based on the username
+
   useEffect(() => {
-    if (username) {
-      const fetchData = () => {
-        try {
-          const q =
-            role === "sales admin" || role === "Manager"
-              ? query(
-                  collection(db, collectionName_BaseAwb.getCollection(Location))
-                ) // Fetch all pickups for sales admin
-              : query(
-                  collection(
-                    db,
-                    collectionName_BaseAwb.getCollection(
-                      JSON.parse(localStorage.getItem("LoginCredentials"))
-                        .Location
-                    )
-                  ),
-                  where("pickupBookedBy", "==", username)
-                ); // Fetch only user's pickups
+    if (Location == "ALL") {
+      if (username) {
+        const fetchData = () => {
+          try {
+            const collectionNames = [
+              "pickup",
+              "franchise_pondy",
+              "franchise_coimbatore",
+            ];
 
-          const unsubscribe = onSnapshot(q, (snapshot) => {
-            const filteredData = snapshot.docs.map((doc) => ({
-              ...doc.data(),
-              id: doc.id,
-            }));
-            // Sort data by date and time
-            const sortedData = filteredData.sort((a, b) => {
-              const dateTimeA = parsePickupDateTime(a.pickupDatetime);
-              const dateTimeB = parsePickupDateTime(b.pickupDatetime);
-              return dateTimeA - dateTimeB;
-            });
+            // Create an array of queries for each collection
+            const queries = collectionNames.map((name) =>
+              query(collection(db, collectionName_BaseAwb.getCollection("pickup")))
+            );
 
-            setPickups(sortedData);
+            // Use Promise.all to fetch data from all queries
+            const unsubscribes = [];
+
+            Promise.all(
+              queries.map(
+                (q) =>
+                  new Promise((resolve) => {
+                    const unsubscribe = onSnapshot(q, (snapshot) => {
+                      const data = snapshot.docs.map((doc) => ({
+                        ...doc.data(),
+                        id: doc.id,
+                      }));
+                      console.log(data)
+                      resolve(data);
+                    });
+                    unsubscribes.push(unsubscribe);
+                  })
+              )
+            )
+              .then((results) => {
+                // Combine results from all collections
+                const combinedData = results.flat();
+console.log(results)
+                // Sort the combined data by date and time
+                const sortedData = combinedData.sort((a, b) => {
+                  const dateTimeA = parsePickupDateTime(a.pickupDatetime);
+                  const dateTimeB = parsePickupDateTime(b.pickupDatetime);
+                  return dateTimeA - dateTimeB;
+                });
+
+                setPickups(sortedData);
+                setLoading(false);
+              })
+              .catch((error) => {
+                setError("Failed to fetch data: " + error.message);
+                setLoading(false);
+              });
+
+            // Cleanup subscription on unmount
+            return () => unsubscribes.forEach((unsubscribe) => unsubscribe());
+          } catch (error) {
+            setError("Failed to fetch data: " + error.message);
             setLoading(false);
+          }
+        };
+
+        fetchData();
+      }
+    }
+else {
+    const fetchData = () => {
+      try {
+        const q = query(
+          collection(
+            db,
+            collectionName_BaseAwb.getCollection(
+              Location == "HQ CHENNAI" ? "CHENNAI" : Location
+            )
+          )
+        ); // Fetch all pickups for sales admin
+        // Fetch only user's pickups
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+          const filteredData = snapshot.docs.map((doc) => ({
+            ...doc.data(),
+            id: doc.id,
+          }));
+          // Sort data by date and time
+          const sortedData = filteredData.sort((a, b) => {
+            const dateTimeA = parsePickupDateTime(a.pickupDatetime);
+            const dateTimeB = parsePickupDateTime(b.pickupDatetime);
+            return dateTimeA - dateTimeB;
           });
 
-          // Cleanup subscription on unmount
-          return () => unsubscribe();
-        } catch (error) {
-          setError("Failed to fetch data: " + error.message);
+          setPickups(sortedData);
           setLoading(false);
-        }
-      };
+        });
 
-      fetchData();
-    }
+        // Cleanup subscription on unmount
+        return () => unsubscribe();
+      } catch (error) {
+        setError("Failed to fetch data: " + error.message);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }
   }, [username, role, Location]);
 
   // Filter pickups based on search terms
@@ -120,7 +179,7 @@ function Pickups() {
       <div className="container mx-auto p-6 rounded-lg">
         <h1 className="text-3xl font-bold mb-6 text-purple-700">
           {role !== "sales admin" ? (
-            <>Pickups Booked By {capitalizeFirstLetter(username)}</>
+            <>{Location} SHIPMENTS</>
           ) : (
             "All Booked Pickups"
           )}
@@ -130,7 +189,8 @@ function Pickups() {
           onChange={(e) => setLocation(e.target.value)}
           className="border w-fit mb-6 border-gray-300 rounded py-2 px-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
         >
-          <option value="CHENNAI">HQ CHENNAI</option>
+          <option value="ALL">ALL</option>
+          <option value="HQ CHENNAI">HQ CHENNAI</option>
           <option value="PONDY">PONDY</option>
           <option value="COIMBATORE">COIMBATORE</option>
         </select>
@@ -169,9 +229,9 @@ function Pickups() {
             className="border border-gray-300 rounded py-2 px-4 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-purple-600"
           />
         </div>
-        <h1 className="text-2xl font-bold mb-6 text-purple-700">
+        {/* <h1 className="text-2xl font-bold mb-6 text-purple-700">
           {Location}
-        </h1>
+        </h1> */}
         {/* Scrollable Table Wrapper */}
         <div className="overflow-auto border scrollbar-hide">
           <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow overflow-hidden">
