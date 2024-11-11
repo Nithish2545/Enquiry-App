@@ -6,7 +6,7 @@ import { db, storage } from "./firebase";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { addDoc, collection, getDocs } from "firebase/firestore";
 import axios from "axios";
-
+import collectionName_baseAwb from "./functions/collectionName";
 function PickupBooking() {
   const [loading, setLoading] = useState(false);
   const [countries, setCountries] = useState([]);
@@ -203,31 +203,35 @@ function PickupBooking() {
         logisticCost: null,
         KycImage: uploadedImageURLs.length == 0 ? "" : uploadedImageURLs[0],
       });
-      
+
       const options = {
         method: "POST",
         headers: {
           accept: "application/json",
           "content-type": "application/json",
-          Authorization: "key_z6hIuLo8GC" // Add your authorization token here
+          Authorization: "key_z6hIuLo8GC", // Add your authorization token here
         },
         data: {
           messages: [
             {
-              content: { language: "en", templateName: "pickup_confirm" },
+              content: { language: "en", templateName: "shipmentbooked" },
               from: "+919087786986",
-              to: `+91${data.Consignornumber}`
-            }
-          ]
-        }
+              to: `+91${data.Consignornumber}`,
+            },
+          ],
+        },
       };
-  
-      const response = await axios.post("https://public.doubletick.io/whatsapp/message/template", options.data, {
-        headers: options.headers
-      });
+
+      const response = await axios.post(
+        "https://public.doubletick.io/whatsapp/message/template",
+        options.data,
+        {
+          headers: options.headers,
+        }
+      );
 
       console.log("WhatsApp message sent: ", response.data);
-      
+
       setShowModal(true);
       setFiles([]);
       reset();
@@ -248,7 +252,6 @@ function PickupBooking() {
     const uploadPromises = images.map((image, index) => {
       const imageRef = ref(storage, `${awbnumber}/KYC/${image.name}`);
       const uploadTask = uploadBytesResumable(imageRef, image);
-
       return new Promise((resolve, reject) => {
         uploadTask.on(
           "state_changed",
@@ -669,28 +672,33 @@ function PickupBooking() {
                 </p>
               )}
             </div>
-            <div>
-              <p className="text-gray-700 font-semibold mb-2">Franchise</p>
-              <select
-                className="w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:border-[#8847D9]"
-                {...register("franchise", {
-                  required: "Franchise is required",
-                })}
-                onChange={(e) => {
-                  setfrachise(e.target.value);
-                }}
-              >
-                <option value="">Select</option>
-                <option value="CHENNAI">CHENNAI</option>
-                <option value="COIMBATORE">COIMBATORE</option>
-                <option value="PONDY">PONDY</option>
-              </select>
-              {errors.franchise && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.franchise.message}
-                </p>
-              )}
-            </div>
+            {JSON.parse(localStorage.getItem("LoginCredentials")).Location ==
+            "CHENNAI" ? (
+              <div>
+                <p className="text-gray-700 font-semibold mb-2">Franchise</p>
+                <select
+                  className="w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:border-[#8847D9]"
+                  {...register("franchise", {
+                    required: "Franchise is required",
+                  })}
+                  onChange={(e) => {
+                    setfrachise(e.target.value);
+                  }}
+                >
+                  <option value="">Select</option>
+                  <option value="CHENNAI">CHENNAI</option>
+                  <option value="COIMBATORE">COIMBATORE</option>
+                  <option value="PONDY">PONDY</option>
+                </select>
+                {errors.franchise && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.franchise.message}
+                  </p>
+                )}
+              </div>
+            ) : (
+              ""
+            )}
             <div>
               <p className="text-gray-700 font-semibold mb-2">Service</p>
               <select
@@ -726,7 +734,7 @@ function PickupBooking() {
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 font-semibold mb-2">
-            Upload KYC Image (PDF Only):
+              Upload KYC Image (PDF Only):
             </label>
             <input
               type="file"
