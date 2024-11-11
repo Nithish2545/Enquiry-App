@@ -160,7 +160,7 @@ function PaymentConfirmationForm() {
         data: {
           messages: [
             {
-              content: { language: "en", templateName: "payment_done" },
+              content: { language: "en", templateName: "paymentcompleted" },
               from: "+919087786986",
               to: `+91${details.consignorphonenumber}`
             }

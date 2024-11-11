@@ -192,31 +192,35 @@ function PickupBooking() {
         logisticCost: null,
         KycImage: uploadedImageURLs.length == 0 ? "" : uploadedImageURLs[0],
       });
-      
+
       const options = {
         method: "POST",
         headers: {
           accept: "application/json",
           "content-type": "application/json",
-          Authorization: "key_z6hIuLo8GC" // Add your authorization token here
+          Authorization: "key_z6hIuLo8GC", // Add your authorization token here
         },
         data: {
           messages: [
             {
-              content: { language: "en", templateName: "pickup_confirm" },
+              content: { language: "en", templateName: "shipmentbooked" },
               from: "+919087786986",
-              to: `+91${data.Consignornumber}`
-            }
-          ]
-        }
+              to: `+91${data.Consignornumber}`,
+            },
+          ],
+        },
       };
-  
-      const response = await axios.post("https://public.doubletick.io/whatsapp/message/template", options.data, {
-        headers: options.headers
-      });
+
+      const response = await axios.post(
+        "https://public.doubletick.io/whatsapp/message/template",
+        options.data,
+        {
+          headers: options.headers,
+        }
+      );
 
       console.log("WhatsApp message sent: ", response.data);
-      
+
       setShowModal(true);
       setFiles([]);
       reset();
@@ -718,7 +722,7 @@ function PickupBooking() {
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 font-semibold mb-2">
-            Upload KYC Image (PDF Only):
+              Upload KYC Image (PDF Only):
             </label>
             <input
               type="file"
