@@ -120,10 +120,21 @@ function PickupBooking() {
       const destinationCountryName =
         countryCodeToName[data.country] || data.country;
       // Step 1: Fetch current maximum awbNumber
-      const pickupsRef = collection(db, "pickup");
+      const pickupsRef = collection(
+        db,
+        collectionName_baseAwb.getCollection(
+          frachise
+            ? frachise
+            : JSON.parse(localStorage.getItem("LoginCredentials")).Location
+        )
+      );
       const snapshot = await getDocs(pickupsRef);
-      let maxAwbNumber = 1000; // Initialize to 0
-
+      let maxAwbNumber = collectionName_baseAwb.getFranchiseBasedAWb(
+        frachise
+          ? frachise
+          : JSON.parse(localStorage.getItem("LoginCredentials")).Location
+      ); // Initialize to 0
+      // testing
       if (!snapshot.empty) {
         snapshot.forEach((doc) => {
           const pickupData = doc.data();
@@ -549,10 +560,7 @@ function PickupBooking() {
                 Vendor:
               </label>
               <select
-                {...register(
-                  "vendor"
-                  // { required: "Vendor is required" }
-                )}
+                {...register("vendor", { required: "Vendor is required" })}
                 className={`w-full px-3 py-2 border ${
                   errors.vendor ? "border-red-500" : "border-gray-300"
                 } rounded-md focus:outline-none focus:border-[#8847D9]`}
