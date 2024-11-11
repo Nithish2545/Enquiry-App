@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Nav from "./Nav";
-import { collection, query, onSnapshot, where } from "firebase/firestore";
+import { collection, query, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
 import collectionName_BaseAwb from "./functions/collectionName";
 
@@ -16,23 +16,26 @@ function Pickups() {
   const [PickupPersonName, setPickUpPersonName] = useState("");
   const [Location, setLocation] = useState("ALL");
   // Fetch user info from localStorage
+
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("LoginCredentials"));
     console.log(JSON.parse(localStorage.getItem("LoginCredentials")));
     setUsername(storedUser?.name);
     setRole(storedUser.role);
   }, []);
-  console.log(Location);
-  const parsePickupDateTime = (dateTimeString) => {
-    const [datePart, timePart] = dateTimeString.split("&"); // Split date and time
-    const [year, month, day] = datePart.split("-"); // Get year, month, day
-    const [hour, minute] = timePart.split(" ")[0].split(":"); // Get hour and minute
 
+  const parsePickupDateTime = (dateTimeString) => {
+    const [datePart, timePart] = dateTimeString
+      .split("&")
+      .map((str) => str.trim()); // Split and trim date and time
+    const [day, month] = datePart.split("-").map(Number); // Extract day and month as numbers
+    const currentYear = new Date().getFullYear(); // Assume the current year
+    let [hour, period] = timePart.split(" "); // Split hour and period (AM/PM)
+    hour = parseInt(hour, 10); // Convert hour to number
     // Convert hour to 24-hour format if it's PM
-    const isPM = timePart.includes("PM") && hour !== "12";
-    const adjustedHour = isPM ? parseInt(hour, 10) + 12 : hour;
-    const date = new Date(year, month - 1, day, adjustedHour, minute || 0); // Create Date object
-    return date;
+    if (period === "PM" && hour !== 12) hour += 12;
+    if (period === "AM" && hour === 12) hour = 0; // Handle midnight case
+    return new Date(currentYear, month - 1, day, hour, 0, 0); // Create Date object
   };
 
   // Fetch pickup data from Firestore and filter based on the username
@@ -47,15 +50,12 @@ function Pickups() {
               "franchise_pondy",
               "franchise_coimbatore",
             ];
-
             // Create an array of queries for each collection
-            const queries = collectionNames.map((name) =>
-              query(collection(db, collectionName_BaseAwb.getCollection("pickup")))
+            const queries = collectionNames.map((collec) =>
+              query(collection(db, collec))
             );
-
             // Use Promise.all to fetch data from all queries
             const unsubscribes = [];
-
             Promise.all(
               queries.map(
                 (q) =>
@@ -65,7 +65,7 @@ function Pickups() {
                         ...doc.data(),
                         id: doc.id,
                       }));
-                      console.log(data)
+                      console.log(data);
                       resolve(data);
                     });
                     unsubscribes.push(unsubscribe);
@@ -75,14 +75,12 @@ function Pickups() {
               .then((results) => {
                 // Combine results from all collections
                 const combinedData = results.flat();
-console.log(results)
                 // Sort the combined data by date and time
                 const sortedData = combinedData.sort((a, b) => {
                   const dateTimeA = parsePickupDateTime(a.pickupDatetime);
                   const dateTimeB = parsePickupDateTime(b.pickupDatetime);
                   return dateTimeA - dateTimeB;
                 });
-
                 setPickups(sortedData);
                 setLoading(false);
               })
@@ -90,7 +88,6 @@ console.log(results)
                 setError("Failed to fetch data: " + error.message);
                 setLoading(false);
               });
-
             // Cleanup subscription on unmount
             return () => unsubscribes.forEach((unsubscribe) => unsubscribe());
           } catch (error) {
@@ -101,46 +98,45 @@ console.log(results)
 
         fetchData();
       }
-    }
-else {
-    const fetchData = () => {
-      try {
-        const q = query(
-          collection(
-            db,
-            collectionName_BaseAwb.getCollection(
-              Location == "HQ CHENNAI" ? "CHENNAI" : Location
+    } else {
+      const fetchData = () => {
+        try {
+          const q = query(
+            collection(
+              db,
+              collectionName_BaseAwb.getCollection(
+                Location == "HQ CHENNAI" ? "CHENNAI" : Location
+              )
             )
-          )
-        ); // Fetch all pickups for sales admin
-        // Fetch only user's pickups
+          ); // Fetch all pickups for sales admin
+          // Fetch only user's pickups
 
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-          const filteredData = snapshot.docs.map((doc) => ({
-            ...doc.data(),
-            id: doc.id,
-          }));
-          // Sort data by date and time
-          const sortedData = filteredData.sort((a, b) => {
-            const dateTimeA = parsePickupDateTime(a.pickupDatetime);
-            const dateTimeB = parsePickupDateTime(b.pickupDatetime);
-            return dateTimeA - dateTimeB;
+          const unsubscribe = onSnapshot(q, (snapshot) => {
+            const filteredData = snapshot.docs.map((doc) => ({
+              ...doc.data(),
+              id: doc.id,
+            }));
+            // Sort data by date and time
+            const sortedData = filteredData.sort((a, b) => {
+              const dateTimeA = parsePickupDateTime(a.pickupDatetime);
+              const dateTimeB = parsePickupDateTime(b.pickupDatetime);
+              return dateTimeA - dateTimeB;
+            });
+
+            setPickups(sortedData);
+            setLoading(false);
           });
 
-          setPickups(sortedData);
+          // Cleanup subscription on unmount
+          return () => unsubscribe();
+        } catch (error) {
+          setError("Failed to fetch data: " + error.message);
           setLoading(false);
-        });
+        }
+      };
 
-        // Cleanup subscription on unmount
-        return () => unsubscribe();
-      } catch (error) {
-        setError("Failed to fetch data: " + error.message);
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }
+      fetchData();
+    }
   }, [username, role, Location]);
 
   // Filter pickups based on search terms
