@@ -14,7 +14,9 @@ function Pickups() {
   const [dateSearchTerm, setDateSearchTerm] = useState("");
   const [consignorPhoneSearchTerm, setConsignorPhoneSearchTerm] = useState("");
   const [PickupPersonName, setPickUpPersonName] = useState("");
-  
+  const [Location, setLocation] = useState("ALL");
+  // Fetch user info from localStorage
+
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("LoginCredentials"));
     console.log(JSON.parse(localStorage.getItem("LoginCredentials")));

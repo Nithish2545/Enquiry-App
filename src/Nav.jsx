@@ -146,7 +146,7 @@ function Nav() {
         </div>
         <div
           onClick={() => {
-            localStorage.removeItem("enquiryAuthToken");
+            localStorage.removeItem("LoginCredentials");
             auth.signOut();
           }}
           className="bg-white text-purple-700 font-semibold p-1 pl-4 pr-5 cursor-pointer rounded-sm"
