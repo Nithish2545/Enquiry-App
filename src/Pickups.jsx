@@ -24,15 +24,17 @@ function Pickups() {
   }, []);
 
   const parsePickupDateTime = (dateTimeString) => {
-    const [datePart, timePart] = dateTimeString.split("&"); // Split date and time
-    const [year, month, day] = datePart.split("-"); // Get year, month, day
-    const [hour, minute] = timePart.split(" ")[0].split(":"); // Get hour and minute
-
+    const [datePart, timePart] = dateTimeString
+      .split("&")
+      .map((str) => str.trim()); // Split and trim date and time
+    const [day, month] = datePart.split("-").map(Number); // Extract day and month as numbers
+    const currentYear = new Date().getFullYear(); // Assume the current year
+    let [hour, period] = timePart.split(" "); // Split hour and period (AM/PM)
+    hour = parseInt(hour, 10); // Convert hour to number
     // Convert hour to 24-hour format if it's PM
-    const isPM = timePart.includes("PM") && hour !== "12";
-    const adjustedHour = isPM ? parseInt(hour, 10) + 12 : hour;
-    const date = new Date(year, month - 1, day, adjustedHour, minute || 0); // Create Date object
-    return date;
+    if (period === "PM" && hour !== 12) hour += 12;
+    if (period === "AM" && hour === 12) hour = 0; // Handle midnight case
+    return new Date(currentYear, month - 1, day, hour, 0, 0); // Create Date object
   };
 
   // Fetch pickup data from Firestore and filter based on the username
@@ -121,10 +123,10 @@ function Pickups() {
       <Nav />
       <div className="container mx-auto p-6 rounded-lg">
         <h1 className="text-3xl font-bold mb-6 text-purple-700">
-          {role !== "sales admin" ? (
-            <>Pickups Booked by {username}</>
+          {role == "sales admin" || role == "Manager" ? (
+            "All Shipments"
           ) : (
-            "All Booked Pickups"
+            <>Pickups Booked by {username}</>
           )}
         </h1>
         {/* Search Inputs */}
@@ -182,7 +184,9 @@ function Pickups() {
                 <th className="py-3 px-4  border">
                   Payment Comfirmed Date & Time
                 </th>
-                <th className="py-3 px-4  border">Package Connected Data & Time</th>
+                <th className="py-3 px-4  border">
+                  Package Connected Data & Time
+                </th>
                 <th className="py-3 px-4 border">Status</th>
                 <th className="py-3 px-4 border"> Pickup Booked by</th>
                 <th className="py-3 px-4 border">PickUp Person</th>
@@ -225,9 +229,13 @@ function Pickups() {
                       </td>
                     )}
                     <td className="py-10 px-4 border text-nowrap">
-                      {pickup.packageConnectedDataTime ? pickup.packageConnectedDataTime : "NA" }
-                    </td> 
-                    <td className="py-10 px-4 border text-nowrap">{pickup.status}</td>
+                      {pickup.packageConnectedDataTime
+                        ? pickup.packageConnectedDataTime
+                        : "NA"}
+                    </td>
+                    <td className="py-10 px-4 border text-nowrap">
+                      {pickup.status}
+                    </td>
                     <td className="py-10 px-4 border">
                       {pickup.pickupBookedBy}
                     </td>

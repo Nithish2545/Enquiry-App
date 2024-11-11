@@ -6,6 +6,7 @@ import { db, storage } from "./firebase";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { addDoc, collection, getDocs } from "firebase/firestore";
 import collectionName_baseAwb from "./functions/collectionName";
+import axios from "axios";
 
 function PickupBooking() {
   const [loading, setLoading] = useState(false);
