@@ -127,6 +127,19 @@ function Nav() {
               </Link>
             </li>
           )}
+          <li>
+            <Link
+              to="/Track"
+              className={`text-white rounded transition-colors ${
+                location.pathname === "/Track"
+                  ? "text-purple-900 font-semibold"
+                  : "bg-transparent"
+              }`}
+              style={{ minHeight: "40px" }}
+            >
+              Track
+            </Link>
+          </li>
         </ul>
       </div>
       {/* Right Section */}
@@ -154,7 +167,6 @@ function Nav() {
           Logout
         </div>
       </div>
-
       {/* Sidebar for mobile screens */}
       <div
         className={`fixed top-0 left-0 h-full w-64 bg-white z-20 transform ${
@@ -251,7 +263,6 @@ function Nav() {
           {/* )} */}
         </ul>
       </div>
-
       {/* Overlay when sidebar is open */}
       {sidebarOpen && (
         <div

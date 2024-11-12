@@ -134,7 +134,6 @@ function Pickups() {
           setLoading(false);
         }
       };
-
       fetchData();
     }
   }, [username, role, Location]);
