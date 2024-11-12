@@ -91,7 +91,6 @@ function PaymentConfirmationForm() {
   };
 
   const validateForm = () => {
-    
     console.log("paymentProof", paymentProof);
     console.log("KycImage", KycImage);
     if (!paymentProof && !KycImage) {
@@ -111,7 +110,6 @@ function PaymentConfirmationForm() {
   }
 
   const onSubmit = async (data) => {
-
     console.log(await getTodayDate());
     if (!validateForm()) return;
     setSubmitLoading(true);
@@ -171,25 +169,29 @@ function PaymentConfirmationForm() {
         headers: {
           accept: "application/json",
           "content-type": "application/json",
-          Authorization: "key_z6hIuLo8GC" // Add your authorization token here
+          Authorization: "key_z6hIuLo8GC", // Add your authorization token here
         },
         data: {
           messages: [
             {
               content: { language: "en", templateName: "paymentcompleted" },
               from: "+919087786986",
-              to: `+91${details.consignorphonenumber}`
-            }
-          ]
-        }
+              to: `+91${details.consignorphonenumber}`,
+            },
+          ],
+        },
       };
-  
-      const response = await axios.post("https://public.doubletick.io/whatsapp/message/template", options.data, {
-        headers: options.headers
-      });
+
+      const response = await axios.post(
+        "https://public.doubletick.io/whatsapp/message/template",
+        options.data,
+        {
+          headers: options.headers,
+        }
+      );
 
       console.log("WhatsApp message sent: ", response.data);
-      
+
       setShowPopup(true);
     } catch (error) {
       handleError(error);
@@ -389,9 +391,7 @@ function PaymentConfirmationForm() {
           </div>
 
           <div className="flex flex-col mb-4">
-            <label className="text-gray-700 font-medium mb-1">
-            Vendor
-            </label>
+            <label className="text-gray-700 font-medium mb-1">Vendor</label>
             <input
               type="text"
               value={details.vendorName}
@@ -578,7 +578,7 @@ function PaymentConfirmationForm() {
                 </label>
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="application/pdf"
                   onChange={handleKYCFileChange}
                   className="p-2 border rounded"
                 />

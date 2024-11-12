@@ -240,6 +240,7 @@ function Pickups() {
                 <th className="py-3 px-4 border">Weight (Apx)</th>
                 <th className="py-3 px-4 border">Vendor</th>
                 <th className="py-3 px-4 border">Pickup Area</th>
+                <th className="py-3 px-4 border">Status</th>
                 <th className="py-3 px-4  border">Pickup Date & Time</th>
                 <th className="py-3 px-4  border">
                   Pickup Completed Date & Time
@@ -250,7 +251,6 @@ function Pickups() {
                 <th className="py-3 px-4  border">
                   Package Connected Data & Time
                 </th>
-                <th className="py-3 px-4 border">Status</th>
                 <th className="py-3 px-4 border"> Pickup Booked by</th>
                 <th className="py-3 px-4 border">PickUp Person</th>
               </tr>
@@ -270,6 +270,9 @@ function Pickups() {
                     <td className="py-10 px-4 border">{pickup.weightapx}</td>
                     <td className="py-10 px-4 border">{pickup.vendorName}</td>
                     <td className="py-10 px-4 border">{pickup.pickuparea}</td>
+                    <td className="py-10 px-4 border text-nowrap">
+                      {pickup.status}
+                    </td>
                     <td className="py-10 px-4 border text-nowrap">
                       {pickup.pickupDatetime}
                     </td>
@@ -296,9 +299,7 @@ function Pickups() {
                         ? pickup.packageConnectedDataTime
                         : "NA"}
                     </td>
-                    <td className="py-10 px-4 border text-nowrap">
-                      {pickup.status}
-                    </td>
+
                     <td className="py-10 px-4 border">
                       {pickup.pickupBookedBy}
                     </td>
