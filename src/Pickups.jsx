@@ -171,6 +171,7 @@ function Pickups() {
             <thead className="bg-purple-600 text-white">
               <tr>
                 <th className="py-3 px-4 border">AWB Number</th>
+                <th className="py-3 px-4 border">Status</th>
                 <th className="py-3 px-4 border">Consignor Name</th>
                 <th className="py-3 px-4 border">Consignor Phone</th>
                 <th className="py-3 px-4 border">Destination</th>
@@ -187,7 +188,6 @@ function Pickups() {
                 <th className="py-3 px-4  border">
                   Package Connected Data & Time
                 </th>
-                <th className="py-3 px-4 border">Status</th>
                 <th className="py-3 px-4 border"> Pickup Booked by</th>
                 <th className="py-3 px-4 border">PickUp Person</th>
               </tr>
@@ -197,6 +197,9 @@ function Pickups() {
                 filteredPickups.map((pickup) => (
                   <tr key={pickup.id}>
                     <td className="py-10 px-4 border">{pickup.awbNumber}</td>
+                    <td className="py-10 px-4 border text-nowrap">
+                      {pickup.status}
+                    </td>
                     <td className="py-10 px-4 border">
                       {pickup.consignorname}
                     </td>
@@ -233,9 +236,7 @@ function Pickups() {
                         ? pickup.packageConnectedDataTime
                         : "NA"}
                     </td>
-                    <td className="py-10 px-4 border text-nowrap">
-                      {pickup.status}
-                    </td>
+                   
                     <td className="py-10 px-4 border">
                       {pickup.pickupBookedBy}
                     </td>

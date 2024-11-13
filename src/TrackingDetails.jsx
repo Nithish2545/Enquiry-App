@@ -47,8 +47,8 @@ function TrackingDetails() {
   console.log(data[0])
 
   return (
-    <div>
-        <TrackingDetailsChild data={data[0]} />
+    <div className="h-[100vh] bg-gray-100 ">
+        <TrackingDetailsChild data={data[0]}  awbNumber ={awbNumber}/>
     </div>
   );
 }

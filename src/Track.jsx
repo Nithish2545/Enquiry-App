@@ -2,13 +2,11 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
 function Track() {
-
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
-
   const navigate = useNavigate();
 
   const onSubmit = (data) => {
