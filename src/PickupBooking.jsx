@@ -672,7 +672,7 @@ function PickupBooking() {
                 </p>
               )}
             </div>
-            {JSON.parse(localStorage.getItem("LoginCredentials")).Location ==
+            {/* {JSON.parse(localStorage.getItem("LoginCredentials")).Location ==
             "CHENNAI" ? (
               <div>
                 <p className="text-gray-700 font-semibold mb-2">Franchise</p>
@@ -698,7 +698,7 @@ function PickupBooking() {
               </div>
             ) : (
               ""
-            )}
+            )} */}
             <div>
               <p className="text-gray-700 font-semibold mb-2">Service</p>
               <select

@@ -127,7 +127,7 @@ function Nav() {
               </Link>
             </li>
           )}
-          <li>
+          {/* <li>
             <Link
               to="/Track"
               className={`text-white rounded transition-colors ${
@@ -139,7 +139,7 @@ function Nav() {
             >
               Track
             </Link>
-          </li>
+          </li> */}
         </ul>
       </div>
       {/* Right Section */}
