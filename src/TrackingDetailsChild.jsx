@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
+import Nav from "./Nav";
 
 function TrackingDetailsChild({ data }) {
   const imageStyle = { width: 18 };
@@ -36,24 +37,6 @@ function TrackingDetailsChild({ data }) {
       Location: "Chennai",
       progress: false,
     },
-    {
-      status: "Departed from Facility",
-      dateTime: "",
-      Location: "",
-      progress: false,
-    },
-    {
-      status: "Out For Delivery Today",
-      dateTime: "",
-      Location: "",
-      progress: false,
-    },
-    {
-      status: "DELIVERED",
-      dateTime: "",
-      progress: false,
-      Location: "",
-    },
   ];
 
   const postData = {
@@ -64,84 +47,49 @@ function TrackingDetailsChild({ data }) {
   };
 
   const [dataSet, setDataSet] = useState(initialDataSet);
-  useEffect(() => {
-    const getTrackingDetails = async () => {
-      // If the status is "SHIPMENT CONNECTED", skip the API request and just update the dataSet
-      if (data.status != "SHIPMENT CONNECTED") {
-        setDataSet(initialDataSet);
-        return; // Exit the function early to prevent the API call
-      }
+  const [addedStatuses, setAddedStatuses] = useState(new Set());
+  const [isLoading, setIsLoading] = useState(true);
 
-      // if (console.log(data.vendorName == "UPS")) {
+  useEffect(() => {
+    const fetchTrackingData = async () => {
       try {
         const response = await axios.post(
           "http://worldfirst.xpresion.in/api/v1/Tracking/Tracking",
           postData
         );
         const events = response.data.Response.Events;
-        console.log(events);
-        const out_delivery = events.find(
-          (d) => d.Status == "Out For Delivery Today"
-        );
-        if (out_delivery) {
-          initialDataSet.forEach((item) => {
-            const updatedDateTime =
-              out_delivery.EventDate + " " + out_delivery.EventTime1;
-            if (item.status === "Out For Delivery Today") {
-              item.dateTime = updatedDateTime;
-              item.Location = out_delivery.Location;
-            }
-          });
-          setDataSet(initialDataSet);
-        }
-
-        const delivery = events.find((d) => d.Status == "DELIVERED");
-        if (delivery) {
-          initialDataSet.forEach((item) => {
-            const updatedDateTime =
-              delivery.EventDate + " " + delivery.EventTime1;
-            if (item.status === "DELIVERED") {
-              item.dateTime = updatedDateTime;
-              item.Location = delivery.Location;
-            }
-          });
-          setDataSet(initialDataSet);
-        }
-
-        const Departed = events.find(
-          (d) => d.Status == "Departed from Facility"
-        );
-        if (delivery) {
-          initialDataSet.forEach((item) => {
-            const updatedDateTime =
-              Departed.EventDate + " " + Departed.EventTime1;
-            if (item.status === "Departed from Facility") {
-              item.dateTime = updatedDateTime;
-              item.Location = Departed.Location;
-            }
-          });
-          setDataSet(initialDataSet);
-        }
-
-        // Get the latest relevant status from events
-        const latestEvent = events.find((event) =>
-          [
-            "Departed from Facility",
-            "Out For Delivery Today",
-            "DELIVERED",
-          ].includes(event.Status)
-        );
-        if (latestEvent) {
-          updateProgress(latestEvent.Status);
+        if (events) {
+          const newEvents = events.reverse().filter((d) => !addedStatuses.has(d.Status));
+        
+          if (newEvents.length > 0) {
+            const transformedData = newEvents.map((d) => {
+              // Replace "UPS" with "SHIPHIT" in the status message
+              const status = d.Status.replace(/UPS/gi, "SHIPHIT");
+              
+              return {
+                status: status,
+                dateTime: `${d.EventDate}, ${d.EventTime1}`,
+                Location: d.Location || "",
+                progress: true,
+              };
+            });
+        
+            setDataSet((prev) => [...prev, ...transformedData]);
+            setAddedStatuses((prev) => {
+              const updated = new Set(prev);
+              newEvents.forEach((e) => updated.add(e.Status));
+              return updated;
+            });
+          }
         }
       } catch (error) {
-        console.error("Error fetching tracking details:", error);
+        console.error("Error fetching tracking data:", error);
+      } finally {
+        setIsLoading(false);
       }
-      // }
     };
-
-    getTrackingDetails();
-  }, []); // Runs on mount only.
+    fetchTrackingData();
+  }, []);
 
   const updateProgress = (inputStatus) => {
     setDataSet((prevData) =>
@@ -161,7 +109,7 @@ function TrackingDetailsChild({ data }) {
       updateProgress(data.status);
     }
   }, [data.status]);
-  
+
   const lastProgressTrue = (() => {
     for (let i = dataSet.length - 1; i >= 0; i--) {
       if (dataSet[i].progress === true) {
@@ -170,50 +118,58 @@ function TrackingDetailsChild({ data }) {
     }
     return null; // Return null if no item with progress === true is found
   })();
-  
+
+  // Conditionally render loading screen or the actual data
+  if (isLoading) {
+    return (
+      <div className="w-full min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center justify-center">
+          <div className="w-12 h-12 border-4 border-t-4 border-gray-500 rounded-full animate-spin"></div>
+          <p className="mt-4 text-sm font-medium text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-fit h-full items-center ml-24  flex flex-col justify-center">
+    <div className="w-fit ml-24 flex flex-col justify-center bg-gray-50 p-6 rounded-lg shadow-md">
       <div>
         <div className="mb-3">
-          <p className="font-normal  text-sm">Your shipment</p>
-          <p className="font-semibold ">{data.awbNumber}</p>
+          <p className="font-normal text-sm text-gray-800">Your shipment</p>
+          <p className="font-semibold text-xl text-gray-900">
+            {data.awbNumber}
+          </p>
         </div>
         <div className="mb-4 flex gap-1 flex-col">
           <p className="text-[18px] font-medium text-green-600 flex gap-2">
             <img src="green-checkmark-icon.svg" className="w-4" alt="" />
             {lastProgressTrue?.status}
-          </p>
-          <p className="text-[18px] font-medium text-green-600 ">
-            {lastProgressTrue?.dateTime}
-            {lastProgressTrue?.Location}
+            <p className="text-[18px] font-medium text-gray-800">
+              {lastProgressTrue?.dateTime}
+            </p>
+            <p className="text-[18px] font-medium text-gray-600">
+              {lastProgressTrue?.Location}
+            </p>
           </p>
         </div>
       </div>
-      <div className="flex gap-8  min-h-screenpy-8">
+      <div className="flex gap-8 min-h-screen py-8">
         <div className="flex h-fit">
           <div className="relative">
             <div className="flex flex-col items-center relative">
               {dataSet.map((d, idx) => (
                 <div
                   key={idx}
-                  className={`flex flex-col items-center relative z-10 ${
-                    d.enable ? "" : imageHeight
-                  }`}
+                  className={`flex flex-col items-center relative z-10 ${d.enable ? "" : imageHeight}`}
                 >
                   <img
                     style={imageStyle}
-                    src={
-                      d.progress
-                        ? "green-checkmark-icon.svg"
-                        : "pending-clock-icon.svg"
-                    }
+                    src={d.progress ? "green-checkmark-icon.svg" : "pending-clock-icon.svg"}
                     alt="Status icon"
                   />
                   {idx < dataSet.length - 1 && (
                     <div
-                      className={`w-px h-full bg-${
-                        d.progress ? "green-500" : "gray-300"
-                      }`}
+                      className={`w-px h-full bg-${d.progress ? "green-500" : "gray-300"}`}
                     ></div>
                   )}
                 </div>
@@ -234,4 +190,5 @@ function TrackingDetailsChild({ data }) {
     </div>
   );
 }
+
 export default TrackingDetailsChild;

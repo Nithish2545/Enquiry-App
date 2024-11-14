@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "./firebase";
 import TrackingDetailsChild from "./TrackingDetailsChild";
+import Nav from "./Nav";
 
 function TrackingDetails() {
   const location = useLocation();
@@ -47,9 +48,14 @@ function TrackingDetails() {
   console.log(data[0])
 
   return (
-    <div className="h-[100vh] bg-gray-100 ">
+    <>
+    <Nav/>
+    
+    <div className=" flex justify-center">
         <TrackingDetailsChild data={data[0]}  awbNumber ={awbNumber}/>
     </div>
+    </>
+
   );
 }
 

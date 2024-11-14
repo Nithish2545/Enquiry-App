@@ -15,7 +15,7 @@ function Nav() {
   }, []);
 
   return (
-    <nav className="sticky flex items-center justify-around top-0 bg-purple-400 p-4 shadow-md z-10">
+    <nav className="sticky z-40 flex items-center justify-around top-0 bg-purple-400 p-4 shadow-md z-10">
       {/* Left Section */}
       <div className="flex items-center gap-4">
         <img src="/logo.png" className="h-10" alt="Logo" />
@@ -233,19 +233,36 @@ function Nav() {
               Cancel - Reschedule
             </Link>
           </li>
-          <li>
-            <Link
-              to="/Pickups"
-              className={`py-2 px-4 text-gray-700 rounded transition-colors block ${
-                location.pathname === "/Pickups"
-                  ? "text-purple-900 font-semibold"
-                  : "bg-transparent"
-              }`}
-              onClick={() => setSidebarOpen(false)}
-            >
-              Pickups
-            </Link>
-          </li>
+          {JSON.parse(localStorage.getItem("LoginCredentials")).email ==
+          "dinesh@gmail.com" ? (
+            <li>
+              <Link
+                to="/allpickups"
+                className={`py-2 px-4 text-gray-700 rounded transition-colors block ${
+                  location.pathname === "/allpickups"
+                    ? "text-purple-900 font-semibold"
+                    : "bg-transparent"
+                }`}
+                style={{ minHeight: "40px" }}
+              >
+                Pickups
+              </Link>
+            </li>
+          ) : (
+            <li>
+              <Link
+                to="/Pickups"
+                className={`py-2 px-4 text-gray-700 rounded transition-colors block ${
+                  location.pathname === "/Pickups"
+                    ? "text-purple-900 font-semibold"
+                    : "bg-transparent"
+                }`}
+                style={{ minHeight: "40px" }}
+              >
+                Pickups
+              </Link>
+            </li>
+          )}
           {/* {user.email == "dinesh@gmail.com" && ( */}
           <li>
             <Link
