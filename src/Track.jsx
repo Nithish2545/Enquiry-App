@@ -1,23 +1,65 @@
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { collection, query, where, getDocs } from "firebase/firestore"; 
+import { db } from "./firebase";
 
 function Track() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm();
+  
   const navigate = useNavigate();
 
-  const onSubmit = (data) => {
-    const awbNumber = data.awbNumber;
-    navigate("/TrackingDetails",{ state: { awbNumber } });
+  const onSubmit = async (data) => {
+    const awbNumber = parseInt(data.awbNumber, 10); // Ensure awbNumber is a number
+
+    let category = "";
+
+    if (awbNumber > 3000) {
+      category = "franchise_coimbatore";
+    } else if (awbNumber > 2000) {
+      category = "franchise_pondy";
+    } else if (awbNumber > 1000) {
+      category = "pickup";
+    } else {
+      setError("awbNumber", {
+        type: "manual",
+        message: "AWB Number is not valid",
+      });
+      return;
+    }
+
+    try {
+      const collectionRef = collection(db, category);
+      const q = query(collectionRef, where("awbNumber", "==", awbNumber),
+      // where("vendorName", "==", "UPS")
+    );
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        navigate("/TrackingDetails", { state: { awbNumber, category } });
+      } else {
+        setError("awbNumber", {
+          type: "manual",
+          message: "AWB number is not found",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching data from Firestore:", error);
+      setError("awbNumber", {
+        type: "manual",
+        message: "An error occurred while searching for the AWB number",
+      });
+    }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <form
-        onSubmit={handleSubmit(onSubmit)} // React Hook Form prevents refresh here
+        onSubmit={handleSubmit(onSubmit)}
         className="bg-white shadow-md rounded-lg p-8 max-w-sm w-full"
       >
         <div className="flex flex-col items-center">

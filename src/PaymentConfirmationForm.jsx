@@ -101,13 +101,28 @@ function PaymentConfirmationForm() {
     return true;
   };
 
-  async function getTodayDate() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, "0"); // Months are zero-indexed
-    const day = String(today.getDate()).padStart(2, "0");
-    return `${day}/${month}/${year}`; // Returns date in "YYYY-MM-DD" format
-  }
+  const getTodayDate = async () => {
+    const now = new Date();
+  
+    // Convert to IST (Indian Standard Time)
+    const istOffset = 5 * 60 + 30; // IST is UTC+5:30
+    const utcTime = now.getTime() + now.getTimezoneOffset() * 60000; // Get the UTC time
+    const istTime = new Date(utcTime + istOffset * 60000); // Adjust to IST time
+  
+    // Format the date
+    const day = String(istTime.getDate()).padStart(2, '0');
+    const month = String(istTime.getMonth() + 1).padStart(2, '0'); // Month is zero-indexed
+    const year = istTime.getFullYear();
+  
+    // Format the time in 12-hour format
+    let hours = istTime.getHours();
+    const minutes = String(istTime.getMinutes()).padStart(2, '0');
+    const seconds = String(istTime.getSeconds()).padStart(2, '0');
+    const period = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12; // Convert to 12-hour format, with 12 for midnight and noon
+  
+    return `${day}-${month}-${year} ${hours}:${minutes}:${seconds} ${period}`;
+  };
 
   const onSubmit = async (data) => {
     console.log(await getTodayDate());

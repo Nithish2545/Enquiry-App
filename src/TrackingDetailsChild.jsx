@@ -9,13 +9,13 @@ function TrackingDetailsChild({ data }) {
   const initialDataSet = [
     {
       status: "Run sheet",
-      dateTime: "01/11/2024, 9:06 A.M.",
+      dateTime: data.pickupDatetime,
       progress: false,
       Location: "Chennai",
     },
     {
       status: "INCOMING MANIFEST",
-      dateTime: "01/11/2024, 9:06 A.M.",
+      dateTime: data.pickupCompletedDatatime,
       Location: "Chennai",
       progress: false,
     },
@@ -27,13 +27,13 @@ function TrackingDetailsChild({ data }) {
     },
     {
       status: "PAYMENT DONE",
-      dateTime: "01/11/2024, 9:06 A.M.",
+      dateTime: data.PaymentComfirmedDate,
       Location: "Chennai",
       progress: false,
     },
     {
       status: "SHIPMENT CONNECTED",
-      dateTime: "01/11/2024, 9:06 A.M.",
+      dateTime: data.packageConnectedDataTime,
       Location: "Chennai",
       progress: false,
     },
@@ -41,7 +41,7 @@ function TrackingDetailsChild({ data }) {
 
   const postData = {
     UserID: import.meta.env.VITE_USER_ID,
-    AWBNo: "1ZGX05920432746110",
+    AWBNo: data.vendorAwbnumber,
     Password: import.meta.env.VITE_PASSWORD,
     Type: import.meta.env.VITE_TYPE,
   };
@@ -49,7 +49,8 @@ function TrackingDetailsChild({ data }) {
   const [dataSet, setDataSet] = useState(initialDataSet);
   const [addedStatuses, setAddedStatuses] = useState(new Set());
   const [isLoading, setIsLoading] = useState(false);
-  console.log(dataSet)
+  const [FoundText, showNotFoundText] = useState(false);
+  console.log(dataSet);
   useEffect(() => {
     const shipmentconnected = dataSet.find(
       (d) => d.status == "SHIPMENT CONNECTED"
@@ -93,6 +94,10 @@ function TrackingDetailsChild({ data }) {
         } finally {
           setIsLoading(false);
         }
+        return;
+      }
+      if (data.vendorName == "DHL") {
+        showNotFoundText(true);
       }
     };
     fetchTrackingData();
@@ -141,70 +146,81 @@ function TrackingDetailsChild({ data }) {
 
   return (
     <div className="w-fit h-fit  ml-24 flex flex-col justify-center bg-gray-50 p-6 rounded-lg shadow-md">
-      <div>
-        <div className="mb-3">
-          <p className="font-normal text-sm text-gray-800">Your shipment</p>
-          <p className="font-semibold text-xl text-gray-900">
-            {data.awbNumber}
-          </p>
-        </div>
-        <div className="mb-4 flex gap-1 flex-col">
-          <p className="text-[18px] font-medium text-green-600 flex gap-2">
-            <img src="green-checkmark-icon.svg" className="w-4" alt="" />
-            {lastProgressTrue?.status}
-            <p className="text-[18px] font-medium text-gray-800">
-              {lastProgressTrue?.dateTime}
+      <>
+        <div>
+          <div className="mb-3">
+            <p className="font-normal text-sm text-gray-800">Your shipment</p>
+            <p className="font-semibold text-xl text-gray-900">
+              {data.awbNumber}
             </p>
-            <p className="text-[18px] font-medium text-gray-600">
-              {lastProgressTrue?.Location}
+          </div>
+          <div className="mb-4 flex gap-1 flex-col">
+            <p className="text-[18px] font-medium text-green-600 flex gap-2">
+              <img src="green-checkmark-icon.svg" className="w-4" alt="" />
+              {lastProgressTrue?.status}
+              <p className="text-[18px] font-medium text-gray-800">
+                {lastProgressTrue?.dateTime}
+              </p>
+              <p className="text-[18px] font-medium text-gray-600">
+                {lastProgressTrue?.Location}
+              </p>
             </p>
-          </p>
-        </div>
-      </div>
-      <div className="flex gap-8 py-8">
-        <div className="flex h-fit">
-          <div className="relative">
-            <div className="flex flex-col items-center relative">
-              {dataSet.map((d, idx) => (
-                <div
-                  key={idx}
-                  className={`flex flex-col items-center relative z-10 ${
-                    d.enable ? "" : imageHeight
-                  }`}
-                >
-                  <img
-                    style={imageStyle}
-                    src={
-                      d.progress
-                        ? "green-checkmark-icon.svg"
-                        : "pending-clock-icon.svg"
-                    }
-                    alt="Status icon"
-                  />
-                  {idx < dataSet.length - 1 && (
-                    <div
-                      className={`w-px h-full bg-${
-                        d.progress ? "green-500" : "gray-300"
-                      }`}
-                    ></div>
-                  )}
-                </div>
-              ))}
-            </div>
           </div>
         </div>
-        <div className="relative grid grid-cols-1 h-fit">
-          {dataSet.map((d, idx) => (
-            <div key={idx} className={`flex flex-col z-10 ${imageHeight}`}>
-              <p className="text-sm font-semibold text-gray-800">{d.status}</p>
-              <p className="text-sm text-gray-600">{d.dateTime}</p>
-              <p className="text-sm text-gray-600">{d.Location}</p>
+        <div className="flex gap-8 py-8">
+          <div className="flex h-fit">
+            <div className="relative">
+              <div className="flex flex-col items-center relative">
+                {dataSet.map((d, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex flex-col items-center relative z-10 ${
+                      d.enable ? "" : imageHeight
+                    }`}
+                  >
+                    <img
+                      style={imageStyle}
+                      src={
+                        d.progress
+                          ? "green-checkmark-icon.svg"
+                          : "pending-clock-icon.svg"
+                      }
+                      alt="Status icon"
+                    />
+                    {idx < dataSet.length - 1 && (
+                      <div
+                        className={`w-px h-full bg-${
+                          d.progress ? "green-500" : "gray-300"
+                        }`}
+                      ></div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
+          </div>
+          <div className="relative grid grid-cols-1 h-fit">
+            {dataSet.map((d, idx) => (
+              <div key={idx} className={`flex flex-col z-10 ${imageHeight}`}>
+                <p className="text-sm font-semibold text-gray-800">
+                  {d.status == "Run sheet" ? "SHIPMENT SCHEDULED" : d.status}
+                </p>
+                <p className="text-sm text-gray-600">{d.dateTime}</p>
+                <p className="text-sm text-gray-600">{d.Location}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      </>
+      {/* {showNotFoundText ? (
+  <div className="bg-red-100 text-red-600 p-4 rounded-lg border border-red-300">
+    <p className="font-semibold text-lg">Tracking Not Found</p>
+    <p className="mt-2 text-sm">348346823746378</p>
+  </div>
+) : (
+  <div></div>
+)} */}
     </div>
   );
 }
-
 export default TrackingDetailsChild;

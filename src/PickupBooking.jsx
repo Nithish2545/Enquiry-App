@@ -191,7 +191,7 @@ function PickupBooking() {
 
         actualNoOfPackages: null,
         actualWeight: null,
-
+        PaymentComfirmedDate: "",
         status: "RUN SHEET",
 
         pickupBookedBy: username,
