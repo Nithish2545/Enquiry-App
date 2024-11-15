@@ -400,7 +400,7 @@ function PaymentConfirmationForm() {
             />
           </div>
           {/* consignee data */}
-          {!details.consigneename1 == "" ? (
+          {details.consigneename == "" ? (
             <>
               <div className="flex flex-col mb-2">
                 <label className="text-gray-700 font-medium mb-1">
@@ -424,7 +424,7 @@ function PaymentConfirmationForm() {
           ) : (
             ""
           )}
-          {!details.consigneephonenumber1 == "" ? (
+          {details.consigneephonenumber == "" ? (
             <>
               <div className="flex flex-col mb-2">
                 <label className="text-gray-700 font-medium mb-1">
@@ -452,7 +452,7 @@ function PaymentConfirmationForm() {
           ) : (
             ""
           )}
-          {!details.consigneelocation1 == "" ? (
+          {details.consigneelocation == "" ? (
             <>
               <div className="flex flex-col mb-2">
                 <label className="text-gray-700 font-medium mb-1">

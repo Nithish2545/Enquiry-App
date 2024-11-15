@@ -48,50 +48,58 @@ function TrackingDetailsChild({ data }) {
 
   const [dataSet, setDataSet] = useState(initialDataSet);
   const [addedStatuses, setAddedStatuses] = useState(new Set());
-  const [isLoading, setIsLoading] = useState(true);
-
+  const [isLoading, setIsLoading] = useState(false);
+  console.log(dataSet)
   useEffect(() => {
+    const shipmentconnected = dataSet.find(
+      (d) => d.status == "SHIPMENT CONNECTED"
+    );
     const fetchTrackingData = async () => {
-      try {
-        const response = await axios.post(
-          "http://worldfirst.xpresion.in/api/v1/Tracking/Tracking",
-          postData
-        );
-        const events = response.data.Response.Events;
-        if (events) {
-          const newEvents = events.reverse().filter((d) => !addedStatuses.has(d.Status));
-        
-          if (newEvents.length > 0) {
-            const transformedData = newEvents.map((d) => {
-              // Replace "UPS" with "SHIPHIT" in the status message
-              const status = d.Status.replace(/UPS/gi, "SHIPHIT");
-              
-              return {
-                status: status,
-                dateTime: `${d.EventDate}, ${d.EventTime1}`,
-                Location: d.Location || "",
-                progress: true,
-              };
-            });
-        
-            setDataSet((prev) => [...prev, ...transformedData]);
-            setAddedStatuses((prev) => {
-              const updated = new Set(prev);
-              newEvents.forEach((e) => updated.add(e.Status));
-              return updated;
-            });
+      if (shipmentconnected.progress && data.vendorName == "UPS") {
+        try {
+          const response = await axios.post(
+            "http://worldfirst.xpresion.in/api/v1/Tracking/Tracking",
+            postData
+          );
+          const events = response.data.Response.Events;
+          if (events) {
+            const newEvents = events
+              .reverse()
+              .filter((d) => !addedStatuses.has(d.Status));
+
+            if (newEvents.length > 0) {
+              const transformedData = newEvents.map((d) => {
+                // Replace "UPS" with "SHIPHIT" in the status message
+                const status = d.Status.replace(/UPS/gi, "SHIPHIT");
+
+                return {
+                  status: status,
+                  dateTime: `${d.EventDate}, ${d.EventTime1}`,
+                  Location: d.Location || "",
+                  progress: true,
+                };
+              });
+
+              setDataSet((prev) => [...prev, ...transformedData]);
+              setAddedStatuses((prev) => {
+                const updated = new Set(prev);
+                newEvents.forEach((e) => updated.add(e.Status));
+                return updated;
+              });
+            }
           }
+        } catch (error) {
+          console.error("Error fetching tracking data:", error);
+        } finally {
+          setIsLoading(false);
         }
-      } catch (error) {
-        console.error("Error fetching tracking data:", error);
-      } finally {
-        setIsLoading(false);
       }
     };
     fetchTrackingData();
-  }, []);
+  }, [dataSet]);
 
   const updateProgress = (inputStatus) => {
+    console.log("updateProgress!");
     setDataSet((prevData) =>
       prevData.map((item, index) => ({
         ...item,
@@ -132,7 +140,7 @@ function TrackingDetailsChild({ data }) {
   }
 
   return (
-    <div className="w-fit ml-24 flex flex-col justify-center bg-gray-50 p-6 rounded-lg shadow-md">
+    <div className="w-fit h-fit  ml-24 flex flex-col justify-center bg-gray-50 p-6 rounded-lg shadow-md">
       <div>
         <div className="mb-3">
           <p className="font-normal text-sm text-gray-800">Your shipment</p>
@@ -153,23 +161,31 @@ function TrackingDetailsChild({ data }) {
           </p>
         </div>
       </div>
-      <div className="flex gap-8 min-h-screen py-8">
+      <div className="flex gap-8 py-8">
         <div className="flex h-fit">
           <div className="relative">
             <div className="flex flex-col items-center relative">
               {dataSet.map((d, idx) => (
                 <div
                   key={idx}
-                  className={`flex flex-col items-center relative z-10 ${d.enable ? "" : imageHeight}`}
+                  className={`flex flex-col items-center relative z-10 ${
+                    d.enable ? "" : imageHeight
+                  }`}
                 >
                   <img
                     style={imageStyle}
-                    src={d.progress ? "green-checkmark-icon.svg" : "pending-clock-icon.svg"}
+                    src={
+                      d.progress
+                        ? "green-checkmark-icon.svg"
+                        : "pending-clock-icon.svg"
+                    }
                     alt="Status icon"
                   />
                   {idx < dataSet.length - 1 && (
                     <div
-                      className={`w-px h-full bg-${d.progress ? "green-500" : "gray-300"}`}
+                      className={`w-px h-full bg-${
+                        d.progress ? "green-500" : "gray-300"
+                      }`}
                     ></div>
                   )}
                 </div>

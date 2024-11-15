@@ -315,22 +315,50 @@ function Pickups() {
                   </p>
                   <p>
                     <span className="font-semibold text-purple-700">
-                      Consignor Name:
-                    </span>{" "}
-                    {selectedPickup.consignorname || "NA"}
-                  </p>
-                  <p>
-                    <span className="font-semibold text-purple-700">
-                      Consignor Phone:
-                    </span>{" "}
-                    {selectedPickup.consignorphonenumber || "NA"}
-                  </p>
-                  <p>
-                    <span className="font-semibold text-purple-700">
                       Destination:
                     </span>{" "}
                     {selectedPickup.destination || "NA"}
                   </p>
+                  <div className="flex flex-col gap-4">
+                    <p>
+                      <span className="font-semibold text-purple-700">
+                        Consignor Name:
+                      </span>{" "}
+                      {selectedPickup.consignorname || "NA"}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-purple-700">
+                        Consignor Phone:
+                      </span>{" "}
+                      {selectedPickup.consignorphonenumber || "NA"}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-purple-700">
+                        Consignor Phone:
+                      </span>{" "}
+                      {selectedPickup.consignorlocation || "NA"}
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-4">
+                    <p>
+                      <span className="font-semibold text-purple-700">
+                        Consignee Name:
+                      </span>{" "}
+                      {selectedPickup.consigneename || "NA"}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-purple-700">
+                        Consignee Phone:
+                      </span>{" "}
+                      {selectedPickup.consigneephonenumber || "NA"}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-purple-700">
+                        Consignee Phone:
+                      </span>{" "}
+                      {selectedPickup.consigneelocation || "NA"}
+                    </p>
+                  </div>
                   <p>
                     <span className="font-semibold text-purple-700">
                       Weight (Apx):

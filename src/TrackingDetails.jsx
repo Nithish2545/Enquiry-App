@@ -45,17 +45,15 @@ function TrackingDetails() {
     return <div>Loading...</div>;
   }
 
-  console.log(data[0])
+  console.log(data[0]);
 
   return (
     <>
-    <Nav/>
-    
-    <div className=" flex justify-center">
-        <TrackingDetailsChild data={data[0]}  awbNumber ={awbNumber}/>
-    </div>
+      <Nav />
+      <div className=" flex justify-center">
+        <TrackingDetailsChild data={data[0]} awbNumber={awbNumber} />
+      </div>
     </>
-
   );
 }
 
