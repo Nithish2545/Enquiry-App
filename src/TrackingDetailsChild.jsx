@@ -1,6 +1,5 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
-import Nav from "./Nav";
 
 function TrackingDetailsChild({ data }) {
   const imageStyle = { width: 18 };
@@ -59,7 +58,7 @@ function TrackingDetailsChild({ data }) {
       if (shipmentconnected.progress && data.vendorName == "UPS") {
         try {
           const response = await axios.post(
-            "http://worldfirst.xpresion.in/api/v1/Tracking/Tracking",
+            "https://awb-tracking-api.onrender.com/api/track",
             postData
           );
           const events = response.data.Response.Events;

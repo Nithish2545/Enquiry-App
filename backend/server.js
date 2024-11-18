@@ -1,6 +1,7 @@
 // server.js
-const express = require('express');
-const axios = require('axios');
+import express from "express"
+import axios from "axios"
+
 const app = express();
 const port = 3000;
 
