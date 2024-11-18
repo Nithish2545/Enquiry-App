@@ -214,7 +214,7 @@ function PickupBooking() {
         data: {
           messages: [
             {
-              content: { language: "en", templateName: "shipmentbooked" },
+              content: { language: "en", templateName: "shipmentbooked_final1" },
               from: "+919087786986",
               to: `+91${data.Consignornumber}`,
             },
