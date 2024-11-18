@@ -2,6 +2,7 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 
 function TrackingDetailsChild({ data }) {
+
   const imageStyle = { width: 18 };
   const imageHeight = "h-20";
 
@@ -154,9 +155,21 @@ function TrackingDetailsChild({ data }) {
             </p>
           </div>
           <div className="mb-4 flex gap-1 flex-col">
-            <p className="text-[18px] font-medium text-green-600 flex gap-2">
-              <img src="green-checkmark-icon.svg" className="w-4" alt="" />
-              {lastProgressTrue?.status}
+            <p className="flex flex-col">
+              <p
+                className={`text-[18px] font-medium flex gap-2 ${
+                  lastProgressTrue?.status == "DELIVERED"
+                    ? "text-green-600"
+                    : "text-[#FF7900]"
+                }`}
+              >
+                {lastProgressTrue?.status == "DELIVERED" ? (
+                  <img src="green-checkmark-icon.svg" className="w-4" alt="" />
+                ) : (
+                  <img src="pending-clock-icon.svg" className="w-4" alt="" />
+                )}
+                {lastProgressTrue?.status}
+              </p>
               <p className="text-[18px] font-medium text-gray-800">
                 {lastProgressTrue?.dateTime}
               </p>
