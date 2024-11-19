@@ -578,6 +578,7 @@ function PaymentConfirmationForm() {
               accept="image/*"
               onChange={handleFileChange}
               className="p-2 border rounded"
+              required
             />
           </div>
           {errors.Paymentproof && (
@@ -596,6 +597,7 @@ function PaymentConfirmationForm() {
                   accept="application/pdf"
                   onChange={handleKYCFileChange}
                   className="p-2 border rounded"
+                  required
                 />
               </div>
               {errors.KYCimage && (

@@ -312,24 +312,46 @@ function Pickups() {
                       {selectedPickup.consigneelocation || "NA"}
                     </p>
                   </div>
-                  <p>
-                    <span className="font-semibold text-purple-700">
-                      Weight (Apx):
-                    </span>{" "}
-                    {selectedPickup.weightapx || "NA"}
-                  </p>
-                  <p>
-                    <span className="font-semibold text-purple-700">
-                      Vendor:
-                    </span>{" "}
-                    {selectedPickup.vendorName || "NA"}
-                  </p>
-                  <p>
-                    <span className="font-semibold text-purple-700">
-                      Pickup Area:
-                    </span>{" "}
-                    {selectedPickup.pickuparea || "NA"}
-                  </p>
+                  <div className="flex flex-col gap-4">
+                    <p>
+                      <span className="font-semibold text-purple-700">
+                        Weight (Apx):
+                      </span>{" "}
+                      {selectedPickup.weightapx || "NA"}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-purple-700">
+                        Post Pickup Weight:
+                      </span>{" "}
+                      {selectedPickup.postPickupWeight || "NA"}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-purple-700">
+                        Final Weight:
+                      </span>{" "}
+                      {selectedPickup.actualWeight + " " + "KG" || "NA"}
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-4">
+                    <p>
+                      <span className="font-semibold text-purple-700">
+                        Service:
+                      </span>{" "}
+                      {selectedPickup.service || "NA"}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-purple-700">
+                        Vendor:
+                      </span>{" "}
+                      {selectedPickup.vendorName || "NA"}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-purple-700">
+                        Pickup Area:
+                      </span>{" "}
+                      {selectedPickup.pickuparea || "NA"}
+                    </p>
+                  </div>
                   <p>
                     <span className="font-semibold text-purple-700">
                       Status:
@@ -385,32 +407,28 @@ function Pickups() {
                 </div>
               </div>
               <div className="mt-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                  KYC Images
+                </h3>
                 {selectedPickup.KycImage ? (
-                  <div className="grid grid-cols-1 gap-4">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                      KYC Images
-                    </h3>
+                  <div className="grid grid-cols-1 gap-4 bg-white p-4 rounded-lg shadow-md">
                     <a
                       href={selectedPickup.KycImage}
                       target="_blank"
-                      className="w-fit"
+                      rel="noopener noreferrer"
+                      className="inline-block"
                     >
-                      <img
-                        src={selectedPickup.KycImage}
-                        className="w-48 rounded-2xl object-scale-down h-48"
-                      />
+                      <button className="px-4 py-2 text-white bg-purple-600 rounded hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+                        View KYC Image
+                      </button>
                     </a>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 gap-4">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                      KYC Images
-                    </h3>
-                    <p>No Image</p>
+                  <div className="grid grid-cols-1 gap-4 bg-gray-50 p-4 rounded-lg shadow-md">
+                    <p className="text-gray-600">No Image Available</p>
                   </div>
                 )}
               </div>
-
               {selectedPickup.PRODUCTSIMAGE?.length > 0 ? (
                 <div className="mt-6">
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">
@@ -600,11 +618,11 @@ function Pickups() {
                 )}
               </div>
               <div className="mt-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                  Pickup Person Image{" "}
-                </h3>
                 {selectedPickup.PickupPersonImageURL ? (
                   <div className="grid grid-cols-1 gap-4">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                      Pickup Person Image{" "}
+                    </h3>
                     <a
                       href={selectedPickup.PickupPersonImageURL}
                       target="_blank"
