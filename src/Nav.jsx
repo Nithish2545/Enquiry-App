@@ -127,19 +127,6 @@ function Nav() {
               </Link>
             </li>
           )}
-          <li>
-            <Link
-              to="/Track"
-              className={`text-white rounded transition-colors ${
-                location.pathname === "/Track"
-                  ? "text-purple-900 font-semibold"
-                  : "bg-transparent"
-              }`}
-              style={{ minHeight: "40px" }}
-            >
-              Track
-            </Link>
-          </li>
         </ul>
       </div>
       {/* Right Section */}
@@ -275,19 +262,6 @@ function Nav() {
               style={{ minHeight: "40px" }}
             >
               Logistics Dashboard
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/Track"
-              className={`py-2 px-4 text-gray-700 rounded transition-colors block ${
-                location.pathname === "/Track"
-                  ? "text-purple-900 font-semibold"
-                  : "bg-transparent"
-              }`}
-              style={{ minHeight: "40px" }}
-            >
-              Track
             </Link>
           </li>
           {/* )} */}

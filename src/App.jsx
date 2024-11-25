@@ -11,8 +11,6 @@ import Pickups from './Pickups';
 import LogisticsDashboard from './LogisticsDashboard';
 import { collection, getDocs, query } from 'firebase/firestore';
 import AllPickups from "./AllPickups"
-import Track from './Track';
-import TrackingDetails from './TrackingDetails';
 function App() {
 
   const [user, setUser] = useState(null);
@@ -67,8 +65,6 @@ function App() {
           <Route path="/Sale-rates" element={user ? <RateCardForm /> : <Navigate to="/signin" />} />
           <Route path="/Payment-confirm" element={user ? <PaymentConfirm /> : <Navigate to="/signin" />} />
           <Route path="/logisticsDashboard" element={user ? <LogisticsDashboard /> : <Navigate to="/signin" />} />
-          <Route path="/Track" element={user ? <Track /> : <Navigate to="/Track" />} />
-          <Route path="/TrackingDetails" element={user ? <TrackingDetails /> : <Navigate to="/Track" />} />
           <Route path="/Payment-confirmation-form/:awbnumber" element={user ? <PaymentConfirmationForm /> : <Navigate to="/signin" />} />
           {/* Sign In route, only accessible if no user is logged in */}
           <Route path="/signin" element={!user ? <SignIn /> : <Navigate to="/PickupBooking" />} />
