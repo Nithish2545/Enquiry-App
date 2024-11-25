@@ -214,14 +214,21 @@ function PickupBooking() {
         data: {
           messages: [
             {
-              content: { language: "en", templateName: "shipmentbooked_final1" },
               from: "+919087786986",
               to: `+91${data.Consignornumber}`,
+              content: {
+                language: "en_US",
+                templateName: "shipmentbooked_dync_final",
+                templateData: {
+                  body: {
+                    placeholders: [data.Consignorname],
+                  },
+                },
+              },
             },
           ],
         },
       };
-
       const response = await axios.post(
         "https://public.doubletick.io/whatsapp/message/template",
         options.data,
@@ -229,9 +236,7 @@ function PickupBooking() {
           headers: options.headers,
         }
       );
-
       console.log("WhatsApp message sent: ", response.data);
-
       setShowModal(true);
       setFiles([]);
       reset();
