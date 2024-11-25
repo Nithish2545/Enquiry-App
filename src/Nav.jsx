@@ -15,7 +15,7 @@ function Nav() {
   }, []);
 
   return (
-    <nav className="sticky flex items-center justify-around top-0 bg-purple-400 p-4 shadow-md z-10">
+    <nav className="sticky z-40 flex items-center justify-around top-0 bg-purple-400 p-4 shadow-md z-10">
       {/* Left Section */}
       <div className="flex items-center gap-4">
         <img src="/logo.png" className="h-10" alt="Logo" />
@@ -127,6 +127,19 @@ function Nav() {
               </Link>
             </li>
           )}
+          <li>
+            <Link
+              to="/Track"
+              className={`text-white rounded transition-colors ${
+                location.pathname === "/Track"
+                  ? "text-purple-900 font-semibold"
+                  : "bg-transparent"
+              }`}
+              style={{ minHeight: "40px" }}
+            >
+              Track
+            </Link>
+          </li>
         </ul>
       </div>
       {/* Right Section */}
@@ -146,7 +159,7 @@ function Nav() {
         </div>
         <div
           onClick={() => {
-            localStorage.removeItem("enquiryAuthToken");
+            localStorage.removeItem("LoginCredentials");
             auth.signOut();
           }}
           className="bg-white text-purple-700 font-semibold p-1 pl-4 pr-5 cursor-pointer rounded-sm"
@@ -154,7 +167,6 @@ function Nav() {
           Logout
         </div>
       </div>
-
       {/* Sidebar for mobile screens */}
       <div
         className={`fixed top-0 left-0 h-full w-64 bg-white z-20 transform ${
@@ -221,19 +233,36 @@ function Nav() {
               Cancel - Reschedule
             </Link>
           </li>
-          <li>
-            <Link
-              to="/Pickups"
-              className={`py-2 px-4 text-gray-700 rounded transition-colors block ${
-                location.pathname === "/Pickups"
-                  ? "text-purple-900 font-semibold"
-                  : "bg-transparent"
-              }`}
-              onClick={() => setSidebarOpen(false)}
-            >
-              Pickups
-            </Link>
-          </li>
+          {JSON.parse(localStorage.getItem("LoginCredentials")).email ==
+          "dinesh@gmail.com" ? (
+            <li>
+              <Link
+                to="/allpickups"
+                className={`py-2 px-4 text-gray-700 rounded transition-colors block ${
+                  location.pathname === "/allpickups"
+                    ? "text-purple-900 font-semibold"
+                    : "bg-transparent"
+                }`}
+                style={{ minHeight: "40px" }}
+              >
+                Pickups
+              </Link>
+            </li>
+          ) : (
+            <li>
+              <Link
+                to="/Pickups"
+                className={`py-2 px-4 text-gray-700 rounded transition-colors block ${
+                  location.pathname === "/Pickups"
+                    ? "text-purple-900 font-semibold"
+                    : "bg-transparent"
+                }`}
+                style={{ minHeight: "40px" }}
+              >
+                Pickups
+              </Link>
+            </li>
+          )}
           {/* {user.email == "dinesh@gmail.com" && ( */}
           <li>
             <Link
@@ -248,10 +277,22 @@ function Nav() {
               Logistics Dashboard
             </Link>
           </li>
+          <li>
+            <Link
+              to="/Track"
+              className={`py-2 px-4 text-gray-700 rounded transition-colors block ${
+                location.pathname === "/Track"
+                  ? "text-purple-900 font-semibold"
+                  : "bg-transparent"
+              }`}
+              style={{ minHeight: "40px" }}
+            >
+              Track
+            </Link>
+          </li>
           {/* )} */}
         </ul>
       </div>
-
       {/* Overlay when sidebar is open */}
       {sidebarOpen && (
         <div
