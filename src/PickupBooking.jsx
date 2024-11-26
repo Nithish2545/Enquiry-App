@@ -218,7 +218,7 @@ function PickupBooking() {
               to: `+91${data.Consignornumber}`,
               content: {
                 language: "en_US",
-                templateName: "shipmentbooked_dync_final",
+                templateName: "shipmentbooked_dynamic",
                 templateData: {
                   body: {
                     placeholders: [data.Consignorname],
