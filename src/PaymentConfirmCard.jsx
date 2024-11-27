@@ -254,6 +254,8 @@ function PaymentConfirmCard({ item, index }) {
     doc.save(`Receipt_${item.consignorname}.pdf`);
   }
 
+  const allowedStatuses = ["PAYMENT DONE", "SHIPMENT CONNECTED"];
+  
   return (
     <div
       key={index}
@@ -326,7 +328,7 @@ function PaymentConfirmCard({ item, index }) {
           </p>
           <p
             className={`rounded-full py-1 px-3 text-sm font-semibold text-center ${
-              item.status == "PAYMENT DONE" ? "bg-green-500" : "bg-red-500"
+              allowedStatuses.includes(item.status) ? "bg-green-500" : "bg-red-500"
             } text-white`}
           >
             {item.status}
@@ -345,7 +347,7 @@ function PaymentConfirmCard({ item, index }) {
       ) : (
         ""
       )}
-      {item.status == "PAYMENT DONE" ? (
+      {allowedStatuses.includes(item.status) ? (
         <div className="flex gap-10">
           <button
             onClick={() => generate_Invoice_PDF()}
