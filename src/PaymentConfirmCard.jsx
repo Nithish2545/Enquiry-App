@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
 import JsBarcode from "jsbarcode";
 import "jspdf-autotable";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { storage } from "./firebase";
 
 function PaymentConfirmCard({ item, index }) {
   const navigate = useNavigate();
@@ -108,7 +110,7 @@ function PaymentConfirmCard({ item, index }) {
     doc.save(`AWB NUMBER_${item.consignorname}_${item.destination}.pdf`);
   }
 
-  function generate_Invoice_PDF() {
+  async function generate_Invoice_PDF() {
     const doc = new jsPDF("p", "pt");
     const subtotal = item.costKg * item.actualWeight;
     const nettotal = subtotal - item.discountCost;
@@ -249,6 +251,25 @@ function PaymentConfirmCard({ item, index }) {
       40,
       doc.internal.pageSize.height - 30
     );
+
+    // // Save the PDF as a Blob
+    // const pdfBlob = doc.output("blob");
+
+    // // Reference to Firebase Storage
+    // const storagePath = `${item.awbNumber}/receipt/Receipt_${item.consignorname}.pdf`;
+    // const storageRef = ref(storage, storagePath);
+
+    // try {
+    //   // Upload the PDF Blob to Firebase Storage
+    //   await uploadBytes(storageRef, pdfBlob);
+    //   // Get the download URL
+    //   const downloadURL = await getDownloadURL(storageRef);
+    //   // Log the download URL
+    //   console.log("PDF stored successfully! Download URL:", downloadURL);
+    //   console.log(":", downloadURL);
+    // } catch (error) {
+    //   console.error("Error uploading PDF:", error);
+    // }
 
     // Save the PDF
     doc.save(`Receipt_${item.consignorname}.pdf`);
