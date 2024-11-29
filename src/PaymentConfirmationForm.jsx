@@ -14,7 +14,6 @@ import {
 import collectionName_BaseAwb from "./functions/collectionName";
 import axios from "axios";
 import jsPDF from "jspdf";
-import { CleanHands } from "@mui/icons-material";
 function PaymentConfirmationForm() {
   const { awbnumber } = useParams();
   const [details, setDetails] = useState(null);
@@ -32,9 +31,6 @@ function PaymentConfirmationForm() {
     formState: { errors },
   } = useForm();
   const navigate = useNavigate();
-  const baseUrl = "https://firebasestorage.googleapis.com/v0/b/shiphitmobileapppickup-4d0a1.appspot.com/o/";
-  const truncatedResult = fullUrl.replace(baseUrl, "");
-  
   useEffect(() => {
     const fetchDetails = async () => {
       try {
@@ -288,21 +284,25 @@ function PaymentConfirmationForm() {
     } catch (error) {
       console.error("Error uploading PDF:", error);
     }
-
-    // Save the PDF
-    doc.save(`Receipt_${details.consignorname}.pdf`);
+  }
+  function getTruncatedURL(fullUrl) {
+    const baseUrl =
+      "https://firebasestorage.googleapis.com/v0/b/shiphitmobileapppickup-4d0a1.appspot.com/o/";
+    const truncatedResult = fullUrl.replace(baseUrl, "");
+    return truncatedResult;
   }
 
   const onSubmit = async (data) => {
-    // console.log(await generate_Invoice_PDF(data.costKg, data.discountCost));
     if (!validateForm()) return;
     setSubmitLoading(true);
-
     try {
       if (!details) {
         throw new Error("User details not found");
       }
-
+      const Payment_URL = await generate_Invoice_PDF(
+        data.costKg,
+        data.discountCost
+      );
       const q = query(
         collection(
           db,
@@ -312,14 +312,11 @@ function PaymentConfirmationForm() {
         ),
         where("awbNumber", "==", parseInt(awbnumber))
       );
-
       const querySnapshot = await getDocs(q);
       let final_result = [];
-
       querySnapshot.forEach((doc) => {
         final_result.push({ id: doc.id, ...doc.data() });
       });
-
       const docRef = doc(
         db,
         collectionName_BaseAwb.getCollection(
@@ -327,7 +324,6 @@ function PaymentConfirmationForm() {
         ),
         final_result[0].id
       ); // db is your Firestore instance
-      console.log(data.consigneename1);
       const updatedFields = {
         status: "PAYMENT DONE",
         logisticCost: data.logisticsCost,
@@ -345,14 +341,9 @@ function PaymentConfirmationForm() {
           ? details.consigneelocation
           : data.consigneelocation1,
         costKg: data.costKg,
-        payment_Receipt_URL: await generate_Invoice_PDF(
-          data.costKg,
-          data.discountCost
-        ),
+        payment_Receipt_URL: Payment_URL,
       };
-
       updateDoc(docRef, updatedFields);
-
       const options = {
         method: "POST",
         url: "https://public.doubletick.io/whatsapp/message/template",
@@ -371,8 +362,7 @@ function PaymentConfirmationForm() {
                   buttons: [
                     {
                       type: "URL",
-                      parameter:
-                        "1058%2FPACKAGE%20WEIGHT%2F1000007098.jpg?alt=media&token=26fc7a5c-7c6d-49b0-9999-39a6fbc8f92e",
+                      parameter: getTruncatedURL(Payment_URL),
                     },
                     { type: "URL", parameter: "1108" },
                   ],
@@ -385,7 +375,6 @@ function PaymentConfirmationForm() {
           ],
         },
       };
-
       const response = await axios.post(
         "https://public.doubletick.io/whatsapp/message/template",
         options.data,
@@ -393,9 +382,7 @@ function PaymentConfirmationForm() {
           headers: options.headers,
         }
       );
-
       console.log("WhatsApp message sent: ", response.data);
-
       setShowPopup(true);
     } catch (error) {
       handleError(error);
