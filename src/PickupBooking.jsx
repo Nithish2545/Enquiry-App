@@ -22,7 +22,7 @@ function PickupBooking() {
   const [service, setservice] = useState("");
   const [latitudelongitude, setlatitudelongitude] = useState("");
   const [error, seterror] = useState("");
-
+  const [source, setsource] = useState("");
   function splitLati_Logi(value) {
     const [lat, long] = value.split(",").map(Number);
     // Format the latitude and longitude to match the output precision
@@ -76,7 +76,6 @@ function PickupBooking() {
       "Germany",
       "France",
     ];
-    console.log();
     // Sort countries alphabetically
     const sortedCountries = countryData.sort((a, b) =>
       a.name.localeCompare(b.name)
@@ -110,7 +109,6 @@ function PickupBooking() {
     try {
       console.log(latitudelongitude);
       if (latitudelongitude == "") {
-        console.log("okk");
         seterror("Latitude & Longitude  Is Required!");
         return;
       }
@@ -202,6 +200,7 @@ function PickupBooking() {
         packageConnectedDataTime: null,
         logisticCost: null,
         KycImage: uploadedImageURLs.length == 0 ? "" : uploadedImageURLs[0],
+        Source: source,
       });
 
       const options = {
@@ -541,7 +540,6 @@ function PickupBooking() {
                 </p>
               )}
             </div>
-
             <div className="mb-6">
               <label className="block text-gray-700 font-semibold mb-2">
                 Content (Products):
@@ -562,7 +560,6 @@ function PickupBooking() {
                 </p>
               )}
             </div>
-
             <div className="mb-4">
               <label className="block text-gray-700 font-semibold mb-2">
                 Vendor:
@@ -709,7 +706,7 @@ function PickupBooking() {
               <select
                 className="w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:border-[#8847D9]"
                 {...register("service", {
-                  required: "service is required",
+                  required: "Service is required",
                 })}
                 onChange={(e) => {
                   setservice(e.target.value);
@@ -723,6 +720,28 @@ function PickupBooking() {
               {errors.service && (
                 <p className="text-red-500 text-sm mt-1">
                   {errors.service.message}
+                </p>
+              )}
+            </div>
+            <div>
+              <p className="text-gray-700 font-semibold mb-2">Source</p>
+              <select
+                className="w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:border-[#8847D9]"
+                {...register("source", {
+                  required: "Source is required",
+                })}
+                onChange={(e) => {
+                  setsource(e.target.value);
+                }}
+              >
+                <option value="">Select</option>
+                <option value="new customer">new customer</option>
+                <option value="Dinesh Reference">Dinesh Reference</option>
+                <option value="test">test</option>
+              </select>
+              {errors.service && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.source.message}
                 </p>
               )}
             </div>

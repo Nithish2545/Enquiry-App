@@ -13,7 +13,7 @@ import {
 } from "firebase/firestore";
 import collectionName_BaseAwb from "./functions/collectionName";
 import axios from "axios";
-
+import jsPDF from "jspdf";
 function PaymentConfirmationForm() {
   const { awbnumber } = useParams();
   const [details, setDetails] = useState(null);
@@ -31,7 +31,6 @@ function PaymentConfirmationForm() {
     formState: { errors },
   } = useForm();
   const navigate = useNavigate();
-
   useEffect(() => {
     const fetchDetails = async () => {
       try {
@@ -125,15 +124,186 @@ function PaymentConfirmationForm() {
     return `${day}-${month}-${year} ${hours}:${minutes}:${seconds} ${period}`;
   };
 
+  async function generate_Invoice_PDF(costKg, discountCost) {
+    const doc = new jsPDF("p", "pt");
+    const subtotal = parseInt(costKg) * details.actualWeight;
+    const nettotal = subtotal - parseInt(discountCost);
+
+    // Add business name and logo
+    doc.setFontSize(20);
+    doc.addImage("/shiphtlogo.png", "PNG", 40, 30, 180, 60); // Replace with your logo
+
+    const maxWidth = 210; // Set the maximum width (in points) for the text
+
+    // Bill from and bill to section
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Receipt from:", 40, 140);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text("Shiphit", 40, 160);
+
+    const address = `No. 74, Tiny Sector Industrial Estate, Ekkatuthangal, Chennai - 600032. Tamilnadu, India.`;
+    const phoneNumber = `\n9159 688 688`; // Add a newline before the phone number
+
+    const fullText = address + phoneNumber; // Combine address and phone number
+    const splitText1 = doc.splitTextToSize(fullText, maxWidth);
+    doc.text(splitText1, 40, 180);
+
+    // Bill To
+    doc.setFont("helvetica", "bold");
+    doc.text("Receipt to:", 350, 140);
+    doc.setFontSize(12);
+
+    doc.setFont("helvetica", "normal");
+    doc.text(details.consignorname, 350, 160);
+
+    const consignorLocation = details.consignorlocation.toLowerCase();
+    const fullText1 = consignorLocation + "\n" + details.consigneephonenumber;
+    const splitText = doc.splitTextToSize(fullText1, maxWidth);
+    doc.text(splitText, 350, 180);
+
+    // Align invoice details at the top-right corner
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const rightMargin = pageWidth - 40; // Right margin of 40 units
+
+    doc.setFont("helvetica", "normal");
+    doc.text(`Receipt Number: RCPT-${details.awbNumber}`, rightMargin, 40, {
+      align: "right",
+    });
+    doc.text(`Date: ${await getTodayDate()}`, rightMargin, 61, {
+      align: "right",
+    });
+    doc.setFont("helvetica", "bold");
+    doc.text(`Total: ${nettotal}.00 Rs`, rightMargin, 80, { align: "right" });
+
+    // Draw a line for separation
+    doc.line(40, 250, 570, 250);
+
+    // Invoice Table
+    doc.autoTable({
+      startY: 270,
+      head: [["Country Name", "Mode", "Weight (KG):", "Cost/KG", "Total"]],
+      body: [
+        [
+          details.destination,
+          details.service + " " + "Service",
+          details.actualWeight + " KG",
+          `${costKg} Rs`,
+          `${subtotal}.00 Rs`,
+        ],
+      ],
+      theme: "grid",
+      headStyles: {
+        fillColor: [147, 51, 234], // Purple background color (RGB)
+        textColor: [255, 255, 255], // White text
+        fontSize: 12,
+      },
+      bodyStyles: {
+        fontSize: 12,
+      },
+      margin: { top: 20 },
+    });
+
+    // Terms and Conditions
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Terms & Conditions:", 40, doc.lastAutoTable.finalY + 30);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    const terms = `* This invoice is only valid for ${details.actualWeight} Kg.
+* Shipments exceeding ${details.actualWeight} KG will attract additional costs.
+* All shipments sent are subject to customs clearance only.
+* Customs duty applicable (if any).`;
+    const splitTerms = doc.splitTextToSize(terms, maxWidth + 300);
+    doc.text(splitTerms, 40, doc.lastAutoTable.finalY + 50);
+
+    // Subtotal, Discount, and Total
+    if (discountCost > 1) {
+      // Set Subtotal text to bold
+      doc.text(
+        `Subtotal: ${subtotal}.00 Rs`,
+        400,
+        doc.lastAutoTable.finalY + 120
+      );
+
+      // Set Discount text to normal
+      doc.setFont("helvetica", "normal");
+      doc.text(
+        `Discount: ${discountCost}.00 Rs`,
+        400,
+        doc.lastAutoTable.finalY + 139
+      );
+
+      // Set Total text to bold
+      doc.text(`Total: ${nettotal}.00 Rs`, 400, doc.lastAutoTable.finalY + 159);
+
+      // Set back to normal after this section if needed
+      doc.setFont("helvetica", "normal");
+    } else {
+      doc.text(
+        `Subtotal: ${subtotal}.00 Rs`,
+        400,
+        doc.lastAutoTable.finalY + 120
+      );
+      doc.text(
+        `Net Total: ${nettotal}.00 Rs`,
+        400,
+        doc.lastAutoTable.finalY + 139
+      );
+    }
+
+    // Footer
+    doc.setFontSize(10);
+    doc.text(
+      "Thank you for your business!",
+      40,
+      doc.internal.pageSize.height - 40
+    );
+    doc.text(
+      "Company Contact Info: info@shiphit.in | +91 - 9159 688 688",
+      40,
+      doc.internal.pageSize.height - 30
+    );
+
+    // Save the PDF as a Blob
+    const pdfBlob = doc.output("blob");
+
+    // Reference to Firebase Storage
+    const storagePath = `${details.awbNumber}receipt/Receipt_${details.consignorname}.pdf`;
+    const storageRef = ref(storage, storagePath);
+
+    try {
+      // Upload the PDF Blob to Firebase Storage
+      await uploadBytes(storageRef, pdfBlob);
+      // Get the download URL
+      const downloadURL = await getDownloadURL(storageRef);
+      // Log the download URL
+      console.log("PDF stored successfully! Download URL:", downloadURL);
+      return downloadURL;
+    } catch (error) {
+      console.error("Error uploading PDF:", error);
+    }
+  }
+  function getTruncatedURL(fullUrl) {
+    const baseUrl =
+      "https://firebasestorage.googleapis.com/v0/b/shiphitmobileapppickup-4d0a1.appspot.com/o/";
+    const truncatedResult = fullUrl.replace(baseUrl, "");
+    clg;
+    return truncatedResult;
+  }
+
   const onSubmit = async (data) => {
-    console.log(await getTodayDate());
     if (!validateForm()) return;
     setSubmitLoading(true);
-
     try {
       if (!details) {
         throw new Error("User details not found");
       }
+      const Payment_URL = await generate_Invoice_PDF(
+        data.costKg,
+        data.discountCost
+      );
       const q = query(
         collection(
           db,
@@ -143,14 +313,11 @@ function PaymentConfirmationForm() {
         ),
         where("awbNumber", "==", parseInt(awbnumber))
       );
-
       const querySnapshot = await getDocs(q);
       let final_result = [];
-
       querySnapshot.forEach((doc) => {
         final_result.push({ id: doc.id, ...doc.data() });
       });
-
       const docRef = doc(
         db,
         collectionName_BaseAwb.getCollection(
@@ -158,7 +325,6 @@ function PaymentConfirmationForm() {
         ),
         final_result[0].id
       ); // db is your Firestore instance
-      console.log(data.consigneename1);
       const updatedFields = {
         status: "PAYMENT DONE",
         logisticCost: data.logisticsCost,
@@ -176,50 +342,50 @@ function PaymentConfirmationForm() {
           ? details.consigneelocation
           : data.consigneelocation1,
         costKg: data.costKg,
+        payment_Receipt_URL: Payment_URL,
       };
-
       updateDoc(docRef, updatedFields);
-
       const options = {
         method: "POST",
+        url: "https://public.doubletick.io/whatsapp/message/template",
         headers: {
           accept: "application/json",
           "content-type": "application/json",
-          Authorization: "key_z6hIuLo8GC", // Add your authorization token here
+          Authorization: "key_z6hIuLo8GC",
         },
         data: {
           messages: [
             {
-              from: "+919087786986",
-              to: `+91${details.consignorphonenumber}`,
               content: {
                 language: "en_US",
-                templateName: "payment_completed_dync",
                 templateData: {
-                  body: {
-                    placeholders: [
-                      details.consignorname,
-                      String(details.awbNumber),
-                      String(details.awbNumber),
-                    ],
-                  },
+                  body: { placeholders: ["Nithish", "1108"] },
+                  buttons: [
+                    {
+                      type: "URL",
+                      parameter:
+                        // "Receipt_Kaviya%20.pdf?alt=media&token=1a4c64a6-731d-4d82-ad3b-e3829078f6ac",
+                        // "1109receipt%2FWhatsApp%20Image%202024-11-25%20at%2017.45.18_4938fd8e.jpg?alt=media&token=820e2da1-737a-476f-aa7a-c254eac92c31",
+                        // "1128%2FPICKUPPERSONIMAGE%2FImage?alt=media&token=b352032d-e761-477a-a8c7-130606581c2d",
+                        "1128receipt%2FWhatsApp%20Image%202024-11-25%20at%2017.45.18_4938fd8e.jpg?alt=media&token=e0bfa420-fbad-4a5b-9911-b44a1065feeb",
+                    },
+                    { type: "URL", parameter: "1108" },
+                  ],
                 },
+                templateName: "payment_done6",
               },
+              from: "+919087786986",
+              to: "+919042489612",
             },
           ],
         },
       };
 
-      const response = await axios.post(
-        "https://public.doubletick.io/whatsapp/message/template",
-        options.data,
-        {
-          headers: options.headers,
-        }
-      );
+      const response = await axios.post(options.url, options.data, {
+        headers: options.headers,
+      });
 
       console.log("WhatsApp message sent: ", response.data);
-
       setShowPopup(true);
     } catch (error) {
       handleError(error);
@@ -603,7 +769,7 @@ function PaymentConfirmationForm() {
             <>
               <div className="flex flex-col mb-4">
                 <label className="text-gray-700 font-medium mb-1">
-                  Upload KYC & Product Images:{" "}
+                  Upload KYC
                 </label>
                 <input
                   type="file"

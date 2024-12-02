@@ -6,25 +6,29 @@ import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "./firebase";
 import collectionName_BaseAwb from "./functions/collectionName";
 function CancelOrReschedule() {
-  
   const [data, setData] = useState([]);
   const [activeTab, setActiveTab] = useState("CANCEL");
 
   useEffect(() => {
+    const loginCredentials = JSON.parse(
+      localStorage.getItem("LoginCredentials")
+    );
+    const { role, Location, name } = loginCredentials;
 
+    // Determine the Firestore query based on the role
+    const collectionRef = collection(
+      db,
+      collectionName_BaseAwb.getCollection(Location)
+    );
     // Real-time listener for Firestore data using onSnapshot
+    const baseQuery =
+      role === "Manager" || role === "sales admin"
+        ? query(collectionRef)
+        : query(collectionRef, where("pickupBookedBy", "==", name));
 
     const unsubscribe = onSnapshot(
       query(
-        collection(
-          db,
-          collectionName_BaseAwb.getCollection(
-            JSON.parse(localStorage.getItem("LoginCredentials")).Location
-          )
-        ),
-        where("pickupBookedBy", "==", 
-            JSON.parse(localStorage.getItem("LoginCredentials")).name
-        ) // Apply the where filter
+        baseQuery // Apply the where filter
       ),
       (snapshot) => {
         const documents = snapshot.docs.map((doc) => ({
@@ -49,7 +53,7 @@ function CancelOrReschedule() {
     }
     return null; // No filtering for other tabs
   });
-  
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Nav />

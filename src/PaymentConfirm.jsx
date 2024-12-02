@@ -9,21 +9,25 @@ function PaymentConfirm() {
   const [activeTab, setActiveTab] = useState("PAYMENT PENDING");
 
   useEffect(() => {
-    // Set up a real-time listener for Firestore data using onSnapshot
+    // Parse LoginCredentials from localStorage
+    const loginCredentials = JSON.parse(
+      localStorage.getItem("LoginCredentials")
+    );
+    const { role, Location, name } = loginCredentials;
+
+    // Determine the Firestore query based on the role
+    const collectionRef = collection(
+      db,
+      collectionName_BaseAwb.getCollection(Location)
+    );
+    const baseQuery =
+      role === "Manager" || role === "sales admin"
+        ? query(collectionRef)
+        : query(collectionRef, where("pickupBookedBy", "==", name));
+
+    // Set up the Firestore real-time listener
     const unsubscribe = onSnapshot(
-      query(
-        collection(
-          db,
-          collectionName_BaseAwb.getCollection(
-            JSON.parse(localStorage.getItem("LoginCredentials")).Location
-          )
-        ),
-        where(
-          "pickupBookedBy",
-          "==",
-          JSON.parse(localStorage.getItem("LoginCredentials")).name
-        )
-      ),
+      baseQuery,
       (snapshot) => {
         const documents = snapshot.docs.map((doc) => ({
           id: doc.id,

@@ -90,7 +90,7 @@ function Pickups() {
                 const sortedData = combinedData.sort((a, b) => {
                   const dateTimeA = parsePickupDateTime(a.pickupDatetime);
                   const dateTimeB = parsePickupDateTime(b.pickupDatetime);
-                  return dateTimeA - dateTimeB;
+                  return dateTimeB - dateTimeA;
                 });
                 setPickups(sortedData);
                 setLoading(false);
@@ -131,7 +131,7 @@ function Pickups() {
             const sortedData = filteredData.sort((a, b) => {
               const dateTimeA = parsePickupDateTime(a.pickupDatetime);
               const dateTimeB = parsePickupDateTime(b.pickupDatetime);
-              return dateTimeA - dateTimeB;
+              return dateTimeB - dateTimeA;
             });
 
             setPickups(sortedData);
@@ -398,34 +398,55 @@ function Pickups() {
                       {selectedPickup.pickuparea || "NA"}
                     </p>
                   </div>
-                  <p>
-                    <span className="font-semibold text-purple-700">
-                      Status:
-                    </span>
-                    <span
-                      className={`font-medium px-2 py-1 rounded text-nowrap ${
-                        selectedPickup.status === "Completed"
-                          ? "bg-green-100 text-green-800"
-                          : selectedPickup.status === "Pending"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {selectedPickup.status || "NA"}
-                    </span>
-                  </p>
-                  <p>
-                    <span className="font-semibold text-purple-700">
-                      Pickup Booked by:
+                  <div className="flex flex-col gap-6">
+                    {/* Status Section */}
+                    <div className="flex items-center">
+                      <span className="font-semibold text-purple-700 text-lg">
+                        Status:
+                      </span>
+                      <span
+                        className={`font-medium px-3 py-1 ml-1 rounded-full text-[13px]  text-nowrap ${
+                          selectedPickup.status === "SHIPMENT CONNECTED"
+                            ? "bg-green-200 text-green-800"
+                            : "bg-red-200 text-red-800"
+                        }`}
+                      >
+                        {selectedPickup.status || "NA"}
+                      </span>
+                    </div>
+
+                    {/* Logistics Cost Section */}
+                  </div>
+                  <div
+                    className={`p-4 rounded-lg shadow-inner border ${
+                      ["PAYMENT DONE", "SHIPMENT CONNECTED"].includes(
+                        selectedPickup.status
+                      )
+                        ? "bg-green-50 border-green-300 text-green-800"
+                        : "bg-gray-50 border-gray-300 text-gray-800"
+                    }`}
+                  >
+                    <span className="font-semibold text-purple-700 text-lg">
+                      Logistics Cost:
                     </span>{" "}
-                    {selectedPickup.pickupBookedBy || "NA"}
-                  </p>
-                  <p>
-                    <span className="font-semibold text-purple-700">
-                      PickUp Person:
-                    </span>{" "}
-                    {selectedPickup.pickUpPersonName || "NA"}
-                  </p>
+                    <span className="text-lg font-medium">
+                      {selectedPickup.logisticCost || "NA"}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-4">
+                    <p>
+                      <span className="font-semibold text-purple-700">
+                        Pickup Booked by:
+                      </span>{" "}
+                      {selectedPickup.pickupBookedBy || "NA"}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-purple-700">
+                        PickUp Person:
+                      </span>{" "}
+                      {selectedPickup.pickUpPersonName || "NA"}
+                    </p>
+                  </div>
                   <p>
                     <span className="font-semibold text-purple-700">
                       Pickup Date & Time:
