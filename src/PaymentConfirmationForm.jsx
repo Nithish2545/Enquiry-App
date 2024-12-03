@@ -31,6 +31,7 @@ function PaymentConfirmationForm() {
     formState: { errors },
   } = useForm();
   const navigate = useNavigate();
+  const [downloadURL, setdownloadURL] = useState("");
   useEffect(() => {
     const fetchDetails = async () => {
       try {
@@ -128,7 +129,10 @@ function PaymentConfirmationForm() {
     const doc = new jsPDF("p", "pt");
     const subtotal = parseInt(costKg) * details.actualWeight;
     const nettotal = subtotal - parseInt(discountCost);
-
+    console.log("costKg", costKg);
+    console.log("discountCost", discountCost);
+    console.log("subtotal", subtotal);
+    console.log("nettotal" , nettotal)
     // Add business name and logo
     doc.setFontSize(20);
     doc.addImage("/shiphtlogo.png", "PNG", 40, 30, 180, 60); // Replace with your logo
@@ -270,7 +274,7 @@ function PaymentConfirmationForm() {
     const pdfBlob = doc.output("blob");
 
     // Reference to Firebase Storage
-    const storagePath = `${details.awbNumber}receipt/Receipt_${details.consignorname}.pdf`;
+    const storagePath = `${details.awbNumber}/receipt/Receipt${details.consignorname} .pdf`;
     const storageRef = ref(storage, storagePath);
 
     try {
@@ -279,17 +283,18 @@ function PaymentConfirmationForm() {
       // Get the download URL
       const downloadURL = await getDownloadURL(storageRef);
       // Log the download URL
-      console.log("PDF stored successfully! Download URL:", downloadURL);
+      console.log(downloadURL);
       return downloadURL;
     } catch (error) {
       console.error("Error uploading PDF:", error);
     }
   }
   function getTruncatedURL(fullUrl) {
+    console.log("fullUrl", fullUrl);
     const baseUrl =
       "https://firebasestorage.googleapis.com/v0/b/shiphitmobileapppickup-4d0a1.appspot.com/o/";
     const truncatedResult = fullUrl.replace(baseUrl, "");
-    clg;
+    console.log(truncatedResult);
     return truncatedResult;
   }
 
@@ -359,15 +364,16 @@ function PaymentConfirmationForm() {
               content: {
                 language: "en_US",
                 templateData: {
-                  body: { placeholders: ["Nithish", "1108"] },
+                  body: {
+                    placeholders: [
+                      String(details.consignorname),
+                      String(details.awbNumber),
+                    ],
+                  },
                   buttons: [
                     {
                       type: "URL",
-                      parameter:
-                        // "Receipt_Kaviya%20.pdf?alt=media&token=1a4c64a6-731d-4d82-ad3b-e3829078f6ac",
-                        // "1109receipt%2FWhatsApp%20Image%202024-11-25%20at%2017.45.18_4938fd8e.jpg?alt=media&token=820e2da1-737a-476f-aa7a-c254eac92c31",
-                        // "1128%2FPICKUPPERSONIMAGE%2FImage?alt=media&token=b352032d-e761-477a-a8c7-130606581c2d",
-                        "1128receipt%2FWhatsApp%20Image%202024-11-25%20at%2017.45.18_4938fd8e.jpg?alt=media&token=e0bfa420-fbad-4a5b-9911-b44a1065feeb",
+                      parameter: getTruncatedURL(Payment_URL),
                     },
                     { type: "URL", parameter: "1108" },
                   ],

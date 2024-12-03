@@ -735,9 +735,15 @@ function PickupBooking() {
                 }}
               >
                 <option value="">Select</option>
-                <option value="new customer">new customer</option>
-                <option value="Dinesh Reference">Dinesh Reference</option>
-                <option value="test">test</option>
+                <option value="FB Ad">FB Ad</option>
+                <option value="Google Ad">Google Ad</option>
+                <option value="Website Ad">Website Ad</option>
+                <option value="Direct Ad">Direct Ad</option>
+                <option value="Whatsapp Campaign">Whatsapp Campaign</option>
+                <option value="REP">REP</option>
+                <option value="Customer Refer">Customer Refer</option>
+                <option value="Employee Refer">Employee Refer</option>
+                <option value="Offline Ad">Offline Ad</option>
               </select>
               {errors.service && (
                 <p className="text-red-500 text-sm mt-1">
