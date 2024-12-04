@@ -320,7 +320,7 @@ function PaymentConfirmCard({ item, index }) {
         </p>
         <p className="text-base font-medium text-gray-800">
           <strong className="text-gray-900">Final no. of boxes:</strong>{" "}
-          {item.actualWeight + " " + "KG" || "-"}
+          {item.actualNoOfPackages + " " + "KG" || "-"}
         </p>
       </div>
 
