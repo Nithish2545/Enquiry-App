@@ -132,7 +132,7 @@ function PaymentConfirmationForm() {
     console.log("costKg", costKg);
     console.log("discountCost", discountCost);
     console.log("subtotal", subtotal);
-    console.log("nettotal" , nettotal)
+    console.log("nettotal", nettotal);
     // Add business name and logo
     doc.setFontSize(20);
     doc.addImage("/shiphtlogo.png", "PNG", 40, 30, 180, 60); // Replace with your logo
@@ -163,7 +163,7 @@ function PaymentConfirmationForm() {
     doc.text(details.consignorname, 350, 160);
 
     const consignorLocation = details.consignorlocation.toLowerCase();
-    const fullText1 = consignorLocation + "\n" + details.consigneephonenumber;
+    const fullText1 = consignorLocation + "\n" + details.consignorphonenumber;
     const splitText = doc.splitTextToSize(fullText1, maxWidth);
     doc.text(splitText, 350, 180);
 
@@ -375,13 +375,13 @@ function PaymentConfirmationForm() {
                       type: "URL",
                       parameter: getTruncatedURL(Payment_URL),
                     },
-                    { type: "URL", parameter: "1108" },
+                    { type: "URL", parameter: String(details.awbNumber) },
                   ],
                 },
                 templateName: "payment_done6",
               },
               from: "+919087786986",
-              to: "+919042489612",
+              to: `+91${details.consignorphonenumber}`,
             },
           ],
         },

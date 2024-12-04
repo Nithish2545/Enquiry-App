@@ -145,7 +145,7 @@ function PaymentConfirmCard({ item, index }) {
     doc.text(item.consignorname, 350, 160);
 
     const consignorLocation = item.consignorlocation.toLowerCase();
-    const fullText1 = consignorLocation + "\n" + item.consigneephonenumber;
+    const fullText1 = consignorLocation + "\n" + item.consignorphonenumber;
     const splitText = doc.splitTextToSize(fullText1, maxWidth);
     doc.text(splitText, 350, 180);
 
