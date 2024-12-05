@@ -46,6 +46,7 @@ function Nav() {
           <li>
             <Link
               to="/Sale-rates"
+              rel="noopener noreferrer"
               className={`text-white rounded transition-colors ${
                 location.pathname === "/Sale-rates"
                   ? "text-purple-900 font-semibold"
@@ -184,6 +185,7 @@ function Nav() {
           <li>
             <Link
               to="/Sale-rates"
+              rel="noopener noreferrer"
               className={`py-2 px-4 text-gray-700 rounded transition-colors block ${
                 location.pathname === "/Sale-rates"
                   ? "text-purple-900 font-semibold"
