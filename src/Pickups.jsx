@@ -287,7 +287,7 @@ function Pickups() {
                     </p>
                     <p>
                       <span className="font-semibold text-purple-700">
-                        Consignor Phone:
+                        Consignor Address:
                       </span>{" "}
                       {selectedPickup.consignorlocation || "NA"}
                     </p>
@@ -307,7 +307,7 @@ function Pickups() {
                     </p>
                     <p>
                       <span className="font-semibold text-purple-700">
-                        Consignee Phone:
+                        Consignee Address:
                       </span>{" "}
                       {selectedPickup.consigneelocation || "NA"}
                     </p>
