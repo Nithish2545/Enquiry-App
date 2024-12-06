@@ -31,6 +31,7 @@ const RateCardForm = () => {
     { name: "PHILIPPINES" },
     { name: "GERMANY" },
     { name: "JAPAN" },
+    { name: "SRI LANKA" },
   ];
 
   const API_ENDPOINT =
@@ -43,10 +44,10 @@ const RateCardForm = () => {
       );
       const responses = await Promise.all(promises);
       const newRateData = {};
-
       responses.forEach((response, index) => {
         const sheetName = sheets[index].name;
         const data = response.data.data;
+        console.log("data" , data[8]?.EcoSelf)
         newRateData[sheetName] = data.map((item) => ({
           Weight_slab: item["Weight_slab(" + sheetName + ")"],
           Economy: item.Economy,
@@ -55,6 +56,7 @@ const RateCardForm = () => {
           ZONES: item.ZONES,
           INSTRUCTIONS: item.INSTRUCTIONS,
           DAYSTODELIVER: item.DAYSTODELIVER,
+          EcoSelf:item.EcoSelf
         }));
       });
 
@@ -108,6 +110,7 @@ const RateCardForm = () => {
     }
   }, [country, rateData]);
 
+  console.log(selectedRate)
   return (
     <>
       <Nav />
@@ -174,6 +177,8 @@ const RateCardForm = () => {
                     <th className="px-2 lg:px-4 py-2">Economy</th>
                     <th className="px-2 lg:px-4 py-2">Express</th>
                     <th className="px-2 lg:px-4 py-2">EcoDutyFree</th>
+                    <th className="px-2 lg:px-4 py-2">Eco Self</th>
+                    
                   </tr>
                 </thead>
                 <tbody>
@@ -189,6 +194,9 @@ const RateCardForm = () => {
                     </td>
                     <td className="px-2 lg:px-4 py-2">
                       {selectedRate.EcoDutyFree}
+                    </td>
+                    <td className="px-2 lg:px-4 py-2">
+                      {selectedRate.EcoSelf}
                     </td>
                   </tr>
                 </tbody>
