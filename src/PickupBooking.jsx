@@ -43,7 +43,8 @@ function PickupBooking() {
     const date = new Date(dateString);
     const day = date.getDate(); // Gets the day (1-31)
     const month = date.getMonth() + 1; // Gets the month (0-11), so add 1
-    return `${day}-${month}`; // Format as "DD-M"
+    const year = date.getFullYear(); // Gets the full year
+    return `${day}-${month}-${year}`; // Format as "DD-M"
   };
 
   // Example usage
@@ -381,6 +382,7 @@ function PickupBooking() {
                 )}
               </div>
             </div>
+
             {/* Consignee */}
             <div>
               <div className="mb-4">
