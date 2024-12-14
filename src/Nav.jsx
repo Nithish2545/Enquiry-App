@@ -128,6 +128,21 @@ function Nav() {
               </Link>
             </li>
           )}
+          {user.email == "dinesh@gmail.com" && (
+            <li>
+              <Link
+                to="/IncentiveReport"
+                className={`text-white rounded transition-colors ${
+                  location.pathname === "/IncentiveReport"
+                    ? "text-purple-900 font-semibold"
+                    : "bg-transparent"
+                }`}
+                style={{ minHeight: "40px" }}
+              >
+                Incentive Report
+              </Link>
+            </li>
+          )}
         </ul>
       </div>
       {/* Right Section */}

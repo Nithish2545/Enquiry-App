@@ -1,18 +1,23 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import PickupBooking from './PickupBooking';
-import RateCardForm from './RateCard';
-import PaymentConfirm from './PaymentConfirm';
-import PaymentConfirmationForm from './PaymentConfirmationForm';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import PickupBooking from "./PickupBooking";
+import RateCardForm from "./RateCard";
+import PaymentConfirm from "./PaymentConfirm";
+import PaymentConfirmationForm from "./PaymentConfirmationForm";
 import SignIn from "./SignIn";
 import { useEffect, useState } from "react";
 import { auth, db } from "./firebase";
-import CancelOrReshedule from './CancelOrReshedule';
-import Pickups from './Pickups';
-import LogisticsDashboard from './LogisticsDashboard';
-import { collection, getDocs, query } from 'firebase/firestore';
-import AllPickups from "./AllPickups"
+import CancelOrReshedule from "./CancelOrReshedule";
+import Pickups from "./Pickups";
+import LogisticsDashboard from "./LogisticsDashboard";
+import { collection, getDocs, query } from "firebase/firestore";
+import AllPickups from "./AllPickups";
+import IncentiveReport from "./IncentiveModel";
 function App() {
-
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -25,7 +30,6 @@ function App() {
           const result = doc.data();
           // Check if the document has an array named after the email
           if (result[user.email]) {
-            console.log(result[user.email]);
             const dataset = {
               name: result[user.email][0],
               email: result[user.email][1],
@@ -44,7 +48,6 @@ function App() {
     });
 
     return () => unsubscribe(); // Cleanup the listener on unmount
-    
   }, []);
 
   if (loading) {
@@ -56,18 +59,54 @@ function App() {
       <div>
         <Routes>
           {/* If user is not present, redirect to SignIn */}
-          <Route path="/" element={user ? <PickupBooking /> : <Navigate to="/signin" />} />
+          <Route
+            path="/"
+            element={user ? <PickupBooking /> : <Navigate to="/signin" />}
+          />
           {/* Only allow access to other routes if user is logged in */}
-          <Route path="/PickupBooking" element={user ? <PickupBooking /> : <Navigate to="/signin" />} />
-          <Route path="/Cancel-reschedule" element={user ? <CancelOrReshedule /> : <Navigate to="/signin" />} />
-          <Route path="/Pickups" element={user ? <Pickups /> : <Navigate to="/signin" />} />
-          <Route path="/allPickups" element={user ? <AllPickups /> : <Navigate to="/signin" />} />
-          <Route path="/Sale-rates" element={user ? <RateCardForm /> : <Navigate to="/signin" />} />
-          <Route path="/Payment-confirm" element={user ? <PaymentConfirm /> : <Navigate to="/signin" />} />
-          <Route path="/logisticsDashboard" element={user ? <LogisticsDashboard /> : <Navigate to="/signin" />} />
-          <Route path="/Payment-confirmation-form/:awbnumber" element={user ? <PaymentConfirmationForm /> : <Navigate to="/signin" />} />
+          <Route
+            path="/PickupBooking"
+            element={user ? <PickupBooking /> : <Navigate to="/signin" />}
+          />
+          <Route
+            path="/Cancel-reschedule"
+            element={user ? <CancelOrReshedule /> : <Navigate to="/signin" />}
+          />
+          <Route
+            path="/Pickups"
+            element={user ? <Pickups /> : <Navigate to="/signin" />}
+          />
+          <Route
+            path="/allPickups"
+            element={user ? <AllPickups /> : <Navigate to="/signin" />}
+          />
+          <Route
+            path="/Sale-rates"
+            element={user ? <RateCardForm /> : <Navigate to="/signin" />}
+          />
+          <Route
+            path="/Payment-confirm"
+            element={user ? <PaymentConfirm /> : <Navigate to="/signin" />}
+          />
+          <Route
+            path="/logisticsDashboard"
+            element={user ? <LogisticsDashboard /> : <Navigate to="/signin" />}
+          />
+          <Route
+            path="/Payment-confirmation-form/:awbnumber"
+            element={
+              user ? <PaymentConfirmationForm /> : <Navigate to="/signin" />
+            }
+          />
+          <Route
+            path="/IncentiveReport"
+            element={user ? <IncentiveReport /> : <Navigate to="/signin" />}
+          />
           {/* Sign In route, only accessible if no user is logged in */}
-          <Route path="/signin" element={!user ? <SignIn /> : <Navigate to="/PickupBooking" />} />
+          <Route
+            path="/signin"
+            element={!user ? <SignIn /> : <Navigate to="/PickupBooking" />}
+          />
         </Routes>
       </div>
     </Router>

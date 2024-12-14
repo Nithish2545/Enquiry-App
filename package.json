@@ -18,6 +18,7 @@
     "@mui/styled-engine-sc": "^6.0.2",
     "axios": "^1.7.4",
     "country-list": "^2.3.0",
+    "date-fns": "^4.1.0",
     "dotenv": "^16.4.5",
     "firebase": "^10.13.1",
     "jsbarcode": "^3.11.6",
