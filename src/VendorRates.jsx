@@ -49,19 +49,25 @@ function VendorRates() {
       const reader = new FileReader();
       reader.onload = (e) => {
         const csvData = e.target.result;
+        console.log("csvData" , csvData)
         const rows = csvData.split("\n").filter((row) => row.trim() !== "");
+        console.log("rows" , rows)
+        // Read the first row as headers (keys)
         const headers = rows[0].split(",").map((header) => header.trim());
-        const columnData = headers.reduce((obj, header) => {
-          obj[header] = [];
-          return obj;
-        }, {});
-
+        // Create an object to hold column data with headers as keys
+        const columnData = {};
+        // Initialize columnData object with empty arrays for each header
+        headers.forEach((header) => {
+          columnData[header] = [];
+        });
+        // Loop through remaining rows and add their values to the corresponding columns
         rows.slice(1).forEach((row) => {
           const values = row.split(",").map((value) => value.trim());
           values.forEach((value, index) => {
             columnData[headers[index]].push(value || "");
           });
         });
+        // Set the resulting columnData
         setJsonData(columnData);
       };
       reader.readAsText(file);
@@ -146,12 +152,12 @@ function VendorRates() {
             </button>
           </div>
           <div className="flex gap-6">
-            {/* <Link to={`/addExtraCharges`}> */}
+            <Link to={`/addExtraCharges`}>
               <button className="bg-purple-600 flex text-white items-center gap-3 px-4 py-2 rounded hover:bg-purple-700">
                 <img className="w-6" src="download.svg" alt="" />
                 Add Extra Charges
               </button>
-            {/* </Link> */}
+            </Link>
             <button
               onClick={downloadSampleCsv}
               className="bg-purple-600 flex text-white items-center  gap-3  px-4 py-2 rounded hover:bg-purple-700"

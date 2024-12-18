@@ -87,7 +87,6 @@ const VendorRatesTable = ({ vendorRates, selectedVendor }) => {
           ))}
         </tbody>
       </table>
-
       {/* Pagination Controls */}
       <div className="flex py-2 px-2 justify-between items-center mt-4 absolute bottom-0 bg-slate-200 w-full">
         <p className="text-sm text-gray-700">
