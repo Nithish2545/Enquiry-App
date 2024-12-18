@@ -59,6 +59,20 @@ function Nav() {
           </li>
           <li>
             <Link
+              to="/vendor-rates"
+              rel="noopener noreferrer"
+              className={`text-white rounded transition-colors ${
+                location.pathname === "/vendor-rates"
+                  ? "text-purple-900 font-semibold"
+                  : "bg-transparent"
+              }`}
+              style={{ minHeight: "40px" }}
+            >
+              Vendor Rates
+            </Link>
+          </li>
+          <li>
+            <Link
               to="/Payment-confirm"
               className={`text-white rounded transition-colors ${
                 location.pathname === "/Payment-confirm"

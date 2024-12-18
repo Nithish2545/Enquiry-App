@@ -17,6 +17,8 @@ import LogisticsDashboard from "./LogisticsDashboard";
 import { collection, getDocs, query } from "firebase/firestore";
 import AllPickups from "./AllPickups";
 import IncentiveReport from "./IncentiveModel";
+import VendorRates from "./VendorRates";
+import ExtraChargesModule from "./ExtraChargesModule";
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -73,6 +75,10 @@ function App() {
             element={user ? <CancelOrReshedule /> : <Navigate to="/signin" />}
           />
           <Route
+            path="/addExtraCharges"
+            element={user ? <ExtraChargesModule /> : <Navigate to="/signin" />}
+          />
+          <Route
             path="/Pickups"
             element={user ? <Pickups /> : <Navigate to="/signin" />}
           />
@@ -83,6 +89,10 @@ function App() {
           <Route
             path="/Sale-rates"
             element={user ? <RateCardForm /> : <Navigate to="/signin" />}
+          />
+            <Route
+            path="/vendor-rates"
+            element={user ? <VendorRates /> : <Navigate to="/signin" />}
           />
           <Route
             path="/Payment-confirm"

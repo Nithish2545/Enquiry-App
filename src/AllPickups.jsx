@@ -163,7 +163,6 @@ function Pickups() {
     const PhonesearchItem = pickup.pickUpPersonName
       .toLowerCase()
       .includes(PickupPersonName.toLowerCase());
-
     return awbMatch && dateMatch && consignorPhoneMatch && PhonesearchItem; // Use AND logic to filter
   });
 
