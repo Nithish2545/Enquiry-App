@@ -1,117 +1,67 @@
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import utilityFunctions from "./Utility/utilityFunctions";
 
-const VendorRatesTable = ({ vendorRates, selectedVendor }) => {
-  console.log("vendorRates", vendorRates);
-  // Filter vendor data based on selected vendor
-  const selectedVendorData = vendorRates.filter(
-    (d) => d.id === selectedVendor
-  )[0];
+const DataTable = ({ data }) => {
+  if (!data || !data.length) {
+    return <div className="text-gray-500">No data available</div>;
+  }
 
-  if (!selectedVendorData)
-    return (
-      <p className="text-center text-red-500">
-        No data available for the selected vendor
-      </p>
-    );
-
-  // Pagination states
-  const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 8;
-
-  // Calculate the number of pages
-  const totalRows = selectedVendorData["COUNTRY/ZONE"].length;
-  const totalPages = Math.ceil(totalRows / rowsPerPage);
-
-  // Determine which rows to display based on the current page
-  const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
-  const displayedRows = selectedVendorData["COUNTRY/ZONE"].slice(
-    startIndex,
-    endIndex
-  );
-
-  // Handle page change
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage((prev) => prev + 1);
-    }
-  };
-
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage((prev) => prev - 1);
-    }
-  };
+  // Extract headers and values from the first entry
+  const countryData = data[0].data[0]["COUNTRY/ZONE"];
+  const weightCategories = data[0].data.slice(1);
 
   return (
-    <div className="h-[80vh] overflow-x-auto bg-white shadow-md rounded-lg relative">
-      <table className="min-w-full table-auto">
+    <div className="overflow-x-auto">
+      <table className="table-auto border-collapse border border-gray-300 w-full text-sm text-left text-gray-500">
         <thead>
-          <tr className="bg-[#F1F7F9] text-gray-600">
-            <th className="px-4 border-b py-4 text-left font-semibold">
-              Country/Zone
-            </th>
-            {Object.keys(selectedVendorData).map((key) => {
-              if (key === "id" || key === "COUNTRY/ZONE") return null;
-              return (
-                <th
-                  key={key}
-                  className="px-4 border-b py-4 text-center font-semibold"
-                >
-                  <div className="flex items-center justify-center gap-2">
-                    {key}
-                    <img className="w-[9px]" src="arrowUpDown.svg" alt="Sort" />
-                  </div>
-                </th>
-              );
-            })}
+          <tr className="bg-gray-100 text-gray-700">
+            <th className="border border-gray-300 px-4 py-2">COUNTRY/ZONE</th>
+            {weightCategories.map((category, index) => (
+              <th key={index} className="border border-gray-300 px-4 py-2">
+                {Object.keys(category)[0]}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
-          {/* Map through COUNTRY/ZONE and display rows */}
-          {displayedRows.map((country, index) => (
-            <tr
-              key={index}
-              className="hover:bg-gray-100 transition-colors duration-300"
-            >
-              <td className="px-4 border-b py-6">{country}</td>
-              {Object.keys(selectedVendorData).map((key) => {
-                if (key === "id" || key === "COUNTRY/ZONE") return null;
-                return (
-                  <td key={key} className="px-4  border-b py-2 text-center">
-                    {selectedVendorData[key][index] || "-"}
-                  </td>
-                );
-              })}
+          {countryData.map((country, rowIndex) => (
+            <tr key={rowIndex} className="hover:bg-gray-50">
+              <td className="border border-gray-300 px-4 py-2">{country}</td>
+              {weightCategories.map((category, colIndex) => (
+                <td key={colIndex} className="border border-gray-300 px-4 py-2">
+                  {category[Object.keys(category)[0]][rowIndex]}
+                </td>
+              ))}
             </tr>
           ))}
         </tbody>
       </table>
-      {/* Pagination Controls */}
-      <div className="flex py-2 px-2 justify-between items-center mt-4 absolute bottom-0 bg-slate-200 w-full">
-        <p className="text-sm text-gray-700">
-          Total Rows: {totalRows} | Rows per page: {rowsPerPage}
-        </p>
-        <div className="flex gap-4 items-center">
-          <button
-            onClick={goToPreviousPage}
-            disabled={currentPage === 1}
-            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 transition-colors duration-300"
-          >
-            Previous
-          </button>
-          <span className="text-sm text-gray-700">
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            onClick={goToNextPage}
-            disabled={currentPage === totalPages}
-            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 transition-colors duration-300"
-          >
-            Next
-          </button>
-        </div>
-      </div>
+    </div>
+  );
+};
+
+const VendorRatesTable = ({ data, selectedVendor }) => {
+  const [filteredData, setFilteredData] = useState(null);
+  useEffect(() => {
+    if (data?.length) {
+      const vendorData = data.find((d) => d.id === selectedVendor);
+      setFilteredData(vendorData ? [vendorData] : null);
+    }
+    console.log(
+      utilityFunctions.calculateCost("Mauritius", 7.000, filteredData)
+    );
+  }, [data, selectedVendor]);
+  console.log("filteredData", filteredData);
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-semibold mb-4">
+        {selectedVendor} Shipping Rates
+      </h1>
+      {filteredData ? (
+        <DataTable data={filteredData} />
+      ) : (
+        <div className="text-gray-500">No data available</div>
+      )}
     </div>
   );
 };

@@ -49,26 +49,31 @@ function VendorRates() {
       const reader = new FileReader();
       reader.onload = (e) => {
         const csvData = e.target.result;
-        console.log("csvData" , csvData)
-        const rows = csvData.split("\n").filter((row) => row.trim() !== "");
-        console.log("rows" , rows)
-        // Read the first row as headers (keys)
-        const headers = rows[0].split(",").map((header) => header.trim());
-        // Create an object to hold column data with headers as keys
-        const columnData = {};
-        // Initialize columnData object with empty arrays for each header
-        headers.forEach((header) => {
-          columnData[header] = [];
+        console.log("csvData", csvData);
+        const rawData = csvData.split("\n").filter((row) => row.trim() !== "");
+        console.log("rawData", rawData);
+
+        // Split the raw data into rows
+        const rows = rawData.map((row) => row.trim().split(","));
+
+        // Create an array to store the formatted data
+        const formattedData = [];
+
+        // Get the country/zone header and the measurements
+        const countryZones = rows[0].slice(1); // Skip the first item as it's 'COUNTRY/ZONE'
+        const measurements = rows.slice(1);
+
+        // Iterate through each measurement and create the object
+        measurements.forEach((measurement) => {
+          const key = measurement[0]; // The measurement type (e.g., "0.500 gms")
+          const values = measurement.slice(1).map(Number); // Convert the rest to numbers
+          const entry = { [key]: values };
+          formattedData.push(entry);
         });
-        // Loop through remaining rows and add their values to the corresponding columns
-        rows.slice(1).forEach((row) => {
-          const values = row.split(",").map((value) => value.trim());
-          values.forEach((value, index) => {
-            columnData[headers[index]].push(value || "");
-          });
-        });
-        // Set the resulting columnData
-        setJsonData(columnData);
+
+        // Include the country/zone as the first item in the formattedData
+        formattedData.unshift({ "COUNTRY/ZONE": countryZones });
+        setJsonData(formattedData);
       };
       reader.readAsText(file);
     }
@@ -86,7 +91,7 @@ function VendorRates() {
         "VendorRates",
         inputText.toUpperCase() || "DHL"
       );
-      await setDoc(vendorRateDocRef, jsonData);
+      await setDoc(vendorRateDocRef, { data: jsonData });
 
       const vendorRateDocRef1 = doc(
         db,
@@ -152,12 +157,12 @@ function VendorRates() {
             </button>
           </div>
           <div className="flex gap-6">
-            <Link to={`/addExtraCharges`}>
+            {/* <Link to={`/addExtraCharges`}>
               <button className="bg-purple-600 flex text-white items-center gap-3 px-4 py-2 rounded hover:bg-purple-700">
                 <img className="w-6" src="download.svg" alt="" />
                 Add Extra Charges
               </button>
-            </Link>
+            </Link> */}
             <button
               onClick={downloadSampleCsv}
               className="bg-purple-600 flex text-white items-center  gap-3  px-4 py-2 rounded hover:bg-purple-700"
@@ -172,13 +177,8 @@ function VendorRates() {
           </div>
         </div>
       </div>
-
       {/* Table */}
-      <VendorRatesTable
-        vendorRates={vendorRates}
-        selectedVendor={selectedVendor}
-      />
-
+      <VendorRatesTable data={vendorRates} selectedVendor={selectedVendor} />
       {/* Popup */}
       {isPopupOpen && (
         <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
@@ -195,7 +195,6 @@ function VendorRates() {
             <p className="text-sm text-center text-gray-600 mb-4">
               Provide a vendor name and upload the CSV file.
             </p>
-
             <input
               type="text"
               placeholder="Enter vendor name"
@@ -203,7 +202,6 @@ function VendorRates() {
               onChange={(e) => setInputText(e.target.value)}
               className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:ring-2 focus:ring-purple-500"
             />
-
             <div
               className="cursor-pointer border-2 border-dotted border-gray-500 h-40 flex items-center justify-center text-gray-600 rounded-lg"
               onClick={() => document.getElementById("file-upload").click()}
@@ -227,9 +225,7 @@ function VendorRates() {
                 </div>
               </span>
             </div>
-
             {fileName && <p className="text-center">File: {fileName}</p>}
-
             {isLoading && (
               <div className="w-full bg-gray-200 rounded-full h-3">
                 <div
@@ -238,7 +234,6 @@ function VendorRates() {
                 ></div>
               </div>
             )}
-
             <button
               onClick={handleSubmit}
               disabled={isLoading}

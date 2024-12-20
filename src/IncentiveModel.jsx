@@ -13,6 +13,7 @@ function IncentiveModel() {
     topPerformer: "",
     startEnddate: {},
   });
+  const [incentive, setIncentive] = useState({});
 
   function getSalesPersonBookings(person) {
     return data.groupedData[person]?.bookings.length
@@ -40,7 +41,6 @@ function IncentiveModel() {
           utility.TopPerformer(DateRange),
           utility.fetchStartEndDate(DateRange),
         ]);
-
         setData({
           revenue,
           totalBookings,
@@ -54,7 +54,6 @@ function IncentiveModel() {
         console.error("Error fetching data:", error);
       }
     }
-
     getData();
   }, [DateRange]);
 
@@ -62,10 +61,23 @@ function IncentiveModel() {
     return name?.charAt(0).toUpperCase() + name?.slice(1);
   }
 
-  function findIncentive(person) {
-    return utility.IncentiveCalculator(getSalesPersonBookings(person));
+  async function findIncentive(dateRange, name) {
+    return 0;
   }
 
+  useEffect(() => {
+    // Fetch incentives for each row (name)
+    data.loginCredentials.forEach((row) => {
+      utility
+        .calculateTotalIncentive(DateRange, row.name)
+        .then((incentive) => {
+          setIncentive((prevIncentives) => ({
+            ...prevIncentives,
+            [row.name]: incentive,
+          }));
+        });
+    });
+  }, [data]);
   return (
     <div>
       <Nav />
@@ -248,7 +260,10 @@ function IncentiveModel() {
                       )}
                     </td>
                     <td className="px-6 py-4 text-center text-base text-gray-800 font-medium border-b border-gray-300">
-                      ₹{findIncentive(row.name)}
+                      {/* {Object.entries(incentive).map(([name, value]) =>
+                       <p>{name}</p> 
+                      )} */}
+                      <p>{incentive[row.name]}</p>
                     </td>
                     <td className="px-6 py-4 text-center text-base text-gray-800 font-medium border-b border-gray-300">
                       <button

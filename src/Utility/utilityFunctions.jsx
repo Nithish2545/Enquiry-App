@@ -203,6 +203,7 @@ const groupByPickupBookedBy = async (DateRange) => {
 
 async function TopPerformer(DateRange) {
   const data = await groupByPickupBookedBy(DateRange);
+
   let topPerformer = { name: null, totalCost: 0, totalBookings: 0 };
   for (const person in data) {
     const bookings = data[person].bookings;
@@ -220,14 +221,40 @@ async function TopPerformer(DateRange) {
 
 function IncentiveCalculator(BookingCount) {
   if (BookingCount < 3) {
-    return 0;
+    return 0; // No incentive if less than 3 bookings
   } else if (BookingCount === 3) {
-    return BookingCount * 50;
+    return BookingCount * 50; // Incentive for 3 bookings: 3 * 50
   } else if (BookingCount >= 4 && BookingCount <= 5) {
-    return 3 * 60;
+    return BookingCount * 60; // Incentive for 4-5 bookings: 3 * 60
   } else if (BookingCount >= 6 && BookingCount <= 7) {
-    return 3 * 75;
+    return BookingCount * 75; // Incentive for 6-7 bookings: 3 * 75
   }
+  return 0; // Default, no incentive
+}
+
+async function calculateTotalIncentive(DateRange, name) {
+  let data = await transformData(DateRange);
+  data = [data.find((d) => d.name == name)];
+  let totalIncentive = 0;
+  for (const person in data) {
+    if (person !== "name") {
+      const personData = data[person];
+
+      for (const dayKey in personData) {
+        if (dayKey !== "name") {
+          const dayData = personData[dayKey];
+          const bookingCount = dayData.bookings.length;
+
+          // Only calculate incentive if bookings are greater than or equal to 3
+          if (bookingCount >= 3) {
+            const dayIncentive = IncentiveCalculator(bookingCount);
+            totalIncentive += dayIncentive;
+          }
+        }
+      }
+    }
+  }
+  return totalIncentive;
 }
 
 // Transform data into the required format
@@ -374,6 +401,24 @@ function getSalesPersonBookings(person) {
     : 0;
 }
 
+function calculateCost(country, weight, data) {
+  if (!data) {
+    return "";
+  }
+  const temp = data[0].data;
+  const countryIndex = temp[0]["COUNTRY/ZONE"].indexOf(country.trim());
+  console.log(countryIndex)
+  if (countryIndex === -1) {
+    return `Country ${country} not found.`;
+  }
+  const weightKey = `${weight.toFixed(3)} gms `;
+  const weightData = temp.find((item) => weightKey in item);
+  if (!weightData) {
+    return `Weight ${weight} gms not found.`;
+  }
+  return weightData[weightKey][countryIndex];
+}
+
 export default {
   getRevenue: getRevenue,
   getTotalBookings: getTotalBookings,
@@ -386,5 +431,7 @@ export default {
   transformData: transformData,
   downloadCSV: downloadCSV,
   getSalesPersonBookings: getSalesPersonBookings,
-  fetchStartEndDate:fetchStartEndDate
+  fetchStartEndDate: fetchStartEndDate,
+  calculateTotalIncentive: calculateTotalIncentive,
+  calculateCost: calculateCost,
 };
