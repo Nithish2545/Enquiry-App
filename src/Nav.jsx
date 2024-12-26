@@ -5,6 +5,7 @@ import { auth } from "./firebase";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import utility from "./Utility/utilityFunctions";
 
 function Nav() {
   const location = useLocation();
@@ -12,9 +13,10 @@ function Nav() {
   const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile sidebar state
   const [pickupAnchorEl, setPickupAnchorEl] = useState(null); // Pickup dropdown state
   const [rateAnchorEl, setRateAnchorEl] = useState(null); // Rate dropdown state
-
+  const [RoleBasedScreens, setRoleBasedScreens] = useState({});
   useEffect(() => {
     setUser(JSON.parse(localStorage.getItem("LoginCredentials")));
+    setRoleBasedScreens(utility.rolesPermissions());
   }, []);
 
   const handlePickupMenuOpen = (event) =>
@@ -23,13 +25,16 @@ function Nav() {
 
   const handleRateMenuOpen = (event) => setRateAnchorEl(event.currentTarget);
   const handleRateMenuClose = () => setRateAnchorEl(null);
+  console.log(RoleBasedScreens);
 
   return (
     <nav className="sticky top-0 z-40 flex items-center justify-between bg-purple-400 p-4 shadow-md">
       {/* Desktop Navigation */}
       <div className="flex  container mx-auto justify-between">
         <div className="flex items-center gap-4">
-          <img src="/logo.png" className="h-10" alt="Logo" />
+          <Link to="/PickupBooking">
+            <img src="/logo.png" className="h-10" alt="Logo" />
+          </Link>
           <button
             className="lg:hidden block text-white"
             onClick={() => setSidebarOpen(true)}
@@ -51,42 +56,20 @@ function Nav() {
                 open={Boolean(pickupAnchorEl)}
                 onClose={handlePickupMenuClose}
               >
-                <MenuItem
-                  onClick={handlePickupMenuClose}
-                  component={Link}
-                  to="/PickupBooking"
-                  className={`${
-                    location.pathname === "/PickupBooking"
-                      ? "text-purple-900"
-                      : "text-gray-700"
-                  }`}
-                >
-                  Pickup Booking
-                </MenuItem>
-                <MenuItem
-                  onClick={handlePickupMenuClose}
-                  component={Link}
-                  to="/allpickups"
-                  className={`${
-                    location.pathname === "/allpickups"
-                      ? "text-purple-900"
-                      : "text-gray-700"
-                  }`}
-                >
-                  All Pickups
-                </MenuItem>
-                <MenuItem
-                  onClick={handlePickupMenuClose}
-                  component={Link}
-                  to="/logisticsDashboard"
-                  className={`${
-                    location.pathname === "/logisticsDashboard"
-                      ? "text-purple-900"
-                      : "text-gray-700"
-                  }`}
-                >
-                  Logistics Dashboard
-                </MenuItem>
+                {RoleBasedScreens?.PickupManagement?.map((d) => (
+                  <MenuItem
+                    onClick={handlePickupMenuClose}
+                    component={Link}
+                    to={`/${d}`}
+                    className={`${
+                      location.pathname === `/${d}`
+                        ? "text-purple-900"
+                        : "text-gray-700"
+                    }`}
+                  >
+                    {utility.formatRouteName(d)}
+                  </MenuItem>
+                ))}
               </Menu>
             </li>
             <li>
@@ -102,30 +85,20 @@ function Nav() {
                 open={Boolean(rateAnchorEl)}
                 onClose={handleRateMenuClose}
               >
-                <MenuItem
-                  onClick={handleRateMenuClose}
-                  component={Link}
-                  to="/Sale-rates"
-                  className={`${
-                    location.pathname === "/Sale-rates"
-                      ? "text-purple-900"
-                      : "text-gray-700"
-                  }`}
-                >
-                  Sales Rates
-                </MenuItem>
-                <MenuItem
-                  onClick={handleRateMenuClose}
-                  component={Link}
-                  to="/vendor-rates"
-                  className={`${
-                    location.pathname === "/vendor-rates"
-                      ? "text-purple-900"
-                      : "text-gray-700"
-                  }`}
-                >
-                  Vendor Rates
-                </MenuItem>
+                {RoleBasedScreens?.RateManagement?.map((d) => (
+                  <MenuItem
+                    onClick={handlePickupMenuClose}
+                    component={Link}
+                    to={`/${d}`}
+                    className={`${
+                      location.pathname === `/${d}`
+                        ? "text-purple-900"
+                        : "text-gray-700"
+                    }`}
+                  >
+                    {utility.formatRouteName(d)}
+                  </MenuItem>
+                ))}
               </Menu>
             </li>
             <li>
@@ -154,10 +127,19 @@ function Nav() {
             </li>
           </ul>
         </div>
-
         {/* Right Section */}
         <div className="flex items-center gap-6">
           <Avatar>{user?.name?.[0] || "?"}</Avatar>
+          <div className="text-black hidden sm:block">
+            {user ? (
+              <>
+                <p className="font-medium">{user.email}</p>
+                <p>{user.name}</p>
+              </>
+            ) : (
+              <p>Loading user info...</p> // Display loading text or spinner
+            )}
+          </div>
           <button
             onClick={() => {
               localStorage.removeItem("LoginCredentials");
@@ -168,7 +150,6 @@ function Nav() {
             Logout
           </button>
         </div>
-
         {/* Sidebar for Mobile */}
         <div
           className={`fixed top-0 left-0 h-full w-64 bg-white z-20 transform ${
@@ -185,14 +166,13 @@ function Nav() {
               <CloseIcon />
             </button>
           </div>
-
           {/* Menu Items */}
           <ul className="flex flex-col p-4 space-y-2">
             <li>
               <Link
-                to="/PickupBooking"
+                to="/Pickup-Booking"
                 className={`py-2 px-4 text-gray-700 rounded-lg transition-colors duration-200 block ${
-                  location.pathname === "/PickupBooking"
+                  location.pathname === "/Pickup-Booking"
                     ? "bg-purple-100 text-purple-800"
                     : ""
                 } hover:bg-purple-200`}
@@ -203,9 +183,9 @@ function Nav() {
             </li>
             <li>
               <Link
-                to="/allpickups"
+                to="/all-pickups"
                 className={`py-2 px-4 text-gray-700 rounded-lg transition-colors duration-200 block ${
-                  location.pathname === "/allpickups"
+                  location.pathname === "/all-pickups"
                     ? "bg-purple-100 text-purple-800"
                     : ""
                 } hover:bg-purple-200`}
@@ -216,9 +196,9 @@ function Nav() {
             </li>
             <li>
               <Link
-                to="/logisticsDashboard"
+                to="/logistics-Dashboard"
                 className={`py-2 px-4 text-gray-700 rounded-lg transition-colors duration-200 block ${
-                  location.pathname === "/logisticsDashboard"
+                  location.pathname === "/logistics-Dashboard"
                     ? "bg-purple-100 text-purple-800"
                     : ""
                 } hover:bg-purple-200`}
@@ -281,7 +261,6 @@ function Nav() {
             </li>
           </ul>
         </div>
-
         {/* Overlay */}
         {sidebarOpen && (
           <div
@@ -293,4 +272,5 @@ function Nav() {
     </nav>
   );
 }
+
 export default Nav;

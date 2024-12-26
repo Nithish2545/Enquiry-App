@@ -68,8 +68,6 @@ function TrackingDetailsChild({ data }) {
           postData
         );
         const events = response.data.Response.Events;
-        console.log(events);
-  
         // Set the fetched Events data directly to dataSet
         setDataSet(events);
       } catch (error) {

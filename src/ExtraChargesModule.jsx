@@ -7,8 +7,6 @@ const ExtraChargesModule = () => {
   const [charges, setCharges] = useState({}); // Local charges to add for each vendor
   const [vendorNames, setVendorNames] = useState([]); // Unique vendor names
 
-  console.log(vendorNames); // Debugging: Verify vendor names
-
   // Fetch the vendor extra charges from Firestore
   useEffect(() => {
     const fetchVendorRates = async () => {

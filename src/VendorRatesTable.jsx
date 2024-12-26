@@ -47,11 +47,7 @@ const VendorRatesTable = ({ data, selectedVendor }) => {
       const vendorData = data.find((d) => d.id === selectedVendor);
       setFilteredData(vendorData ? [vendorData] : null);
     }
-    console.log(
-      utilityFunctions.calculateCost("Mauritius", 7.000, filteredData)
-    );
   }, [data, selectedVendor]);
-  console.log("filteredData", filteredData);
   return (
     <div className="p-4">
       <h1 className="text-2xl font-semibold mb-4">

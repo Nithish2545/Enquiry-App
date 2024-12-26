@@ -20,7 +20,6 @@ function Pickups() {
   // Fetch user info from localStorage
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("LoginCredentials"));
-    console.log(JSON.parse(localStorage.getItem("LoginCredentials")));
     setUsername(storedUser?.name);
     setRole(storedUser.role);
   }, []);

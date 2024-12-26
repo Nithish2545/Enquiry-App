@@ -35,7 +35,6 @@ function PaymentConfirmationForm() {
   useEffect(() => {
     const fetchDetails = async () => {
       try {
-        console.log();
         // Create a query to fetch documents with status "PAYMENT PENDING" and the given awbNumber
         const q = query(
           collection(
@@ -53,7 +52,6 @@ function PaymentConfirmationForm() {
           id: doc.id,
           ...doc.data(),
         }));
-        console.log("userDetails", userDetails);
 
         // Assuming you want only one result (in case there are multiple matches)
         if (userDetails.length > 0) {
@@ -92,8 +90,6 @@ function PaymentConfirmationForm() {
   };
 
   const validateForm = () => {
-    console.log("paymentProof", paymentProof);
-    console.log("KycImage", KycImage);
     if (!paymentProof && !KycImage) {
       setFormError("Payment proof and KYC Image is required.");
       return false;
@@ -129,10 +125,6 @@ function PaymentConfirmationForm() {
     const doc = new jsPDF("p", "pt");
     const subtotal = parseInt(costKg) * details.actualWeight;
     const nettotal = subtotal - parseInt(discountCost);
-    console.log("costKg", costKg);
-    console.log("discountCost", discountCost);
-    console.log("subtotal", subtotal);
-    console.log("nettotal", nettotal);
     // Add business name and logo
     doc.setFontSize(20);
     doc.addImage("/shiphtlogo.png", "PNG", 40, 30, 180, 60); // Replace with your logo
@@ -283,18 +275,15 @@ function PaymentConfirmationForm() {
       // Get the download URL
       const downloadURL = await getDownloadURL(storageRef);
       // Log the download URL
-      console.log(downloadURL);
       return downloadURL;
     } catch (error) {
       console.error("Error uploading PDF:", error);
     }
   }
   function getTruncatedURL(fullUrl) {
-    console.log("fullUrl", fullUrl);
     const baseUrl =
       "https://firebasestorage.googleapis.com/v0/b/shiphitmobileapppickup-4d0a1.appspot.com/o/";
-    const truncatedResult = fullUrl.replace(baseUrl, "");
-    console.log(truncatedResult);
+     const truncatedResult = fullUrl.replace(baseUrl, "");
     return truncatedResult;
   }
 
@@ -390,8 +379,6 @@ function PaymentConfirmationForm() {
       const response = await axios.post(options.url, options.data, {
         headers: options.headers,
       });
-
-      console.log("WhatsApp message sent: ", response.data);
       setShowPopup(true);
     } catch (error) {
       handleError(error);

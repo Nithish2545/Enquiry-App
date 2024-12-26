@@ -47,7 +47,6 @@ const RateCardForm = () => {
       responses.forEach((response, index) => {
         const sheetName = sheets[index].name;
         const data = response.data.data;
-        console.log("data" , data[8]?.EcoSelf)
         newRateData[sheetName] = data.map((item) => ({
           Weight_slab: item["Weight_slab(" + sheetName + ")"],
           Economy: item.Economy,
@@ -103,14 +102,10 @@ const RateCardForm = () => {
       rateData[country][0]["DAYSTODELIVER"]
     ) {
       setDeliverDays(rateData[country][0]["DAYSTODELIVER"]);
-      console.log(rateData[country]);
-    } else {
+   } else {
       setDeliverDays("");
-      console.log(rateData[country]);
     }
   }, [country, rateData]);
-
-  console.log(selectedRate)
   return (
     <>
       <Nav />

@@ -13,7 +13,6 @@ function getCollection(location) {
 
 function getFranchiseBasedAWb(location) {
   const franchiseLocation = location;
-  console.log(location)
   const collectionName =
     franchiseLocation === "PONDY"
       ? 2000

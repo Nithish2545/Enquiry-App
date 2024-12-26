@@ -67,7 +67,7 @@ function App() {
           />
           {/* Only allow access to other routes if user is logged in */}
           <Route
-            path="/PickupBooking"
+            path="/Pickup-Booking"
             element={user ? <PickupBooking /> : <Navigate to="/signin" />}
           />
           <Route
@@ -83,14 +83,14 @@ function App() {
             element={user ? <Pickups /> : <Navigate to="/signin" />}
           />
           <Route
-            path="/allPickups"
+            path="/all-Pickups"
             element={user ? <AllPickups /> : <Navigate to="/signin" />}
           />
           <Route
             path="/Sale-rates"
             element={user ? <RateCardForm /> : <Navigate to="/signin" />}
           />
-            <Route
+          <Route
             path="/vendor-rates"
             element={user ? <VendorRates /> : <Navigate to="/signin" />}
           />
@@ -99,7 +99,7 @@ function App() {
             element={user ? <PaymentConfirm /> : <Navigate to="/signin" />}
           />
           <Route
-            path="/logisticsDashboard"
+            path="/logistics-Dashboard"
             element={user ? <LogisticsDashboard /> : <Navigate to="/signin" />}
           />
           <Route
@@ -109,13 +109,13 @@ function App() {
             }
           />
           <Route
-            path="/IncentiveReport"
+            path="/Incentive-Report"
             element={user ? <IncentiveReport /> : <Navigate to="/signin" />}
           />
           {/* Sign In route, only accessible if no user is logged in */}
           <Route
             path="/signin"
-            element={!user ? <SignIn /> : <Navigate to="/PickupBooking" />}
+            element={!user ? <SignIn /> : <Navigate to="/Pickup-Booking" />}
           />
         </Routes>
       </div>

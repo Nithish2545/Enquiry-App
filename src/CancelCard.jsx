@@ -53,10 +53,7 @@ function CancelCard({ item, index }) {
         cancelReason: cancelReason, // Add the cancelReason field
         cancelledAt: serverTimestamp(), // Add a cancellation timestamp if needed
       };
-
       await addDoc(collection(db, "cancelled_data"), cancelledData);
-      console.log("Data successfully added to 'cancelled_data' collection");
-
       // Step 3: Delete the matched document from the "pickups" collection
       const userDocRef = doc(
         db,
@@ -66,8 +63,6 @@ function CancelCard({ item, index }) {
         matchedData.id
       );
       await deleteDoc(userDocRef);
-      console.log("Data successfully deleted from 'pickups' collection");
-
       setIsModalOpen(false); // Close the modal after cancellation
     } catch (error) {
       console.error("Error in handling booking cancellation:", error);
@@ -75,19 +70,6 @@ function CancelCard({ item, index }) {
       setIsSubmitting(false); // Stop loading after completion
     }
   };
-
-  // useEffect(() => {
-  //   const fetchDetails = async () => {
-  //     try {
-  //       const result = await axios.get(API_URL);
-  //       const userDetails = result.data.sheet1;
-  //       setDetails(userDetails);
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   };
-  //   fetchDetails();
-  // }, [API_URL]);
 
   const handleCancelClick = () => {
     setIsModalOpen(true); // Open the modal when the cancel button is clicked

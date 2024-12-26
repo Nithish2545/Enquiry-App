@@ -49,10 +49,7 @@ function VendorRates() {
       const reader = new FileReader();
       reader.onload = (e) => {
         const csvData = e.target.result;
-        console.log("csvData", csvData);
         const rawData = csvData.split("\n").filter((row) => row.trim() !== "");
-        console.log("rawData", rawData);
-
         // Split the raw data into rows
         const rows = rawData.map((row) => row.trim().split(","));
 

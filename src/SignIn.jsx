@@ -20,7 +20,6 @@ const SignIn = () => {
     setAuthError(""); // Clear previous error before submission
     try {
       await signInWithEmailAndPassword(auth, data.email, data.password);
-      console.log("You are signed in successfully!");
     } catch (error) {
       console.log(error.code)
       // Set the error message for inline display

@@ -55,6 +55,7 @@ function PickupBooking() {
 
   useEffect(() => {
     var countryData = getData();
+    const updatedCountryData = countryData.map(({ name }) => ({ name }));
     countryData.push({ code: "UAE", name: "United Arab Emirates" });
     countryData.push({ code: "EU", name: "Singapore" });
     countryData.push({ code: "US", name: "USA" });
@@ -62,7 +63,6 @@ function PickupBooking() {
     countryData = countryData.map((country) =>
       country.code == "GB" ? { ...country, name: "United Kingdom" } : country
     );
-    console.log(countryData);
     const topCountries = [
       "USA",
       "United Kingdom",
@@ -108,7 +108,6 @@ function PickupBooking() {
 
   const onSubmit = async (data) => {
     try {
-      console.log(latitudelongitude);
       if (latitudelongitude == "") {
         seterror("Latitude & Longitude  Is Required!");
         return;
@@ -149,7 +148,6 @@ function PickupBooking() {
       // Step 2: Increment awbNumber
       const newAwbNumber = maxAwbNumber + 1;
       const uploadedImageURLs = await uploadImages(files, newAwbNumber);
-      console.log(uploadedImageURLs);
       // Step 3: Store new document
       await addDoc(pickupsRef, {
         // Consignor Data
@@ -236,7 +234,6 @@ function PickupBooking() {
           headers: options.headers,
         }
       );
-      console.log("WhatsApp message sent: ", response.data);
       setShowModal(true);
       setFiles([]);
       reset();
@@ -253,7 +250,6 @@ function PickupBooking() {
 
   const uploadImages = async (images, awbnumber) => {
     const uploadedURLs = [];
-    console.log(`AWB Number: ${awbnumber}`);
     const uploadPromises = images.map((image, index) => {
       const imageRef = ref(storage, `${awbnumber}/KYC/${image.name}`);
       const uploadTask = uploadBytesResumable(imageRef, image);
@@ -271,7 +267,6 @@ function PickupBooking() {
           async () => {
             try {
               const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-              console.log(downloadURL);
               uploadedURLs.push(downloadURL);
               resolve();
             } catch (error) {
@@ -288,7 +283,6 @@ function PickupBooking() {
 
   function openMap() {
     const result = splitLati_Logi(latitudelongitude);
-    console.log(result);
     const googleMapsUrl = `https://www.google.com/maps?q=${result.latitude},${result.longitude}`;
     window.open(googleMapsUrl, "_blank");
   }
@@ -609,7 +603,6 @@ function PickupBooking() {
                 className={`w-full px-3 py-2 border "border-gray-300 rounded-md focus:outline-none focus:border-[#8847D9]`}
                 onChange={(e) => setlatitudelongitude(e.target.value)}
               />
-              {console.log(error)}
               {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
             </div>
             <div className="mb-4">

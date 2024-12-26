@@ -407,7 +407,6 @@ function calculateCost(country, weight, data) {
   }
   const temp = data[0].data;
   const countryIndex = temp[0]["COUNTRY/ZONE"].indexOf(country.trim());
-  console.log(countryIndex)
   if (countryIndex === -1) {
     return `Country ${country} not found.`;
   }
@@ -417,6 +416,33 @@ function calculateCost(country, weight, data) {
     return `Weight ${weight} gms not found.`;
   }
   return weightData[weightKey][countryIndex];
+}
+
+function rolesPermissions() {
+  let { role } = JSON.parse(localStorage.getItem("LoginCredentials"));
+  if (role == "Manager") {
+    return {
+      PickupManagement: [
+        "Pickup-Booking",
+        "all-pickups",
+        "logistics-Dashboard",
+        "Incentive-Report",
+      ],
+      RateManagement: ["Sale-rates", "vendor-rates"],
+    };
+  }
+  if (role == "sales associate" || role == "sales admin") {
+    return {
+      PickupManagement: ["Pickup-Booking", "Pickups"],
+      RateManagement: ["Sale-rates"],
+    };
+  }
+}
+
+function formatRouteName(route) {
+  return route
+    .replace(/-/g, ' ') // Replace hyphens with spaces
+    .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize each word
 }
 
 export default {
@@ -434,4 +460,6 @@ export default {
   fetchStartEndDate: fetchStartEndDate,
   calculateTotalIncentive: calculateTotalIncentive,
   calculateCost: calculateCost,
+  rolesPermissions: rolesPermissions,
+  formatRouteName : formatRouteName
 };
