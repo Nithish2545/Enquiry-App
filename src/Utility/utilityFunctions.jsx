@@ -74,20 +74,14 @@ const formattedLastWeekEnd = Timestamp.fromDate(
   new Date(format(lastWeekEnd, "yyyy-MM-dd"))
 );
 
-async function fetchStartEndDate(DateRange) {
+async function fetchStartEndDate(DateRange, startendrange) {
   return {
-    startDate:
-      DateRange === "This Week"
-        ? timestamptostr(formattedStartDate)
-        : timestamptostr(formattedLastWeekStart),
-    endDate:
-      DateRange === "This Week"
-        ? timestamptostr(formattedEndDate)
-        : timestamptostr(formattedLastWeekEnd),
+    startDate: timestamptostr(startendrange.start),
+    endDate: timestamptostr(startendrange.end),
   };
 }
 
-async function fetchData(DateRange) {
+async function fetchData(DateRange, startendrange) {
   try {
     let queryRef = collection(db, "pickup");
     // Conditional query based on selected DateRange
@@ -101,6 +95,8 @@ async function fetchData(DateRange) {
         collection(db, "pickup"),
         where("status", "in", ["PAYMENT DONE", "SHIPMENT CONNECTED"])
       );
+    } else if (DateRange == "Select range") {
+      console.log("test", DateRange);
     }
 
     const querySnapshot = await getDocs(queryRef);
@@ -116,12 +112,11 @@ async function fetchData(DateRange) {
     // Filter based on the selected DateRange
     const filteredData = updatedData.filter((item) =>
       DateRange === "This Week"
-        ? item.pickupDatetime.seconds >= formattedStartDate.seconds &&
-          item.pickupDatetime.seconds <= formattedEndDate.seconds
-        : item.pickupDatetime.seconds >= formattedLastWeekStart.seconds &&
-          item.pickupDatetime.seconds <= formattedLastWeekEnd.seconds
+        ? item.pickupDatetime.seconds >= startendrange?.start?.seconds &&
+          item.pickupDatetime.seconds <= startendrange?.end?.seconds
+        : item.pickupDatetime.seconds >= startendrange?.start?.seconds &&
+          item.pickupDatetime.seconds <= startendrange?.end?.seconds
     );
-
     return filteredData;
   } catch (error) {
     console.error("Error fetching pickup data:", error);
@@ -129,9 +124,9 @@ async function fetchData(DateRange) {
   }
 }
 
-async function getRevenue(DateRange) {
+async function getRevenue(DateRange, startendrange) {
   var Revenue = 0;
-  await fetchData(DateRange).then((d) => {
+  await fetchData(DateRange, startendrange).then((d) => {
     d?.map((value) => {
       Revenue += value.logisticCost;
     });
@@ -139,14 +134,14 @@ async function getRevenue(DateRange) {
   return Revenue.toFixed(2);
 }
 
-async function getTotalBookings(DateRange) {
-  const FeatchedResult = await fetchData(DateRange);
+async function getTotalBookings(DateRange, startendrange) {
+  const FeatchedResult = await fetchData(DateRange, startendrange);
   return FeatchedResult.length;
 }
 
-async function AvgBookingValue(DateRange) {
-  const revenue = await getRevenue(DateRange);
-  const totalBookings = await getTotalBookings(DateRange);
+async function AvgBookingValue(DateRange, startendrange) {
+  const revenue = await getRevenue(DateRange, startendrange);
+  const totalBookings = await getTotalBookings(DateRange, startendrange);
   const result = totalBookings === 0 ? 0 : revenue / totalBookings;
   return result.toFixed(2);
 }
@@ -171,8 +166,8 @@ async function fetchLoginCredentials() {
   return finalLoginCre;
 }
 
-const groupByPickupBookedBy = async (DateRange) => {
-  const data = await fetchData(DateRange);
+const groupByPickupBookedBy = async (DateRange, startendrange) => {
+  const data = await fetchData(DateRange, startendrange);
   const convertToDate = (timestamp) => {
     const date = new Date(timestamp.seconds * 1000);
     const day = String(date.getDate()).padStart(2, "0");
@@ -201,9 +196,8 @@ const groupByPickupBookedBy = async (DateRange) => {
   }, {});
 };
 
-async function TopPerformer(DateRange) {
-  const data = await groupByPickupBookedBy(DateRange);
-
+async function TopPerformer(DateRange, startendrange) {
+  const data = await groupByPickupBookedBy(DateRange, startendrange);
   let topPerformer = { name: null, totalCost: 0, totalBookings: 0 };
   for (const person in data) {
     const bookings = data[person].bookings;
@@ -232,19 +226,17 @@ function IncentiveCalculator(BookingCount) {
   return 0; // Default, no incentive
 }
 
-async function calculateTotalIncentive(DateRange, name) {
-  let data = await transformData(DateRange);
+async function calculateTotalIncentive(DateRange, startendrange, name) {
+  let data = await transformData(DateRange, startendrange);
   data = [data.find((d) => d.name == name)];
   let totalIncentive = 0;
   for (const person in data) {
     if (person !== "name") {
       const personData = data[person];
-
       for (const dayKey in personData) {
         if (dayKey !== "name") {
           const dayData = personData[dayKey];
           const bookingCount = dayData.bookings.length;
-
           // Only calculate incentive if bookings are greater than or equal to 3
           if (bookingCount >= 3) {
             const dayIncentive = IncentiveCalculator(bookingCount);
@@ -258,8 +250,8 @@ async function calculateTotalIncentive(DateRange, name) {
 }
 
 // Transform data into the required format
-const transformData = async (DateRange) => {
-  const data = await fetchData(DateRange);
+const transformData = async (DateRange, startendrange) => {
+  const data = await fetchData(DateRange, startendrange);
   // Convert Firebase timestamp to dd-mm-yyyy format
   const convertToDate = (timestamp) => {
     const date = new Date(timestamp.seconds * 1000);
@@ -289,15 +281,13 @@ const transformData = async (DateRange) => {
         ...item,
         pickupDatetime: formattedDate,
       });
-
       return result;
     }, {})
   );
 };
 
-const downloadCSV = async (person, DateRange) => {
-  var dataset = await transformData(DateRange);
-
+const downloadCSV = async (person, DateRange, startendrange) => {
+  var dataset = await transformData(DateRange, startendrange);
   // Filter dataset for the specified person
   dataset = [dataset.find((entry) => entry.name === person)];
   if (dataset[0] == null) {

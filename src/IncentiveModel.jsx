@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import utility from "./Utility/utilityFunctions";
 import { Avatar } from "@mui/material";
 import Nav from "./Nav";
+import { format, startOfWeek, addDays, subWeeks } from "date-fns";
+import { Timestamp } from "firebase/firestore";
 function IncentiveModel() {
   const [DateRange, setDateRange] = useState("Last Week"); // Default value set to "This Week"
   const [data, setData] = useState({
@@ -13,13 +15,78 @@ function IncentiveModel() {
     topPerformer: "",
     startEnddate: {},
   });
+
+  function extractDate(dateString) {
+    // Split the string at the '&' character and return the first part (the date)
+    const datePart = dateString.split(" &")[0];
+    return datePart;
+  }
+  function convertDateToTimestamp(dateString) {
+    console.log(dateString);
+    const result = extractDate(dateString);
+    const [day, month, year] = result.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
+    const seconds = Math.floor(date.getTime() / 1000);
+    const nanoseconds = (date.getTime() % 1000) * 1e6;
+    return {
+      seconds,
+      nanoseconds,
+    };
+  }
   const [incentive, setIncentive] = useState({});
+  const [startendrange, setstartEnddate] = useState({});
+  const [StartDatecustome, setStartDatecustome] = useState({});
+  const [endDatecustome, setstartEnddatecustome] = useState({});
+  const currentDate = new Date();
+
+  // Get current week's range (Saturday to Friday)
+  const currentWeekStart = startOfWeek(currentDate, { weekStartsOn: 6 }); // Start on Saturday
+  const currentWeekEnd = addDays(currentWeekStart, 6); // End on Friday
+  // Get last week's range (Saturday to Friday)
+  const lastWeekStart = subWeeks(currentWeekStart, 1);
+  const lastWeekEnd = addDays(lastWeekStart, 6);
+  // Format dates to "yyyy-MM-dd" format for comparison
+  const formattedStartDate = Timestamp.fromDate(
+    new Date(format(currentWeekStart, "yyyy-MM-dd"))
+  );
+  const formattedEndDate = Timestamp.fromDate(
+    new Date(format(currentWeekEnd, "yyyy-MM-dd"))
+  );
+
+  const formattedLastWeekStart = Timestamp.fromDate(
+    new Date(format(lastWeekStart, "yyyy-MM-dd"))
+  );
+
+  const formattedLastWeekEnd = Timestamp.fromDate(
+    new Date(format(lastWeekEnd, "yyyy-MM-dd"))
+  );
 
   function getSalesPersonBookings(person) {
     return data.groupedData[person]?.bookings.length
       ? data.groupedData[person]?.bookings.length
       : 0;
   }
+  useEffect(() => {
+    if (DateRange === "Last Week") {
+      setstartEnddate({
+        start: formattedLastWeekStart,
+        end: formattedLastWeekEnd,
+      });
+    } else if (DateRange === "This Week") {
+      setstartEnddate({
+        start: formattedStartDate,
+        end: formattedEndDate,
+      });
+    }
+    if (DateRange === "Select range") {
+      console.log("StartDatecustome" , StartDatecustome)
+      console.log("endDatecustome" , endDatecustome)
+      setstartEnddate({
+        start: StartDatecustome,
+        end: endDatecustome,
+      });
+    }
+  }, [DateRange]); // Update startEnddate when DateRange changes
 
   useEffect(() => {
     async function getData() {
@@ -33,13 +100,13 @@ function IncentiveModel() {
           topPerformer,
           startEnddate,
         ] = await Promise.all([
-          utility.getRevenue(DateRange),
-          utility.getTotalBookings(DateRange),
-          utility.AvgBookingValue(DateRange),
-          utility.fetchLoginCredentials(DateRange),
-          utility.groupByPickupBookedBy(DateRange),
-          utility.TopPerformer(DateRange),
-          utility.fetchStartEndDate(DateRange),
+          utility.getRevenue(DateRange, startendrange),
+          utility.getTotalBookings(DateRange, startendrange),
+          utility.AvgBookingValue(DateRange, startendrange),
+          utility.fetchLoginCredentials(DateRange, startendrange),
+          utility.groupByPickupBookedBy(DateRange, startendrange),
+          utility.TopPerformer(DateRange, startendrange),
+          utility.fetchStartEndDate(DateRange, startendrange),
         ]);
         setData({
           revenue,
@@ -54,22 +121,23 @@ function IncentiveModel() {
         console.error("Error fetching data:", error);
       }
     }
-    getData();
-  }, [DateRange]);
+
+    if (startendrange.start && startendrange.end) {
+      getData(); // Fetch data only when startendrange is ready
+    }
+  }, [startendrange]); // Trigger fetch when startendrange updates
 
   function FirtLetterCaps(name) {
     return name?.charAt(0).toUpperCase() + name?.slice(1);
   }
 
-  async function findIncentive(dateRange, name) {
-    return 0;
-  }
+  useEffect(() => {}, [DateRange]);
 
   useEffect(() => {
     // Fetch incentives for each row (name)
     data.loginCredentials.forEach((row) => {
       utility
-        .calculateTotalIncentive(DateRange, row.name)
+        .calculateTotalIncentive(DateRange, startendrange, row.name)
         .then((incentive) => {
           setIncentive((prevIncentives) => ({
             ...prevIncentives,
@@ -78,6 +146,7 @@ function IncentiveModel() {
         });
     });
   }, [data]);
+
   return (
     <div>
       <Nav />
@@ -111,7 +180,7 @@ function IncentiveModel() {
                 <select
                   id="date-range"
                   name="dateRange"
-                  className="w-full border border-gray-300 rounded-md p-2 focus:ring-purple-500 focus:border-purple-500"
+                  className="w-full border border-gray-300 rounded-md p-3 bg-white text-gray-800 focus:ring-purple-500 focus:border-purple-500 transition duration-200"
                   value={DateRange}
                   onChange={(e) => setDateRange(e.target.value)}
                 >
@@ -120,13 +189,64 @@ function IncentiveModel() {
                   <option value="Last Week">Last Week</option>
                 </select>
               </div>
+              {DateRange === "Select range" && (
+                <div className="sm:col-span-2 bg-gray-50 p-4 border border-gray-300 rounded-lg shadow-sm">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Select Custom Date Range
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        htmlFor="start-date"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        Start Date
+                      </label>
+                      <input
+                        type="date"
+                        id="start-date"
+                        onChange={(e) => {
+                          const date = new Date(e.target.value);
+                          const formattedDate = `${String(
+                            date.getDate()
+                          ).padStart(2, "0")}-${String(
+                            date.getMonth() + 1
+                          ).padStart(2, "0")}-${date.getFullYear()}`;
+                          setStartDatecustome(
+                            convertDateToTimestamp(formattedDate)
+                          );
+                        }}
+                        className="w-full border border-gray-300 rounded-md p-3 focus:ring-purple-500 focus:border-purple-500 text-gray-800 bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="end-date"
+                        className="block text-sm font-medium text-gray-700 mb-1"
+                      >
+                        End Date
+                      </label>
+                      <input
+                        type="date"
+                        id="end-date"
+                        onChange={(e) => {
+                          const date = new Date(e.target.value);
+                          const formattedDate = `${String(
+                            date.getDate()
+                          ).padStart(2, "0")}-${String(
+                            date.getMonth() + 1
+                          ).padStart(2, "0")}-${date.getFullYear()}`;
+                          setstartEnddatecustome(
+                            convertDateToTimestamp(formattedDate)
+                          );
+                        }}
+                        className="w-full border border-gray-300 rounded-md p-3 focus:ring-purple-500 focus:border-purple-500 text-gray-800 bg-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-            {/* <button
-              type="submit"
-              className="w-full sm:w-auto bg-purple-600 text-white py-2 px-6 rounded-md hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 transition-all duration-200"
-            >
-              Apply Filters
-            </button> */}
           </div>
         </div>
         {/* Sales Overview Section */}
@@ -206,7 +326,9 @@ function IncentiveModel() {
                 {/* Download Report Button */}
                 <button
                   className="flex items-center justify-center bg-purple-600 py-3 px-4 rounded-lg text-white font-medium gap-2 hover:bg-purple-700 focus:ring focus:ring-purple-300 transition-all"
-                  onClick={() => utility.downloadCSV(d.name, DateRange)}
+                  onClick={() =>
+                    utility.downloadCSV(d.name, DateRange, startendrange)
+                  }
                 >
                   <img
                     className="w-5 h-5"
@@ -267,7 +389,13 @@ function IncentiveModel() {
                     </td>
                     <td className="px-6 py-4 text-center text-base text-gray-800 font-medium border-b border-gray-300">
                       <button
-                        onClick={() => utility.downloadCSV(row.name, DateRange)}
+                        onClick={() =>
+                          utility.downloadCSV(
+                            row.name,
+                            DateRange,
+                            startendrange
+                          )
+                        }
                         className="text-purple-600 underline hover:text-purple-800"
                       >
                         Download Report
