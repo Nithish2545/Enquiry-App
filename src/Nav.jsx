@@ -25,7 +25,6 @@ function Nav() {
 
   const handleRateMenuOpen = (event) => setRateAnchorEl(event.currentTarget);
   const handleRateMenuClose = () => setRateAnchorEl(null);
-  console.log(RoleBasedScreens);
 
   return (
     <nav className="sticky top-0 z-40 flex items-center justify-between bg-purple-400 p-4 shadow-md">
@@ -168,71 +167,37 @@ function Nav() {
           </div>
           {/* Menu Items */}
           <ul className="flex flex-col p-4 space-y-2">
-            <li>
-              <Link
-                to="/Pickup-Booking"
-                className={`py-2 px-4 text-gray-700 rounded-lg transition-colors duration-200 block ${
-                  location.pathname === "/Pickup-Booking"
-                    ? "bg-purple-100 text-purple-800"
-                    : ""
-                } hover:bg-purple-200`}
-                onClick={() => setSidebarOpen(false)}
-              >
-                Pickup Booking
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/all-pickups"
-                className={`py-2 px-4 text-gray-700 rounded-lg transition-colors duration-200 block ${
-                  location.pathname === "/all-pickups"
-                    ? "bg-purple-100 text-purple-800"
-                    : ""
-                } hover:bg-purple-200`}
-                onClick={() => setSidebarOpen(false)}
-              >
-                All Pickups
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/logistics-Dashboard"
-                className={`py-2 px-4 text-gray-700 rounded-lg transition-colors duration-200 block ${
-                  location.pathname === "/logistics-Dashboard"
-                    ? "bg-purple-100 text-purple-800"
-                    : ""
-                } hover:bg-purple-200`}
-                onClick={() => setSidebarOpen(false)}
-              >
-                Logistics Dashboard
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/Sale-rates"
-                className={`py-2 px-4 text-gray-700 rounded-lg transition-colors duration-200 block ${
-                  location.pathname === "/Sale-rates"
-                    ? "bg-purple-100 text-purple-800"
-                    : ""
-                } hover:bg-purple-200`}
-                onClick={() => setSidebarOpen(false)}
-              >
-                Sales Rates
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/vendor-rates"
-                className={`py-2 px-4 text-gray-700 rounded-lg transition-colors duration-200 block ${
-                  location.pathname === "/vendor-rates"
-                    ? "bg-purple-100 text-purple-800"
-                    : ""
-                } hover:bg-purple-200`}
-                onClick={() => setSidebarOpen(false)}
-              >
-                Vendor Rates
-              </Link>
-            </li>
+            {RoleBasedScreens?.PickupManagement?.map((d) => (
+              <li>
+                <Link
+                  to={`/${d}`}
+                  className={`py-2 px-4 text-gray-700 rounded-lg transition-colors duration-200 block ${
+                    location.pathname === `/${d}`
+                      ? "bg-purple-100 text-purple-800"
+                      : ""
+                  } hover:bg-purple-200`}
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  {utility.formatRouteName(d)}
+                </Link>
+              </li>
+            ))}
+            {RoleBasedScreens?.RateManagement?.map((d) => (
+              <li>
+                <Link
+                  to={`/${d}`}
+                  className={`py-2 px-4 text-gray-700 rounded-lg transition-colors duration-200 block ${
+                    location.pathname === `/${d}`
+                      ? "bg-purple-100 text-purple-800"
+                      : ""
+                  } hover:bg-purple-200`}
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  {utility.formatRouteName(d)}
+                </Link>
+              </li>
+            ))}
+
             <li>
               <Link
                 to="/Payment-confirm"
@@ -272,5 +237,4 @@ function Nav() {
     </nav>
   );
 }
-
 export default Nav;

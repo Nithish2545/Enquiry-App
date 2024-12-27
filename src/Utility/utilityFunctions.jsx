@@ -441,7 +441,7 @@ function rolesPermissions() {
 
 function formatRouteName(route) {
   return route
-    .replace(/-/g, ' ') // Replace hyphens with spaces
+    .replace(/-/g, " ") // Replace hyphens with spaces
     .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize each word
 }
 
@@ -461,5 +461,5 @@ export default {
   calculateTotalIncentive: calculateTotalIncentive,
   calculateCost: calculateCost,
   rolesPermissions: rolesPermissions,
-  formatRouteName : formatRouteName
+  formatRouteName: formatRouteName,
 };

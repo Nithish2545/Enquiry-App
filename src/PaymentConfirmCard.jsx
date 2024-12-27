@@ -252,31 +252,11 @@ function PaymentConfirmCard({ item, index }) {
       doc.internal.pageSize.height - 30
     );
 
-    // // Save the PDF as a Blob
-    // const pdfBlob = doc.output("blob");
-
-    // // Reference to Firebase Storage
-    // const storagePath = `${item.awbNumber}/receipt/Receipt_${item.consignorname}.pdf`;
-    // const storageRef = ref(storage, storagePath);
-
-    // try {
-    //   // Upload the PDF Blob to Firebase Storage
-    //   await uploadBytes(storageRef, pdfBlob);
-    //   // Get the download URL
-    //   const downloadURL = await getDownloadURL(storageRef);
-    //   // Log the download URL
-    //   console.log("PDF stored successfully! Download URL:", downloadURL);
-    //   console.log(":", downloadURL);
-    // } catch (error) {
-    //   console.error("Error uploading PDF:", error);
-    // }
-
-    // Save the PDF
     doc.save(`Receipt_${item.consignorname}.pdf`);
   }
 
   const allowedStatuses = ["PAYMENT DONE", "SHIPMENT CONNECTED"];
-  
+
   return (
     <div
       key={index}
@@ -349,7 +329,9 @@ function PaymentConfirmCard({ item, index }) {
           </p>
           <p
             className={`rounded-full py-1 px-3 text-sm font-semibold text-center ${
-              allowedStatuses.includes(item.status) ? "bg-green-500" : "bg-red-500"
+              allowedStatuses.includes(item.status)
+                ? "bg-green-500"
+                : "bg-red-500"
             } text-white`}
           >
             {item.status}

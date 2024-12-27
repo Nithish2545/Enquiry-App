@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { getData } from "country-list";
 import Nav from "./Nav";
 import { db, storage } from "./firebase";
@@ -32,6 +32,7 @@ function PickupBooking() {
   }
 
   const {
+    control,
     register,
     handleSubmit,
     formState: { errors },
@@ -387,7 +388,8 @@ function PickupBooking() {
                   type="text"
                   placeholder="Enter consignee name"
                   {...register("consigneename", {
-                    // required: "Consignee name is required",
+                    // testing....
+                    required: "Consignee name is required",
                   })}
                   className={`w-full px-3 py-2 border ${
                     errors.consigneename ? "border-red-500" : "border-gray-300"
@@ -408,11 +410,11 @@ function PickupBooking() {
                   type="text"
                   placeholder="Enter consignee phone number"
                   {...register("consigneenumber", {
-                    // required: "consignee phone number is required",
-                    // pattern: {
-                    //   value: /^[0-9]+$/,
-                    //   message: "Please enter a valid phone number",
-                    // },
+                    required: "consignee phone number is required",
+                    pattern: {
+                      value: /^[0-9]+$/,
+                      message: "Please enter a valid phone number",
+                    },
                   })}
                   className={`w-full px-3 py-2 border ${
                     errors.consigneenumber
@@ -426,7 +428,6 @@ function PickupBooking() {
                   </p>
                 )}
               </div>
-
               <div className="mb-4">
                 <label className="block text-gray-700 font-semibold mb-2">
                   Consignee address:
@@ -435,7 +436,7 @@ function PickupBooking() {
                   type="text"
                   placeholder="Enter consignee location"
                   {...register("consigneelocation", {
-                    // required: "Enter consignee location",
+                    required: "Enter consignee location",
                   })}
                   className={`w-full px-3 py-2 border ${
                     errors.consigneelocation
@@ -669,33 +670,6 @@ function PickupBooking() {
                 </p>
               )}
             </div>
-            {/* {JSON.parse(localStorage.getItem("LoginCredentials")).Location ==
-            "CHENNAI" ? (
-              <div>
-                <p className="text-gray-700 font-semibold mb-2">Franchise</p>
-                <select
-                  className="w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:border-[#8847D9]"
-                  {...register("franchise", {
-                    required: "Franchise is required",
-                  })}
-                  onChange={(e) => {
-                    setfrachise(e.target.value);
-                  }}
-                >
-                  <option value="">Select</option>
-                  <option value="CHENNAI">CHENNAI</option>
-                  <option value="COIMBATORE">COIMBATORE</option>
-                  <option value="PONDY">PONDY</option>
-                </select>
-                {errors.franchise && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.franchise.message}
-                  </p>
-                )}
-              </div>
-            ) : (
-              ""
-            )} */}
             <div>
               <p className="text-gray-700 font-semibold mb-2">Service</p>
               <select
@@ -761,23 +735,46 @@ function PickupBooking() {
             <label className="block text-gray-700 font-semibold mb-2">
               Upload KYC Image (PDF Only):
             </label>
-            <input
-              type="file"
-              accept=".pdf"
-              onChange={(e) => {
-                const file = e.target.files[0]; // Get the first selected file
-                if (file) {
-                  setFiles([file]); // Set the state to an array containing the selected file
-                } else {
-                  setFiles([]); // Clear files if no file is selected
-                }
+            <Controller
+              name="kycFile"
+              control={control}
+              rules={{
+                required: "Upload KYC Image",
+                validate: (value) => {
+                  if (files.length === 0) return "File is required.";
+                  const file = files[0];
+                  if (file.type !== "application/pdf") {
+                    return "Only PDF files are allowed.";
+                  }
+                  return true;
+                },
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#8847D9]"
+              render={({ field }) => (
+                <input
+                  type="file"
+                  accept=".pdf"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      setFiles([file]); // Update state with the selected file
+                      field.onChange(e.target.files); // Update form state
+                    } else {
+                      setFiles([]); // Clear files if no file is selected
+                      field.onChange([]); // Clear form state
+                    }
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#8847D9]"
+                />
+              )}
             />
+            {errors.kycFile && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.kycFile.message}
+              </p>
+            )}
             {files.length > 0 && (
               <div className="mt-2">
                 <p className="text-gray-700">{files[0].name}</p>{" "}
-                {/* Display the name of the uploaded file */}
               </div>
             )}
           </div>
