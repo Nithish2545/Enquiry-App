@@ -79,8 +79,8 @@ function IncentiveModel() {
       });
     }
     if (DateRange === "Select range") {
-      console.log("StartDatecustome" , StartDatecustome)
-      console.log("endDatecustome" , endDatecustome)
+      console.log("StartDatecustome", StartDatecustome);
+      console.log("endDatecustome", endDatecustome);
       setstartEnddate({
         start: StartDatecustome,
         end: endDatecustome,
@@ -125,13 +125,11 @@ function IncentiveModel() {
     if (startendrange.start && startendrange.end) {
       getData(); // Fetch data only when startendrange is ready
     }
-  }, [startendrange]); // Trigger fetch when startendrange updates
+  }, [startendrange, DateRange]); // Trigger fetch when startendrange updates
 
   function FirtLetterCaps(name) {
     return name?.charAt(0).toUpperCase() + name?.slice(1);
   }
-
-  useEffect(() => {}, [DateRange]);
 
   useEffect(() => {
     // Fetch incentives for each row (name)
@@ -243,6 +241,17 @@ function IncentiveModel() {
                         className="w-full border border-gray-300 rounded-md p-3 focus:ring-purple-500 focus:border-purple-500 text-gray-800 bg-white"
                       />
                     </div>
+                    <button
+                    className="bg-purple-500 p-3 rounded-md text-white font-semibold"
+                      onClick={() => {
+                        setstartEnddate({
+                          start: StartDatecustome,
+                          end: endDatecustome,
+                        });
+                      }}
+                    >
+                      Apply
+                    </button>
                   </div>
                 </div>
               )}
