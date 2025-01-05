@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Nav from "./Nav";
+import utilityFunctions from "./Utility/utilityFunctions";
 
 const RateCardForm = () => {
   const [country, setCountry] = useState("USA");
@@ -55,13 +56,13 @@ const RateCardForm = () => {
           ZONES: item.ZONES,
           INSTRUCTIONS: item.INSTRUCTIONS,
           DAYSTODELIVER: item.DAYSTODELIVER,
-          EcoSelf:item.EcoSelf
+          EcoSelf: item.EcoSelf,
         }));
       });
 
       setRateData(newRateData);
     } catch (error) {
-      console.error("Error fetching data from Google Sheets", error);
+      utilityFunctions.ErrorNotify("Failed to fetch data from Google Sheets.");
     }
   };
 
@@ -102,7 +103,7 @@ const RateCardForm = () => {
       rateData[country][0]["DAYSTODELIVER"]
     ) {
       setDeliverDays(rateData[country][0]["DAYSTODELIVER"]);
-   } else {
+    } else {
       setDeliverDays("");
     }
   }, [country, rateData]);
@@ -173,7 +174,6 @@ const RateCardForm = () => {
                     <th className="px-2 lg:px-4 py-2">Express</th>
                     <th className="px-2 lg:px-4 py-2">EcoDutyFree</th>
                     <th className="px-2 lg:px-4 py-2">Eco Self</th>
-                    
                   </tr>
                 </thead>
                 <tbody>

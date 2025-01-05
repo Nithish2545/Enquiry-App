@@ -19,6 +19,8 @@ import AllPickups from "./AllPickups";
 import IncentiveReport from "./IncentiveModel";
 import VendorRates from "./VendorRates";
 import ExtraChargesModule from "./ExtraChargesModule";
+import toast, { Toaster } from "react-hot-toast";
+
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -59,6 +61,7 @@ function App() {
   return (
     <Router>
       <div>
+        <Toaster />
         <Routes>
           {/* If user is not present, redirect to SignIn */}
           <Route

@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 import collectionName_BaseAwb from "./functions/collectionName";
+import utilityFunctions from "./Utility/utilityFunctions";
 
 function CancelCard({ item, index }) {
   // const [details, setDetails] = useState(null);
@@ -65,7 +66,7 @@ function CancelCard({ item, index }) {
       await deleteDoc(userDocRef);
       setIsModalOpen(false); // Close the modal after cancellation
     } catch (error) {
-      console.error("Error in handling booking cancellation:", error);
+      utilityFunctions.ErrorNotify("Error in handling booking cancellation.");
     } finally {
       setIsSubmitting(false); // Stop loading after completion
     }

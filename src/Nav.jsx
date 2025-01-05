@@ -14,6 +14,17 @@ function Nav() {
   const [pickupAnchorEl, setPickupAnchorEl] = useState(null); // Pickup dropdown state
   const [rateAnchorEl, setRateAnchorEl] = useState(null); // Rate dropdown state
   const [RoleBasedScreens, setRoleBasedScreens] = useState({});
+
+  function roleFormate(role) {
+    const formattedRole = role
+      ?.split(" ") // Split the string into words
+      ?.map(
+        (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      ) // Capitalize the first letter of each word
+      ?.join(" "); // Join the words back into a single string
+
+    return formattedRole; // Output: "Sales Admin"
+  }
   useEffect(() => {
     setUser(JSON.parse(localStorage.getItem("LoginCredentials")));
     setRoleBasedScreens(utility.rolesPermissions());
@@ -127,16 +138,21 @@ function Nav() {
           </ul>
         </div>
         {/* Right Section */}
-        <div className="flex items-center gap-6">
-          <Avatar>{user?.name?.[0] || "?"}</Avatar>
-          <div className="text-black hidden sm:block">
+        <div className="flex items-center gap-6 bg-purple-400  rounded-lg">
+          <Avatar className="bg-purple-600 text-white p-3 text-lg font-semibold">
+            {user?.name?.[0] || "?"}
+          </Avatar>
+          <div className="text-gray-900 hidden sm:block">
             {user ? (
               <>
-                <p className="font-medium">{user.email}</p>
-                <p>{user.name}</p>
+                <p className="font-semibold text-xl">{user.email}</p>
+                <p className="text-md text-gray-800 font-medium mt-1">
+                  {roleFormate(user?.role)}
+                </p>{" "}
+                {/* Improved readability of role */}
               </>
             ) : (
-              <p>Loading user info...</p> // Display loading text or spinner
+              <p className="text-gray-500">Loading user info...</p>
             )}
           </div>
           <button
@@ -144,11 +160,12 @@ function Nav() {
               localStorage.removeItem("LoginCredentials");
               auth.signOut();
             }}
-            className="bg-white text-purple-700 font-semibold p-1 pl-4 pr-5 rounded-sm"
+            className="bg-white text-purple-700 font-semibold py-2 px-6 rounded-md hover:bg-purple-50 transition-all ease-in-out"
           >
             Logout
           </button>
         </div>
+
         {/* Sidebar for Mobile */}
         <div
           className={`fixed top-0 left-0 h-full w-64 bg-white z-20 transform ${

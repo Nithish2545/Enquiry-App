@@ -4,6 +4,7 @@ import PaymentConfirmCard from "./PaymentConfirmCard";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "./firebase";
 import collectionName_BaseAwb from "./functions/collectionName";
+import utilityFunctions from "./Utility/utilityFunctions";
 function PaymentConfirm() {
   const [data, setData] = useState([]);
   const [activeTab, setActiveTab] = useState("PAYMENT PENDING");
@@ -36,7 +37,9 @@ function PaymentConfirm() {
         setData(documents); // Update the state with the latest data from Firestore
       },
       (error) => {
-        console.error("Error fetching Firestore data: ", error);
+        utilityFunctions.ErrorNotify(
+          "Data retrieval failed. Please try again."
+        );
       }
     );
 

@@ -3,6 +3,7 @@ import Nav from "./Nav";
 import { collection, query, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
 import collectionName_BaseAwb from "./functions/collectionName";
+import utilityFunctions from "./Utility/utilityFunctions";
 
 function Pickups() {
   const [username, setUsername] = useState(null);
@@ -94,13 +95,17 @@ function Pickups() {
                 setLoading(false);
               })
               .catch((error) => {
-                setError("Failed to fetch data: " + error.message);
+                utilityFunctions.ErrorNotify(
+                  "Unable to retrieve data. Please try again later."
+                );
                 setLoading(false);
               });
             // Cleanup subscription on unmount
             return () => unsubscribes.forEach((unsubscribe) => unsubscribe());
           } catch (error) {
-            setError("Failed to fetch data: " + error.message);
+            utilityFunctions.ErrorNotify(
+              "Unable to retrieve data. Please try again later."
+            );
             setLoading(false);
           }
         };
@@ -139,7 +144,9 @@ function Pickups() {
           // Cleanup subscription on unmount
           return () => unsubscribe();
         } catch (error) {
-          setError("Failed to fetch data: " + error.message);
+          utilityFunctions.ErrorNotify(
+            "Unable to retrieve data. Please try again later."
+          );
           setLoading(false);
         }
       };

@@ -7,6 +7,7 @@ import {
 } from "firebase/firestore";
 import { format, startOfWeek, addDays, subWeeks } from "date-fns";
 import { db } from "../firebase";
+import toast from "react-hot-toast";
 
 function extractDate(dateString) {
   // Split the string at the '&' character and return the first part (the date)
@@ -435,6 +436,67 @@ function formatRouteName(route) {
     .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize each word
 }
 
+function ErrorNotify(value) {
+  toast.error(value, {
+    duration: 4000,
+    position: "top-right",
+
+    // Styling
+    style: {},
+    className: "",
+
+    // Custom Icon
+    icon: "❌", // Change icon to represent an error
+
+    // Change colors of error icon
+    iconTheme: {
+      primary: "#ff0000", // Red for error
+      secondary: "#fff", // White for contrast
+    },
+
+    // Aria
+    ariaProps: {
+      role: "alert", // Role for error message
+      "aria-live": "assertive", // More urgent for errors
+    },
+
+    // Message
+    message: "Invalid email or password. Please try again.",
+
+    // Additional Configuration
+    removeDelay: 1000,
+  });
+}
+
+function SuccessNotify(value) {
+  toast.success(value, {
+    duration: 4000,
+    position: "top-right",
+
+    // Styling
+    style: {},
+    className: "",
+
+    // Custom Icon
+    icon: "✅", // Change icon to represent success
+
+    // Change colors of success icon
+    iconTheme: {
+      primary: "#28a745", // Green for success
+      secondary: "#fff", // White for contrast
+    },
+
+    // Aria
+    ariaProps: {
+      role: "status", // Role for success message
+      "aria-live": "polite", // Less urgent for success
+    },
+
+    // Additional Configuration
+    removeDelay: 1000,
+  });
+}
+
 export default {
   getRevenue: getRevenue,
   getTotalBookings: getTotalBookings,
@@ -452,4 +514,6 @@ export default {
   calculateCost: calculateCost,
   rolesPermissions: rolesPermissions,
   formatRouteName: formatRouteName,
+  ErrorNotify: ErrorNotify,
+  SuccessNotify: SuccessNotify,
 };

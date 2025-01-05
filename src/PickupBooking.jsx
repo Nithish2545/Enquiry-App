@@ -7,6 +7,7 @@ import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { addDoc, collection, getDocs } from "firebase/firestore";
 import axios from "axios";
 import collectionName_baseAwb from "./functions/collectionName";
+import utility from "./Utility/utilityFunctions";
 function PickupBooking() {
   const [loading, setLoading] = useState(false);
   const [countries, setCountries] = useState([]);
@@ -235,11 +236,12 @@ function PickupBooking() {
           headers: options.headers,
         }
       );
-      setShowModal(true);
+      // setShowModal(true);
+      utility.SuccessNotify("Pickup request submitted successfully.");
       setFiles([]);
       reset();
     } catch (error) {
-      console.error("Error adding document: ", error);
+      utility.ErrorNotify("Failed to book the pickup. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -277,7 +279,6 @@ function PickupBooking() {
         );
       });
     });
-
     await Promise.all(uploadPromises);
     return uploadedURLs;
   };

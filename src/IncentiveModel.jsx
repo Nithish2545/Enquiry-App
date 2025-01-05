@@ -4,6 +4,7 @@ import { Avatar } from "@mui/material";
 import Nav from "./Nav";
 import { format, startOfWeek, addDays, subWeeks } from "date-fns";
 import { Timestamp } from "firebase/firestore";
+import utilityFunctions from "./Utility/utilityFunctions";
 function IncentiveModel() {
   const [DateRange, setDateRange] = useState("Last Week"); // Default value set to "This Week"
   const [data, setData] = useState({
@@ -79,8 +80,6 @@ function IncentiveModel() {
       });
     }
     if (DateRange === "Select range") {
-      console.log("StartDatecustome", StartDatecustome);
-      console.log("endDatecustome", endDatecustome);
       setstartEnddate({
         start: StartDatecustome,
         end: endDatecustome,
@@ -118,7 +117,7 @@ function IncentiveModel() {
           startEnddate,
         });
       } catch (error) {
-        console.error("Error fetching data:", error);
+        utilityFunctions.ErrorNotify("Data fetch failed. Please try again.");
       }
     }
 
@@ -242,7 +241,7 @@ function IncentiveModel() {
                       />
                     </div>
                     <button
-                    className="bg-purple-500 p-3 rounded-md text-white font-semibold"
+                      className="bg-purple-500 p-3 rounded-md text-white font-semibold"
                       onClick={() => {
                         setstartEnddate({
                           start: StartDatecustome,
