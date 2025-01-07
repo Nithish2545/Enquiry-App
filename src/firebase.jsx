@@ -23,6 +23,7 @@ export const db = getFirestore();
 export const messaging = getMessaging();
 
 export const generateToken = async () => {
+  console.log(currentToken);
   await getToken(messaging, {
     vapidKey:
       "BMnNnQ4wSQVf1bXSOE-_iuTEYhpUt99RBRh4fssB83LBIVABpz97T1fVqt1EqiXLS9DKaM4gygiPUsx2-RoSUz4",
