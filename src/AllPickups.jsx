@@ -214,7 +214,9 @@ function Pickups() {
             onChange={(e) => {
               const dateValue = e.target.value; // e.g., "2024-10-07"
               const [year, month, day] = dateValue.split("-");
-              const result = `${parseInt(day)}-${parseInt(month)}`;
+              const result = `${parseInt(day)}-${parseInt(month)}-${parseInt(
+                year
+              )}`;
               setDateSearchTerm(result);
             }}
             className="border border-gray-300 rounded py-2 px-4 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-purple-600"

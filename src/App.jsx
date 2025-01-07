@@ -10,7 +10,7 @@ import PaymentConfirm from "./PaymentConfirm";
 import PaymentConfirmationForm from "./PaymentConfirmationForm";
 import SignIn from "./SignIn";
 import { useEffect, useState } from "react";
-import { auth, db } from "./firebase";
+import { auth, db, generateToken, getPermission, messaging } from "./firebase";
 import CancelOrReshedule from "./CancelOrReshedule";
 import Pickups from "./Pickups";
 import LogisticsDashboard from "./LogisticsDashboard";
@@ -19,11 +19,28 @@ import AllPickups from "./AllPickups";
 import IncentiveReport from "./IncentiveModel";
 import VendorRates from "./VendorRates";
 import ExtraChargesModule from "./ExtraChargesModule";
-import toast, { Toaster } from "react-hot-toast";
+import { Toaster } from "react-hot-toast";
+import { onMessage } from "firebase/messaging";
+import utilityFunctions from "./Utility/utilityFunctions";
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    getPermission();
+    generateToken();
+    onMessage(messaging, (payload) => {
+      utilityFunctions.foregroundNotification(payload.notification.body);
+      // const notificationTitle = payload.notification.title;
+      // const notificationOptions = {
+      //   body: payload.notification.body,
+      //   icon: payload.notification.image,
+      // };
+      // if (Notification.permission === "granted") {
+      //   new Notification(notificationTitle, notificationOptions);
+      // }
+    });
+  }, []);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
