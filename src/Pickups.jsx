@@ -3,6 +3,7 @@ import Nav from "./Nav";
 import { collection, query, onSnapshot, where } from "firebase/firestore";
 import { db } from "./firebase";
 import collectionName_BaseAwb from "./functions/collectionName";
+import utilityFunctions from "./Utility/utilityFunctions";
 
 function Pickups() {
   const [username, setUsername] = useState(null);
@@ -94,7 +95,7 @@ function Pickups() {
           // Cleanup subscription on unmount
           return () => unsubscribe();
         } catch (error) {
-          setError("Failed to fetch data: " + error.message);
+          utilityFunctions.ErrorNotify("Data fetch failed. Please try again.");
           setLoading(false);
         }
       };

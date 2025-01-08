@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { auth } from "./firebase"; // Ensure you have configured Firebase correctly
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+import utility from "./Utility/utilityFunctions";
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -20,13 +20,19 @@ const SignIn = () => {
     setAuthError(""); // Clear previous error before submission
     try {
       await signInWithEmailAndPassword(auth, data.email, data.password);
+      setLoading(false);
+      utility.SuccessNotify("Successfully logged in!");
     } catch (error) {
-      console.log(error.code)
       // Set the error message for inline display
-      if (error.code === "auth/invalid-credential" || error.code === "auth/user-not-found") {
-        setAuthError("Invalid email or password. Please try again.");
+      if (
+        error.code === "auth/invalid-credential" ||
+        error.code === "auth/user-not-found"
+      ) {
+        setLoading(false);
+        utility.ErrorNotify("Invalid email or password. Please try again.");
       } else {
-        setAuthError("Something went wrong. Please try again.");
+        utility.ErrorNotify("Something went wrong. Please try again.");
+        setLoading(false);
       }
     } finally {
       setLoading(false);
@@ -35,7 +41,7 @@ const SignIn = () => {
 
   // Handle Enter key press manually
   const handleKeyPress = (event) => {
-    if (event.key === 'Enter') {
+    if (event.key === "Enter") {
       event.preventDefault(); // Prevent the default form behavior
       handleSubmit(onSubmit)(); // Trigger form submission manually
     }

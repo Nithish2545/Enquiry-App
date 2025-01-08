@@ -3,6 +3,7 @@ import Nav from "./Nav";
 import { collection, query, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
 import collectionName_BaseAwb from "./functions/collectionName";
+import utilityFunctions from "./Utility/utilityFunctions";
 
 function Pickups() {
   const [username, setUsername] = useState(null);
@@ -94,13 +95,17 @@ function Pickups() {
                 setLoading(false);
               })
               .catch((error) => {
-                setError("Failed to fetch data: " + error.message);
+                utilityFunctions.ErrorNotify(
+                  "Unable to retrieve data. Please try again later."
+                );
                 setLoading(false);
               });
             // Cleanup subscription on unmount
             return () => unsubscribes.forEach((unsubscribe) => unsubscribe());
           } catch (error) {
-            setError("Failed to fetch data: " + error.message);
+            utilityFunctions.ErrorNotify(
+              "Unable to retrieve data. Please try again later."
+            );
             setLoading(false);
           }
         };
@@ -139,7 +144,9 @@ function Pickups() {
           // Cleanup subscription on unmount
           return () => unsubscribe();
         } catch (error) {
-          setError("Failed to fetch data: " + error.message);
+          utilityFunctions.ErrorNotify(
+            "Unable to retrieve data. Please try again later."
+          );
           setLoading(false);
         }
       };
@@ -207,7 +214,9 @@ function Pickups() {
             onChange={(e) => {
               const dateValue = e.target.value; // e.g., "2024-10-07"
               const [year, month, day] = dateValue.split("-");
-              const result = `${parseInt(day)}-${parseInt(month)}`;
+              const result = `${parseInt(day)}-${parseInt(month)}-${parseInt(
+                year
+              )}`;
               setDateSearchTerm(result);
             }}
             className="border border-gray-300 rounded py-2 px-4 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-purple-600"

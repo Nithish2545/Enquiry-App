@@ -7,6 +7,7 @@ import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { addDoc, collection, getDocs } from "firebase/firestore";
 import axios from "axios";
 import collectionName_baseAwb from "./functions/collectionName";
+import utility from "./Utility/utilityFunctions";
 function PickupBooking() {
   const [loading, setLoading] = useState(false);
   const [countries, setCountries] = useState([]);
@@ -235,11 +236,13 @@ function PickupBooking() {
           headers: options.headers,
         }
       );
-      setShowModal(true);
+      utility.SuccessNotify("Pickup request submitted successfully.");
+      await utility.sendNotification();
       setFiles([]);
       reset();
     } catch (error) {
-      console.error("Error adding document: ", error);
+      console.log(error);
+      utility.ErrorNotify("Failed to book the pickup. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -277,20 +280,24 @@ function PickupBooking() {
         );
       });
     });
-
     await Promise.all(uploadPromises);
     return uploadedURLs;
   };
-
   function openMap() {
     const result = splitLati_Logi(latitudelongitude);
     const googleMapsUrl = `https://www.google.com/maps?q=${result.latitude},${result.longitude}`;
     window.open(googleMapsUrl, "_blank");
   }
-
   return (
     <div className="">
       <Nav />
+      {/* <button
+        onClick={async () => {
+          await utility.sendNotification();
+        }}
+      >
+        TEST
+      </button> */}
       <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4  flex-col gap-4">
         <h className="text-3xl font-bold">Sales</h>
         <form
@@ -353,7 +360,6 @@ function PickupBooking() {
                   </p>
                 )}
               </div>
-
               <div className="mb-4">
                 <label className="block text-gray-700 font-semibold mb-2">
                   Consignor address:
@@ -377,7 +383,6 @@ function PickupBooking() {
                 )}
               </div>
             </div>
-
             {/* Consignee */}
             <div>
               <div className="mb-4">
@@ -401,7 +406,6 @@ function PickupBooking() {
                   </p>
                 )}
               </div>
-
               <div className="mb-4">
                 <label className="block text-gray-700 font-semibold mb-2">
                   Consignee Phone Number:
@@ -451,7 +455,6 @@ function PickupBooking() {
                 )}
               </div>
             </div>
-
             <div className="mb-4">
               <label className="block text-gray-700 font-semibold mb-2">
                 Country (Destination):
@@ -477,7 +480,6 @@ function PickupBooking() {
                 </p>
               )}
             </div>
-
             <div className="mb-4">
               <label className="block text-gray-700 font-semibold mb-2">
                 Pickup Pincode:

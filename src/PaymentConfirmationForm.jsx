@@ -14,6 +14,7 @@ import {
 import collectionName_BaseAwb from "./functions/collectionName";
 import axios from "axios";
 import jsPDF from "jspdf";
+import utilityFunctions from "./Utility/utilityFunctions";
 function PaymentConfirmationForm() {
   const { awbnumber } = useParams();
   const [details, setDetails] = useState(null);
@@ -60,7 +61,9 @@ function PaymentConfirmationForm() {
           setDetails(null); // No data matched
         }
       } catch (error) {
-        console.error("Error fetching Firestore data:", error);
+        utilityFunctions.ErrorNotify(
+          "An error occurred while fetching data. Please try again later."
+        );
       } finally {
         setLoading(false); // Stop the loading state
       }
@@ -277,13 +280,15 @@ function PaymentConfirmationForm() {
       // Log the download URL
       return downloadURL;
     } catch (error) {
-      console.error("Error uploading PDF:", error);
+      utilityFunctions.ErrorNotify(
+        "An error occurred while uploading the document."
+      );
     }
   }
   function getTruncatedURL(fullUrl) {
     const baseUrl =
       "https://firebasestorage.googleapis.com/v0/b/shiphitmobileapppickup-4d0a1.appspot.com/o/";
-     const truncatedResult = fullUrl.replace(baseUrl, "");
+    const truncatedResult = fullUrl.replace(baseUrl, "");
     return truncatedResult;
   }
 
@@ -390,15 +395,18 @@ function PaymentConfirmationForm() {
 
   const handleError = (error) => {
     if (error.response) {
-      setError(
-        `Error ${error.response.status}: ${
-          error.response.data.message || error.message
-        }`
+      // Handle server response error
+      utilityFunctions.ErrorNotify(
+        "An error occurred while processing your request."
       );
     } else if (error.request) {
-      setError("Network error. Please check your connection.");
+      // Handle no response from the server
+      utilityFunctions.ErrorNotify(
+        "Unable to connect. Please check your network."
+      );
     } else {
-      setError(`Error: ${error.message}`);
+      // Handle other types of errors
+      utilityFunctions.ErrorNotify("An unexpected error occurred.");
     }
   };
 

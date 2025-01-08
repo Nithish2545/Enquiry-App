@@ -10,7 +10,7 @@ import PaymentConfirm from "./PaymentConfirm";
 import PaymentConfirmationForm from "./PaymentConfirmationForm";
 import SignIn from "./SignIn";
 import { useEffect, useState } from "react";
-import { auth, db } from "./firebase";
+import { auth, db, getPermission, messaging } from "./firebase";
 import CancelOrReshedule from "./CancelOrReshedule";
 import Pickups from "./Pickups";
 import LogisticsDashboard from "./LogisticsDashboard";
@@ -19,10 +19,19 @@ import AllPickups from "./AllPickups";
 import IncentiveReport from "./IncentiveModel";
 import VendorRates from "./VendorRates";
 import ExtraChargesModule from "./ExtraChargesModule";
+import { Toaster } from "react-hot-toast";
+import { onMessage } from "firebase/messaging";
+import utilityFunctions from "./Utility/utilityFunctions";
 import PickupPersonIncentive from "./PickupPersonIncentive";
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    getPermission();
+    onMessage(messaging, (payload) => {
+      utilityFunctions.foregroundNotification(payload.notification.body);
+    });
+  }, []);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -60,6 +69,7 @@ function App() {
   return (
     <Router>
       <div>
+        <Toaster />
         <Routes>
           {/* If user is not present, redirect to SignIn */}
           <Route

@@ -6,7 +6,11 @@ import {
   where,
 } from "firebase/firestore";
 import { format, startOfWeek, addDays, subWeeks } from "date-fns";
-import { db } from "../firebase";
+import { db, messaging } from "../firebase";
+import toast from "react-hot-toast";
+import axios from "axios";
+import { getToken } from "firebase/messaging";
+import { revokeAccessToken } from "firebase/auth";
 
 function extractDate(dateString) {
   // Split the string at the '&' character and return the first part (the date)
@@ -435,6 +439,133 @@ function formatRouteName(route) {
     .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize each word
 }
 
+const playNotificationSound = (fileName) => {
+  const toastError = {
+    duration: 4000,
+    position: "top-right",
+    icon: "❌", // Change icon to represent an error
+    iconTheme: {
+      primary: "#ff0000", // Red for error
+      secondary: "#fff", // White for contrast
+    },
+    ariaProps: {
+      role: "alert", // Role for error message
+      "aria-live": "assertive", // More urgent for errors
+    },
+    removeDelay: 1000,
+  };
+  try {
+    const audio = new Audio(fileName); // Path to your sound file
+    audio.play().catch(() => {
+      toast.error("Audio playback failed!", toastError);
+    });
+  } catch (error) {
+    toast.error("Error in NotificationSound!", toastError);
+  }
+};
+
+function SuccessNotify(value) {
+  toast.success(value, {
+    duration: 4000,
+    position: "top-right",
+    // Custom Icon
+    icon: "✅", // Change icon to represent success
+    // Change colors of success icon
+    iconTheme: {
+      primary: "#28a745", // Green for success
+      secondary: "#fff", // White for contrast
+    },
+    // Aria
+    ariaProps: {
+      role: "status", // Role for success message
+      "aria-live": "polite", // Less urgent for success
+    },
+    // Additional Configuration
+    removeDelay: 1000,
+  });
+}
+
+function ErrorNotify(value) {
+  playNotificationSound("/errorNotification.mp3");
+  toast.error(value, {
+    duration: 4000,
+    position: "top-right",
+    icon: "❌", // Change icon to represent an error
+    iconTheme: {
+      primary: "#ff0000", // Red for error
+      secondary: "#fff", // White for contrast
+    },
+    ariaProps: {
+      role: "alert", // Role for error message
+      "aria-live": "assertive", // More urgent for errors
+    },
+    removeDelay: 1000,
+  });
+}
+
+function foregroundNotification(value) {
+  console.log("foregroundNotification");
+  playNotificationSound("/notification1.mp3");
+  toast.success(value, {
+    duration: 4000,
+    position: "top-right",
+    // Custom Icon
+    icon: "🔔", // Change icon to represent success
+    // Change colors of success icon
+    iconTheme: {
+      primary: "#28a745", // Green for success
+      secondary: "#fff", // White for contrast
+    },
+    // Aria
+    ariaProps: {
+      role: "status", // Role for success message
+      "aria-live": "polite", // Less urgent for success
+    },
+    // Additional Configuration
+    removeDelay: 1000,
+  });
+}
+
+const sendNotification = async () => {
+  console.log("sendNotification");
+  try {
+    const token = await getToken(messaging, {
+      vapidKey:
+        "BMnNnQ4wSQVf1bXSOE-_iuTEYhpUt99RBRh4fssB83LBIVABpz97T1fVqt1EqiXLS9DKaM4gygiPUsx2-RoSUz4",
+    })
+      .then((currentToken) => {
+        if (currentToken) {
+          console.log("currentToken", currentToken);
+          return currentToken;
+        } else {
+          ErrorNotify(
+            "No registration token available. Request permission to generate one."
+          );
+        }
+      })
+      .catch((err) => {
+        ErrorNotify("An error occurred while retrieving token!");
+      });
+
+    const responseNotification = await axios.post(
+      "https://shiphit-backend.onrender.com/sendNotification",
+      {
+        fcm_token: token,
+        title: "Pickup Request Confirmed",
+        body: "A pickup has been scheduled. Review the details to coordinate smoothly.",
+        image: "https://www.shiphit.in/images/logo.png",
+        link: "",
+      }
+    );
+    console.log("Notification Sent Successfully:", responseNotification.data);
+  } catch (error) {
+    console.error(
+      "Error sending notification:",
+      error.response?.data || error.message
+    );
+  }
+};
+
 export default {
   getRevenue: getRevenue,
   getTotalBookings: getTotalBookings,
@@ -452,4 +583,9 @@ export default {
   calculateCost: calculateCost,
   rolesPermissions: rolesPermissions,
   formatRouteName: formatRouteName,
+  ErrorNotify: ErrorNotify,
+  SuccessNotify: SuccessNotify,
+  playNotificationSound: playNotificationSound,
+  sendNotification: sendNotification,
+  foregroundNotification: foregroundNotification,
 };
