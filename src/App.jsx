@@ -19,6 +19,7 @@ import AllPickups from "./AllPickups";
 import IncentiveReport from "./IncentiveModel";
 import VendorRates from "./VendorRates";
 import ExtraChargesModule from "./ExtraChargesModule";
+import PickupPersonIncentive from "./PickupPersonIncentive";
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -111,6 +112,12 @@ function App() {
           <Route
             path="/Incentive-Report"
             element={user ? <IncentiveReport /> : <Navigate to="/signin" />}
+          />
+          <Route
+            path="/PickuPersonIncentive-Report"
+            element={
+              user ? <PickupPersonIncentive /> : <Navigate to="/signin" />
+            }
           />
           {/* Sign In route, only accessible if no user is logged in */}
           <Route
