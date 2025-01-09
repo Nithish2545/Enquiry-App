@@ -22,26 +22,6 @@ export const storage = getStorage(app);
 export const db = getFirestore();
 export const messaging = getMessaging();
 
-export const generateToken = async () => {
-  console.log(currentToken);
-  await getToken(messaging, {
-    vapidKey:
-      "BMnNnQ4wSQVf1bXSOE-_iuTEYhpUt99RBRh4fssB83LBIVABpz97T1fVqt1EqiXLS9DKaM4gygiPUsx2-RoSUz4",
-  })
-    .then((currentToken) => {
-      if (currentToken) {
-        return currentToken;
-      } else {
-        utilityFunctions.ErrorNotify(
-          "No registration token available. Request permission to generate one."
-        );
-      }
-    })
-    .catch((err) => {
-      utilityFunctions.ErrorNotify("An error occurred while retrieving token!");
-    });
-};
-
 export const getPermission = async () => {
   await Notification.requestPermission();
 };

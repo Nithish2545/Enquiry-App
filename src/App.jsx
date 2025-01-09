@@ -10,7 +10,7 @@ import PaymentConfirm from "./PaymentConfirm";
 import PaymentConfirmationForm from "./PaymentConfirmationForm";
 import SignIn from "./SignIn";
 import { useEffect, useState } from "react";
-import { auth, db, generateToken, getPermission, messaging } from "./firebase";
+import { auth, db, getPermission, messaging } from "./firebase";
 import CancelOrReshedule from "./CancelOrReshedule";
 import Pickups from "./Pickups";
 import LogisticsDashboard from "./LogisticsDashboard";
@@ -28,7 +28,6 @@ function App() {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     getPermission();
-    generateToken();
     onMessage(messaging, (payload) => {
       utilityFunctions.foregroundNotification(payload.notification.body);
       // const notificationTitle = payload.notification.title;

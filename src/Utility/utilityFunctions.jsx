@@ -531,10 +531,12 @@ const sendNotification = async () => {
   try {
     const token = await getToken(messaging, {
       vapidKey:
-        "BMnNnQ4wSQVf1bXSOE-_iuTEYhpUt99RBRh4fssB83LBIVABpz97T1fVqt1EqiXLS9DKaM4gygiPUsx2-RoSUz4",
+        "BIO8vv7plsr6ytibM7C9Au6wbw6FvWAom0XWRrgQc4p4KL8dIrb6mLey8P2HJRhvj81S8AgEG3E4xsBr2eVhf7w",
     })
       .then((currentToken) => {
+        console.log(currentToken);
         if (currentToken) {
+          console.log(currentToken);
           return currentToken;
         } else {
           utilityFunctions.ErrorNotify(
