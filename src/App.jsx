@@ -22,7 +22,7 @@ import ExtraChargesModule from "./ExtraChargesModule";
 import { Toaster } from "react-hot-toast";
 import { onMessage } from "firebase/messaging";
 import utilityFunctions from "./Utility/utilityFunctions";
-
+import PickupPersonIncentive from "./PickupPersonIncentive";
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -30,14 +30,6 @@ function App() {
     getPermission();
     onMessage(messaging, (payload) => {
       utilityFunctions.foregroundNotification(payload.notification.body);
-      // const notificationTitle = payload.notification.title;
-      // const notificationOptions = {
-      //   body: payload.notification.body,
-      //   icon: payload.notification.image,
-      // };
-      // if (Notification.permission === "granted") {
-      //   new Notification(notificationTitle, notificationOptions);
-      // }
     });
   }, []);
 
@@ -130,6 +122,12 @@ function App() {
           <Route
             path="/Incentive-Report"
             element={user ? <IncentiveReport /> : <Navigate to="/signin" />}
+          />
+          <Route
+            path="/PickuPersonIncentive-Report"
+            element={
+              user ? <PickupPersonIncentive /> : <Navigate to="/signin" />
+            }
           />
           {/* Sign In route, only accessible if no user is logged in */}
           <Route

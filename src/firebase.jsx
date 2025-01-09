@@ -3,8 +3,6 @@ import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { getFirestore } from "firebase/firestore";
 import { getMessaging, getToken } from "firebase/messaging";
-import toast from "react-hot-toast";
-import utilityFunctions from "./Utility/utilityFunctions";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAwHe1Ci22MD09r-skn7OZLyYBdEX35L74",

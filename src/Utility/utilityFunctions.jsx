@@ -539,15 +539,13 @@ const sendNotification = async () => {
           console.log(currentToken);
           return currentToken;
         } else {
-          utilityFunctions.ErrorNotify(
+          ErrorNotify(
             "No registration token available. Request permission to generate one."
           );
         }
       })
       .catch((err) => {
-        utilityFunctions.ErrorNotify(
-          "An error occurred while retrieving token!"
-        );
+        ErrorNotify("An error occurred while retrieving token!");
       });
 
     const responseNotification = await axios.post(
@@ -560,7 +558,6 @@ const sendNotification = async () => {
         link: "",
       }
     );
-
     console.log("Notification Sent Successfully:", responseNotification.data);
   } catch (error) {
     console.error(
