@@ -3,6 +3,7 @@ import { useForm, Controller } from "react-hook-form";
 import { auth } from "./firebase"; // Ensure you have configured Firebase correctly
 import { signInWithEmailAndPassword } from "firebase/auth";
 import utility from "./Utility/utilityFunctions";
+import utilityFunctions from "./Utility/utilityFunctions";
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -19,7 +20,12 @@ const SignIn = () => {
     setLoading(true);
     setAuthError(""); // Clear previous error before submission
     try {
-      await signInWithEmailAndPassword(auth, data.email, data.password);
+      const response = await signInWithEmailAndPassword(
+        auth,
+        data.email,
+        data.password
+      );
+      await utilityFunctions.fetchAndStoreToken(response.user.email);
       setLoading(false);
       utility.SuccessNotify("Successfully logged in!");
     } catch (error) {
@@ -31,6 +37,7 @@ const SignIn = () => {
         setLoading(false);
         utility.ErrorNotify("Invalid email or password. Please try again.");
       } else {
+        console.log(error);
         utility.ErrorNotify("Something went wrong. Please try again.");
         setLoading(false);
       }

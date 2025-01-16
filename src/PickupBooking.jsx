@@ -236,12 +236,11 @@ function PickupBooking() {
           headers: options.headers,
         }
       );
-      utility.SuccessNotify("Pickup request submitted successfully.");
       await utility.sendNotification();
+      // utility.SuccessNotify("Pickup request submitted successfully.");
       setFiles([]);
       reset();
     } catch (error) {
-      console.log(error);
       utility.ErrorNotify("Failed to book the pickup. Please try again.");
     } finally {
       setLoading(false);
@@ -293,7 +292,7 @@ function PickupBooking() {
       <Nav />
       {/* <button
         onClick={async () => {
-          await utility.sendNotification();
+          utility.sendNotification();
         }}
       >
         TEST

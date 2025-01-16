@@ -1,7 +1,10 @@
 import {
   collection,
+  doc,
+  getDoc,
   getDocs,
   query,
+  setDoc,
   Timestamp,
   where,
 } from "firebase/firestore";
@@ -504,7 +507,6 @@ function ErrorNotify(value) {
 }
 
 function foregroundNotification(value) {
-  console.log("foregroundNotification");
   playNotificationSound("/notification1.mp3");
   toast.success(value, {
     duration: 4000,
@@ -526,44 +528,141 @@ function foregroundNotification(value) {
   });
 }
 
-const sendNotification = async () => {
-  console.log("sendNotification");
-  try {
-    const token = await getToken(messaging, {
-      vapidKey:
-        "BIO8vv7plsr6ytibM7C9Au6wbw6FvWAom0XWRrgQc4p4KL8dIrb6mLey8P2HJRhvj81S8AgEG3E4xsBr2eVhf7w",
-    })
-      .then((currentToken) => {
-        console.log(currentToken);
-        if (currentToken) {
-          console.log(currentToken);
-          return currentToken;
-        } else {
-          ErrorNotify(
-            "No registration token available. Request permission to generate one."
-          );
-        }
-      })
-      .catch((err) => {
-        ErrorNotify("An error occurred while retrieving token!");
+function findAdminRole(data) {
+  const adminData = [];
+  // Iterate through each key-value pair in the object
+  for (const [key, value] of Object.entries(data[0])) {
+    if (Array.isArray(value) && value[2] === "admin") {
+      adminData.push({
+        email: key,
+        name: value[0],
+        role: value[2],
+        location: value[3],
       });
+    }
+  }
+  return adminData;
+}
 
-    const responseNotification = await axios.post(
-      "https://shiphit-backend.onrender.com/sendNotification",
-      {
-        fcm_token: token,
-        title: "Pickup Request Confirmed",
-        body: "A pickup has been scheduled. Review the details to coordinate smoothly.",
-        image: "https://www.shiphit.in/images/logo.png",
-        link: "",
-      }
-    );
-    console.log("Notification Sent Successfully:", responseNotification.data);
+async function LoginCredentials() {
+  try {
+    const querySnapshot = await getDocs(collection(db, "LoginCredentials"));
+    const credentials = querySnapshot.docs.map((doc) => ({
+      id: doc.id, // Document ID
+      ...doc.data(), // Document data
+    }));
+    return findAdminRole(credentials);
   } catch (error) {
-    console.error(
-      "Error sending notification:",
-      error.response?.data || error.message
-    );
+    ErrorNotify("Error fetching LoginCredentials");
+    return; // Return null in case of an error
+  }
+}
+
+async function fetchNotificationToken(userEmail) {
+  try {
+    const tokenDoc = doc(db, "NotificationToken", userEmail);
+    const tokenSnapshot = await getDoc(tokenDoc);
+    if (tokenSnapshot.exists()) {
+      const tokenData = tokenSnapshot.data();
+      return tokenData.token; // Return the token
+    } else {
+      ErrorNotify(`No token found for userEmail: ${userEmail}`);
+      return; // Return null if no token exists
+    }
+  } catch (error) {
+    ErrorNotify("Error fetching notification token:", error);
+    return; // Return null in case of an error
+  }
+}
+
+async function getTokenService() {
+  const token = await getToken(messaging, {
+    vapidKey:
+      "BGHuL0LEuljqK5PK6bKwb2FhKvUpLxkVbt7X6Ud952TO6qX5NbjruL_4x0ppsosgKxtopueNWBayMlGp1bhH_uE",
+  })
+    .then((currentToken) => {
+      if (currentToken) {
+        return currentToken;
+      } else {
+        ErrorNotify(
+          "No registration token available. Request permission to generate one."
+        );
+      }
+    })
+    .catch((err) => {
+      ErrorNotify("An error occurred while retrieving token!");
+    });
+
+  return token;
+}
+
+async function fetchAndStoreToken(username) {
+  const token = await getTokenService();
+  // Store the token in Firestore under the NotificationToken collection
+  try {
+    await setDoc(doc(db, "NotificationToken", username), {
+      token: token, // Store the token under the user's username
+    });
+  } catch (error) {
+    ErrorNotify("Error storing token in Firestore");
+  }
+}
+
+async function fetchLoginedUserEmail() {
+  return JSON.parse(localStorage.getItem("LoginCredentials")).email;
+}
+
+async function fetchLoginedUserName() {
+  return JSON.parse(localStorage.getItem("LoginCredentials")).name;
+}
+
+const sendNotification = async () => {
+  try {
+    // Fetch necessary user data
+    const userData = await LoginCredentials();
+    const currentUserEmail = await fetchLoginedUserEmail();
+
+    // Get notification tokens
+    const adminToken = await fetchNotificationToken(userData[0].email);
+    const currentUserToken = await fetchNotificationToken(currentUserEmail);
+    const currentUserName = await fetchLoginedUserName();
+
+    // Prepare notification payloads
+    const userNotificationPayload = {
+      to: currentUserToken,
+      title: "Pickup Request Confirmed",
+      body: "A pickup has been scheduled. Review the details to coordinate smoothly.",
+      image: "",
+      link: "",
+    };
+
+    const adminNotificationPayload = {
+      to: adminToken,
+      title: "📦 New Pickup Request Booked!",
+      body: `
+✨ **Attention Ops Team**,  
+🚀 A new pickup request has been successfully booked by **${currentUserName}**.  
+📋 **Action Required**:  
+Please review the booking details and take the necessary steps to ensure a smooth and efficient operation. 🔧  
+      `,
+      image: "", // Add branding
+      link: "", // Optional: Link to booking details
+    };
+
+    // Send notifications
+    const [userNotificationResponse, adminNotificationResponse] =
+      await Promise.all([
+        axios.post(
+          "https://shiphit-backend.onrender.com/sendNotification",
+          userNotificationPayload
+        ),
+        axios.post(
+          "https://shiphit-backend.onrender.com/sendNotification",
+          adminNotificationPayload
+        ),
+      ]);
+  } catch (error) {
+    ErrorNotify("Error sending notification");
   }
 };
 
@@ -589,4 +688,5 @@ export default {
   playNotificationSound: playNotificationSound,
   sendNotification: sendNotification,
   foregroundNotification: foregroundNotification,
+  fetchAndStoreToken: fetchAndStoreToken,
 };

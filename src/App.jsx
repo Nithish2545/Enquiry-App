@@ -10,7 +10,7 @@ import PaymentConfirm from "./PaymentConfirm";
 import PaymentConfirmationForm from "./PaymentConfirmationForm";
 import SignIn from "./SignIn";
 import { useEffect, useState } from "react";
-import { auth, db, getPermission, messaging } from "./firebase";
+import { auth, db, messaging } from "./firebase";
 import CancelOrReshedule from "./CancelOrReshedule";
 import Pickups from "./Pickups";
 import LogisticsDashboard from "./LogisticsDashboard";
@@ -20,14 +20,30 @@ import IncentiveReport from "./IncentiveModel";
 import VendorRates from "./VendorRates";
 import ExtraChargesModule from "./ExtraChargesModule";
 import { Toaster } from "react-hot-toast";
-import { onMessage } from "firebase/messaging";
+import { getToken, onMessage } from "firebase/messaging";
 import utilityFunctions from "./Utility/utilityFunctions";
 import PickupPersonIncentive from "./PickupPersonIncentive";
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    getPermission();
+  useEffect(async () => {
+    const getPermission = async () => {
+      try {
+        // Request permission for push notifications using the browser's Notification API
+        const permission = await Notification.requestPermission();
+        if (permission !== "granted") {
+          utilityFunctions.ErrorNotify("Notification permission denied");
+          return; // Stop further execution if permission is not granted
+        }
+        utilityFunctions.SuccessNotify("Notification permission granted");
+      } catch (error) {
+        utilityFunctions.ErrorNotify(
+          "Error requesting notification permission:",
+          error
+        );
+      }
+    };
+    await getPermission();
     onMessage(messaging, (payload) => {
       utilityFunctions.foregroundNotification(payload.notification.body);
     });

@@ -1,8 +1,8 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { getStorage, ref, getDownloadURL } from "firebase/storage";
+import { getAuth } from "firebase/auth";
+import { getStorage } from "firebase/storage";
 import { getFirestore } from "firebase/firestore";
-import { getMessaging, getToken } from "firebase/messaging";
+import { getMessaging } from "firebase/messaging";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAwHe1Ci22MD09r-skn7OZLyYBdEX35L74",
@@ -19,7 +19,3 @@ export const auth = getAuth(app);
 export const storage = getStorage(app);
 export const db = getFirestore();
 export const messaging = getMessaging();
-
-export const getPermission = async () => {
-  await Notification.requestPermission();
-};
