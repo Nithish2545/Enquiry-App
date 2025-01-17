@@ -474,8 +474,14 @@ function Pickups() {
                   <p>
                     <span className="font-semibold text-purple-700">
                       Package Connected:
-                    </span>{" "}
+                    </span>
                     {selectedPickup.packageConnectedDataTime || "NA"}
+                  </p>
+                  <p className="flex items-center gap-2 bg-gradient-to-r from-purple-100 to-purple-200 p-3 rounded-lg shadow-lg border-l-4 border-purple-700">
+                    <span className="font-bold text-purple-900">Source:</span>
+                    <span className="text-gray-700">
+                      {selectedPickup.Source || "NA"}
+                    </span>
                   </p>
                 </div>
               </div>

@@ -617,50 +617,40 @@ async function fetchLoginedUserName() {
 }
 
 const sendNotification = async () => {
+  await fetchAndStoreToken(await fetchLoginedUserEmail());
+  const userData = await LoginCredentials();
+  const currentUserCre = await fetchLoginedUserEmail();
+
+  const admin_token = await fetchNotificationToken(userData[0].email);
+  const currentUserToken = await fetchNotificationToken(currentUserCre);
+
   try {
-    // Fetch necessary user data
-    const userData = await LoginCredentials();
-    const currentUserEmail = await fetchLoginedUserEmail();
+    const responseNotification = await axios.post(
+      "https://shiphit-backend.onrender.com/sendNotification",
+      {
+        to: currentUserToken,
+        title: "Pickup Request Confirmed",
+        body: "A pickup has been scheduled. Review the details to coordinate smoothly.",
+        image: "https://www.shiphit.in/images/logo.png",
+        link: "",
+      }
+    );
 
-    // Get notification tokens
-    const adminToken = await fetchNotificationToken(userData[0].email);
-    const currentUserToken = await fetchNotificationToken(currentUserEmail);
-    const currentUserName = await fetchLoginedUserName();
-
-    // Prepare notification payloads
-    const userNotificationPayload = {
-      to: currentUserToken,
-      title: "Pickup Request Confirmed",
-      body: "A pickup has been scheduled. Review the details to coordinate smoothly.",
-      image: "",
-      link: "",
-    };
-
-    const adminNotificationPayload = {
-      to: adminToken,
-      title: "📦 New Pickup Request Booked!",
-      body: `
-✨ **Attention Ops Team**,  
-🚀 A new pickup request has been successfully booked by **${currentUserName}**.  
-📋 **Action Required**:  
-Please review the booking details and take the necessary steps to ensure a smooth and efficient operation. 🔧  
-      `,
-      image: "", // Add branding
-      link: "", // Optional: Link to booking details
-    };
-
-    // Send notifications
-    const [userNotificationResponse, adminNotificationResponse] =
-      await Promise.all([
-        axios.post(
-          "https://shiphit-backend.onrender.com/sendNotification",
-          userNotificationPayload
-        ),
-        axios.post(
-          "https://shiphit-backend.onrender.com/sendNotification",
-          adminNotificationPayload
-        ),
-      ]);
+    const responseNotification2 = await axios.post(
+      "https://shiphit-backend.onrender.com/sendNotification",
+      {
+        to: admin_token,
+        title: "📦 New Pickup Request Booked!",
+        body: `
+  ✨ **Attention Ops Team**,
+  🚀 A new pickup request has been successfully booked by **${await fetchLoginedUserName()}**.
+  📋 **Action Required**:
+  Please review the booking details and take the necessary steps to ensure a smooth and efficient operation. 🔧
+  `,
+        image: "",
+        link: "",
+      }
+    );
   } catch (error) {
     ErrorNotify("Error sending notification");
   }
