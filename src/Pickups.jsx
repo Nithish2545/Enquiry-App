@@ -83,15 +83,22 @@ function Pickups() {
             }));
             // Sort data by date and time
             const sortedData = filteredData.sort((a, b) => {
-              const dateTimeA = parsePickupDateTime(a.pickupDatetime);
-              const dateTimeB = parsePickupDateTime(b.pickupDatetime);
-              return dateTimeB - dateTimeA;
-            });
+              const parseDate = (datetime) => {
+                const [datePart, timePart] = datetime.split(" &");
+                const [day, month, year] = datePart.split("-").map(Number);
 
+                const [hour, period] = timePart.split(" ");
+                const hour24 =
+                  period === "PM" && hour !== "12"
+                    ? Number(hour) + 12
+                    : Number(hour === "12" && period === "AM" ? 0 : hour);
+                return new Date(year, month - 1, day, hour24).getTime();
+              };
+              return parseDate(b.pickupDatetime) - parseDate(a.pickupDatetime);
+            });
             setPickups(sortedData);
             setLoading(false);
           });
-
           // Cleanup subscription on unmount
           return () => unsubscribe();
         } catch (error) {
@@ -99,7 +106,6 @@ function Pickups() {
           setLoading(false);
         }
       };
-
       fetchData();
     }
   }, [username, role]);
@@ -118,7 +124,6 @@ function Pickups() {
     const PhonesearchItem = pickup.pickUpPersonName
       .toLowerCase()
       .includes(PickupPersonName.toLowerCase());
-
     return awbMatch && dateMatch && consignorPhoneMatch && PhonesearchItem; // Use AND logic to filter
   });
 
@@ -176,7 +181,6 @@ function Pickups() {
             className="border border-gray-300 rounded py-2 px-4 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-purple-600"
           />
         </div>
-
         {/* Scrollable Table Wrapper */}
         <div className="overflow-auto border scrollbar-hide">
           <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow overflow-hidden">
@@ -191,15 +195,6 @@ function Pickups() {
                 <th className="py-3 px-4 border">Vendor</th>
                 <th className="py-3 px-4 border">Pickup Area</th>
                 <th className="py-3 px-4  border">Pickup Date & Time</th>
-                {/* <th className="py-3 px-4  border">
-                  Pickup Completed Date & Time
-                </th>
-                <th className="py-3 px-4  border">
-                  Payment Comfirmed Date & Time
-                </th>
-                <th className="py-3 px-4  border">
-                  Package Connected Data & Time
-                </th> */}
                 <th className="py-3 px-4 border"> Pickup Booked by</th>
                 <th className="py-3 px-4 border">PickUp Person</th>
               </tr>
@@ -424,6 +419,12 @@ function Pickups() {
                       Package Connected:
                     </span>{" "}
                     {selectedPickup.packageConnectedDataTime || "NA"}
+                  </p>
+                  <p className="flex items-center gap-2 bg-gradient-to-r from-purple-100 to-purple-200 p-3 rounded-lg shadow-lg border-l-4 border-purple-700">
+                    <span className="font-bold text-purple-900">Source:</span>
+                    <span className="text-gray-700">
+                      {selectedPickup.Source || "NA"}
+                    </span>
                   </p>
                 </div>
               </div>

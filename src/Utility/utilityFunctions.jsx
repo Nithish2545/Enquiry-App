@@ -624,33 +624,37 @@ const sendNotification = async () => {
   const admin_token = await fetchNotificationToken(userData[0].email);
   const currentUserToken = await fetchNotificationToken(currentUserCre);
 
-  try {
-    const responseNotification = await axios.post(
-      "https://shiphit-backend.onrender.com/sendNotification",
-      {
-        to: currentUserToken,
-        title: "Pickup Request Confirmed",
-        body: "A pickup has been scheduled. Review the details to coordinate smoothly.",
-        image: "https://www.shiphit.in/images/logo.png",
-        link: "",
-      }
-    );
+  const notificationPayload1 = {
+    to: currentUserToken,
+    title: "Pickup Request Confirmed",
+    body: "A pickup has been scheduled. Review the details to coordinate smoothly.",
+    image: "https://www.shiphit.in/images/logo.png",
+    link: "",
+  };
 
-    const responseNotification2 = await axios.post(
-      "https://shiphit-backend.onrender.com/sendNotification",
-      {
-        to: admin_token,
-        title: "📦 New Pickup Request Booked!",
-        body: `
-  ✨ **Attention Ops Team**,
-  🚀 A new pickup request has been successfully booked by **${await fetchLoginedUserName()}**.
-  📋 **Action Required**:
-  Please review the booking details and take the necessary steps to ensure a smooth and efficient operation. 🔧
-  `,
-        image: "",
-        link: "",
-      }
-    );
+  const notificationPayload2 = {
+    to: admin_token,
+    title: "📦 New Pickup Request Booked!",
+    body: `
+A new pickup request has been successfully booked by **${await fetchLoginedUserName()}**.  
+Please review the details and proceed accordingly.  
+`,
+    image: "",
+    link: "",
+  };
+
+  try {
+    // Send both notifications concurrently using Promise.all
+    await Promise.all([
+      axios.post(
+        "https://shiphit-backend.onrender.com/sendNotification",
+        notificationPayload1
+      ),
+      axios.post(
+        "https://shiphit-backend.onrender.com/sendNotification",
+        notificationPayload2
+      ),
+    ]);
   } catch (error) {
     ErrorNotify("Error sending notification");
   }

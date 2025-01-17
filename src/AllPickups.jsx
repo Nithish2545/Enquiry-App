@@ -83,13 +83,22 @@ function Pickups() {
               )
             )
               .then((results) => {
-                // Combine results from all collections
                 const combinedData = results.flat();
-                // Sort the combined data by date and time
                 const sortedData = combinedData.sort((a, b) => {
-                  const dateTimeA = parsePickupDateTime(a.pickupDatetime);
-                  const dateTimeB = parsePickupDateTime(b.pickupDatetime);
-                  return dateTimeB - dateTimeA;
+                  const parseDate = (datetime) => {
+                    const [datePart, timePart] = datetime.split(" &");
+                    const [day, month, year] = datePart.split("-").map(Number);
+
+                    const [hour, period] = timePart.split(" ");
+                    const hour24 =
+                      period === "PM" && hour !== "12"
+                        ? Number(hour) + 12
+                        : Number(hour === "12" && period === "AM" ? 0 : hour);
+                    return new Date(year, month - 1, day, hour24).getTime();
+                  };
+                  return (
+                    parseDate(b.pickupDatetime) - parseDate(a.pickupDatetime)
+                  );
                 });
                 setPickups(sortedData);
                 setLoading(false);
@@ -132,16 +141,21 @@ function Pickups() {
             }));
             // Sort data by date and time
             const sortedData = filteredData.sort((a, b) => {
-              const dateTimeA = parsePickupDateTime(a.pickupDatetime);
-              const dateTimeB = parsePickupDateTime(b.pickupDatetime);
-              return dateTimeB - dateTimeA;
+              const parseDate = (datetime) => {
+                const [datePart, timePart] = datetime.split(" &");
+                const [day, month, year] = datePart.split("-").map(Number);
+                const [hour, period] = timePart.split(" ");
+                const hour24 =
+                  period === "PM" && hour !== "12"
+                    ? Number(hour) + 12
+                    : Number(hour === "12" && period === "AM" ? 0 : hour);
+                return new Date(year, month - 1, day, hour24).getTime();
+              };
+              return parseDate(b.pickupDatetime) - parseDate(a.pickupDatetime);
             });
-
             setPickups(sortedData);
             setLoading(false);
           });
-
-          // Cleanup subscription on unmount
           return () => unsubscribe();
         } catch (error) {
           utilityFunctions.ErrorNotify(
