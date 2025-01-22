@@ -4,7 +4,7 @@ import { Avatar } from "@mui/material";
 import Nav from "./Nav";
 import { format, startOfWeek, addDays, subWeeks } from "date-fns";
 import { Timestamp } from "firebase/firestore";
-function IncentiveModel() {
+function SalesIncentive() {
   const [DateRange, setDateRange] = useState("Last Week"); // Default value set to "This Week"
   const [data, setData] = useState({
     revenue: 0,
@@ -242,7 +242,7 @@ function IncentiveModel() {
                       />
                     </div>
                     <button
-                    className="bg-purple-500 p-3 rounded-md text-white font-semibold"
+                      className="bg-purple-500 p-3 rounded-md text-white font-semibold"
                       onClick={() => {
                         setstartEnddate({
                           start: StartDatecustome,
@@ -421,4 +421,4 @@ function IncentiveModel() {
   );
 }
 
-export default IncentiveModel;
+export default SalesIncentive;

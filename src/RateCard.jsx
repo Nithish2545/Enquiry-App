@@ -55,7 +55,7 @@ const RateCardForm = () => {
           ZONES: item.ZONES,
           INSTRUCTIONS: item.INSTRUCTIONS,
           DAYSTODELIVER: item.DAYSTODELIVER,
-          EcoSelf:item.EcoSelf
+          EcoSelf: item.EcoSelf,
         }));
       });
 
@@ -102,7 +102,7 @@ const RateCardForm = () => {
       rateData[country][0]["DAYSTODELIVER"]
     ) {
       setDeliverDays(rateData[country][0]["DAYSTODELIVER"]);
-   } else {
+    } else {
       setDeliverDays("");
     }
   }, [country, rateData]);
@@ -173,7 +173,6 @@ const RateCardForm = () => {
                     <th className="px-2 lg:px-4 py-2">Express</th>
                     <th className="px-2 lg:px-4 py-2">EcoDutyFree</th>
                     <th className="px-2 lg:px-4 py-2">Eco Self</th>
-                    
                   </tr>
                 </thead>
                 <tbody>

@@ -16,9 +16,10 @@ import Pickups from "./Pickups";
 import LogisticsDashboard from "./LogisticsDashboard";
 import { collection, getDocs, query } from "firebase/firestore";
 import AllPickups from "./AllPickups";
-import IncentiveReport from "./IncentiveModel";
+import IncentiveReport from "./SalesIncentive";
 import VendorRates from "./VendorRates";
 import ExtraChargesModule from "./ExtraChargesModule";
+import SalesIncentive from "./SalesIncentive";
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -109,7 +110,11 @@ function App() {
             }
           />
           <Route
-            path="/Incentive-Report"
+            path="/Sales-Incentive"
+            element={user ? <SalesIncentive /> : <Navigate to="/signin" />}
+          />
+          <Route
+            path="/Pickup-Incentive"
             element={user ? <IncentiveReport /> : <Navigate to="/signin" />}
           />
           {/* Sign In route, only accessible if no user is logged in */}

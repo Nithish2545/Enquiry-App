@@ -96,7 +96,10 @@ async function fetchData(DateRange, startendrange) {
         where("status", "in", ["PAYMENT DONE", "SHIPMENT CONNECTED"])
       );
     } else if (DateRange == "Select range") {
-      console.log("test", DateRange);
+      queryRef = query(
+        collection(db, "pickup"),
+        where("status", "in", ["PAYMENT DONE", "SHIPMENT CONNECTED"])
+      );
     }
 
     const querySnapshot = await getDocs(queryRef);
@@ -153,9 +156,13 @@ async function fetchLoginCredentials() {
     id: doc.id, // Include the document ID if needed
     ...doc.data(), // Spread the document fields
   }));
+  console.log("loginData", loginData);
   const finalLoginCre = Object.entries(loginData[0])
     .filter(([email, details]) => {
-      return details[3] === "CHENNAI";
+      return (
+        (details[3] === "CHENNAI" && details[2] === "sales associate") ||
+        details[2] === "sales admin"
+      );
     })
     .map(([email, details]) => ({
       email: details[1],
@@ -252,6 +259,7 @@ async function calculateTotalIncentive(DateRange, startendrange, name) {
 // Transform data into the required format
 const transformData = async (DateRange, startendrange) => {
   const data = await fetchData(DateRange, startendrange);
+  console.log("data");
   // Convert Firebase timestamp to dd-mm-yyyy format
   const convertToDate = (timestamp) => {
     const date = new Date(timestamp.seconds * 1000);
@@ -416,7 +424,8 @@ function rolesPermissions() {
         "Pickup-Booking",
         "all-pickups",
         "logistics-Dashboard",
-        "Incentive-Report",
+        "Sales-Incentive",
+        "Pickup-Incentive",
       ],
       RateManagement: ["Sale-rates", "vendor-rates"],
     };
