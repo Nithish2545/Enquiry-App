@@ -23,7 +23,6 @@ function IncentiveModel() {
     return datePart;
   }
   function convertDateToTimestamp(dateString) {
-    console.log(dateString);
     const result = extractDate(dateString);
     const [day, month, year] = result.split("-").map(Number);
     const date = new Date(year, month - 1, day);

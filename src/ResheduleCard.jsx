@@ -41,11 +41,13 @@ function CancelCard({ item, index }) {
       final_result.push({ id: doc.id, ...doc.data() });
     });
 
-    const docRef = doc(db, 
+    const docRef = doc(
+      db,
       collectionName_BaseAwb.getCollection(
         JSON.parse(localStorage.getItem("LoginCredentials")).Location
-      )
-      , final_result[0].id); // db is your Firestore instance
+      ),
+      final_result[0].id
+    ); // db is your Firestore instance
 
     const updatedFields = {
       pickupDatetime: selectedDate + " " + "&" + Hour + " " + Timeperiod,
@@ -61,7 +63,6 @@ function CancelCard({ item, index }) {
     const fetchDetails = async () => {
       try {
         const result = await axios.get(API_URL);
-        const userDetails = result.data.sheet1;
       } catch (error) {
         console.log(error);
       }

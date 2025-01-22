@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axios, { all } from "axios";
 import Nav from "./Nav";
 import utilityFunctions from "./Utility/utilityFunctions";
+import { doc, getDocs, setDoc } from "firebase/firestore";
+import { db } from "./firebase";
+import { collection, onSnapshot } from "firebase/firestore";
 
 const RateCardForm = () => {
-  const [country, setCountry] = useState("USA");
+  const [country, setCountry] = useState("UK");
   const [weight, setWeight] = useState("");
   const [weights, setWeights] = useState([]);
   const [selectedRate, setSelectedRate] = useState(null);
@@ -12,62 +15,68 @@ const RateCardForm = () => {
   const [Zones, setZones] = useState([]);
   const [Instructions, setInstructions] = useState([]);
   const [DeliverDays, setDeliverDays] = useState("");
-
-  const sheets = [
-    { name: "USA" },
-    { name: "UK" },
-    { name: "UAE" },
-    { name: "CANADA" },
-    { name: "CHINA" },
-    { name: "EUROPE" },
-    { name: "FRANCE" },
-    { name: "HONG KONG" },
-    { name: "MALAYSIA" },
-    { name: "NEW ZEALAND" },
-    { name: "SOUTH AMERICA" },
-    { name: "SINGAPORE" },
-    { name: "AUSTRALIA" },
-    { name: "SAUDI" },
-    { name: "MAURITIUS" },
-    { name: "PHILIPPINES" },
-    { name: "GERMANY" },
-    { name: "JAPAN" },
-    { name: "SRI LANKA" },
-  ];
+  const [allCountryNames, setallCountryNames] = useState();
 
   const API_ENDPOINT =
-    "https://script.google.com/macros/s/AKfycbzV38Uyx2o1hHDG8EQKhIDiG3ciRZWNqxGkZrU01rr8ssfL5QxhC5lzLBTbmf_MExrOWA/exec";
-
+    "https://script.google.com/macros/s/AKfycbzQTpIruNyz_uVoqbn221cdnhGWc7nRE7Q0JzUJiaCKZeYVxrlGTsVeFGWBdVJfDOgfNA/exec";
   const fetchData = async () => {
+    console.log("loading...");
+    const uploadDataToFirestore = async (data) => {
+      try {
+        for (const [key, value] of Object.entries(data)) {
+          // Push each key as a document in Firestore
+          await setDoc(doc(db, "rateCards", key), { entries: value });
+        }
+      } catch (error) {
+        console.error("Error uploading data to Firestore:", error);
+      } finally {
+        console.log("Data updated into firebase!");
+      }
+    };
+    await axios.get(API_ENDPOINT).then((d) => {
+      uploadDataToFirestore(d.data.data);
+    });
+  };
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchRateCards = () => {
     try {
-      const promises = sheets.map((sheet) =>
-        axios.get(`${API_ENDPOINT}?sheet=${sheet.name}`)
-      );
-      const responses = await Promise.all(promises);
-      const newRateData = {};
-      responses.forEach((response, index) => {
-        const sheetName = sheets[index].name;
-        const data = response.data.data;
-        newRateData[sheetName] = data.map((item) => ({
-          Weight_slab: item["Weight_slab(" + sheetName + ")"],
-          Economy: item.Economy,
-          Express: item.Express,
-          EcoDutyFree: item.EcoDutyFree,
-          ZONES: item.ZONES,
-          INSTRUCTIONS: item.INSTRUCTIONS,
-          DAYSTODELIVER: item.DAYSTODELIVER,
-          EcoSelf: item.EcoSelf,
-        }));
+      const rateCardsCollection = collection(db, "rateCards");
+
+      // Set up real-time listener using onSnapshot
+      const unsubscribe = onSnapshot(rateCardsCollection, (querySnapshot) => {
+        const rateCardsData = {};
+        querySnapshot.forEach((doc) => {
+          rateCardsData[doc.id] = doc.data().entries;
+        });
+
+        // Extract country names
+        const countries = Object.keys(rateCardsData);
+
+        // Update states
+        setallCountryNames(countries);
+        setRateData(rateCardsData);
       });
 
-      setRateData(newRateData);
+      // Return the unsubscribe function to clean up the listener when the component unmounts
+      return unsubscribe;
     } catch (error) {
-      utilityFunctions.ErrorNotify("Failed to fetch data from Google Sheets.");
+      console.error("Error fetching rate cards data:", error);
     }
   };
 
+  // Example usage
   useEffect(() => {
-    fetchData();
+    const unsubscribe = fetchRateCards();
+
+    // Cleanup listener on unmount
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -131,9 +140,9 @@ const RateCardForm = () => {
                   onChange={(e) => setCountry(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-100 text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
                 >
-                  {sheets.map((sheet) => (
-                    <option key={sheet.name} value={sheet.name}>
-                      {sheet.name}
+                  {allCountryNames?.map((sheet) => (
+                    <option key={sheet} value={sheet}>
+                      {sheet}
                     </option>
                   ))}
                 </select>
