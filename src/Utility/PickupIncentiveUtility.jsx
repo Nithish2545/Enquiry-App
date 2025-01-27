@@ -1,11 +1,4 @@
-import {
-  collection,
-  getDocs,
-  query,
-  Timestamp,
-  where,
-} from "firebase/firestore";
-import { format, startOfWeek, addDays, subWeeks } from "date-fns";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebase";
 
 function extractDate(dateString) {
@@ -25,62 +18,6 @@ function convertDateToTimestamp(dateString) {
   };
 }
 
-function timestamptostr(timestamp) {
-  // Convert seconds to milliseconds and create a Date object
-  const date = new Date(timestamp.seconds * 1000);
-  // Format the date to dd-mm-yyyy
-  const day = String(date.getDate()).padStart(2, "0"); // Ensure two digits for the day
-  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
-  const year = date.getFullYear();
-  return `${day}-${month}-${year}`;
-}
-
-const months = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-]; // List of months
-
-const currentDate = new Date();
-
-// Get current week's range (Saturday to Friday)
-const currentWeekStart = startOfWeek(currentDate, { weekStartsOn: 6 }); // Start on Saturday
-const currentWeekEnd = addDays(currentWeekStart, 6); // End on Friday
-// Get last week's range (Saturday to Friday)
-const lastWeekStart = subWeeks(currentWeekStart, 1);
-const lastWeekEnd = addDays(lastWeekStart, 6);
-// Format dates to "yyyy-MM-dd" format for comparison
-const formattedStartDate = Timestamp.fromDate(
-  new Date(format(currentWeekStart, "yyyy-MM-dd"))
-);
-const formattedEndDate = Timestamp.fromDate(
-  new Date(format(currentWeekEnd, "yyyy-MM-dd"))
-);
-
-const formattedLastWeekStart = Timestamp.fromDate(
-  new Date(format(lastWeekStart, "yyyy-MM-dd"))
-);
-
-const formattedLastWeekEnd = Timestamp.fromDate(
-  new Date(format(lastWeekEnd, "yyyy-MM-dd"))
-);
-
-async function fetchStartEndDate(DateRange, startendrange) {
-  return {
-    startDate: timestamptostr(startendrange.start),
-    endDate: timestamptostr(startendrange.end),
-  };
-}
-
 async function fetchData(DateRange, startendrange) {
   try {
     let queryRef = collection(db, "pickup");
@@ -88,17 +25,17 @@ async function fetchData(DateRange, startendrange) {
     if (DateRange === "This Week") {
       queryRef = query(
         collection(db, "pickup"),
-        where("status", "in", ["PAYMENT DONE", "SHIPMENT CONNECTED"])
+        where("pickUpPersonNameStatus", "in", ["PICKUP COMPLETED"])
       );
     } else if (DateRange === "Last Week") {
       queryRef = query(
         collection(db, "pickup"),
-        where("status", "in", ["PAYMENT DONE", "SHIPMENT CONNECTED"])
+        where("pickUpPersonNameStatus", "in", ["PICKUP COMPLETED"])
       );
     } else if (DateRange == "Select range") {
       queryRef = query(
         collection(db, "pickup"),
-        where("status", "in", ["PAYMENT DONE", "SHIPMENT CONNECTED"])
+        where("pickUpPersonNameStatus", "in", ["PICKUP COMPLETED"])
       );
     }
 
@@ -120,6 +57,7 @@ async function fetchData(DateRange, startendrange) {
         : item.pickupDatetime.seconds >= startendrange?.start?.seconds &&
           item.pickupDatetime.seconds <= startendrange?.end?.seconds
     );
+
     return filteredData;
   } catch (error) {
     console.error("Error fetching pickup data:", error);
@@ -127,49 +65,38 @@ async function fetchData(DateRange, startendrange) {
   }
 }
 
-async function getRevenue(DateRange, startendrange) {
-  var Revenue = 0;
-  await fetchData(DateRange, startendrange).then((d) => {
-    d?.map((value) => {
-      Revenue += value.logisticCost;
-    });
-  });
-  return Revenue.toFixed(2);
-}
-
 async function getTotalBookings(DateRange, startendrange) {
   const FeatchedResult = await fetchData(DateRange, startendrange);
   return FeatchedResult.length;
 }
 
-async function AvgBookingValue(DateRange, startendrange) {
-  const revenue = await getRevenue(DateRange, startendrange);
-  const totalBookings = await getTotalBookings(DateRange, startendrange);
-  const result = totalBookings === 0 ? 0 : revenue / totalBookings;
-  return result.toFixed(2);
+async function getTotalKGs(DateRange, startendrange) {
+  var TotalKGs = 0;
+  await fetchData(DateRange, startendrange).then((d) => {
+    d?.map((value) => {
+      TotalKGs += parseInt(value?.postPickupWeight?.replace(" KG", ""));
+    });
+  });
+  return TotalKGs;
 }
 
-async function fetchLoginCredentials() {
-  let collection_loginCre = collection(db, "LoginCredentials");
-  const querySnapshot = await getDocs(collection_loginCre);
-  const loginData = querySnapshot.docs.map((doc) => ({
-    id: doc.id, // Include the document ID if needed
-    ...doc.data(), // Spread the document fields
-  }));
-  const finalLoginCre = Object.entries(loginData[0])
-    .filter(([email, details]) => {
-      return (
-        (details[3] === "CHENNAI" && details[2] === "sales associate") ||
-        details[2] === "sales admin"
-      );
-    })
-    .map(([email, details]) => ({
-      email: details[1],
-      name: details[0],
-      role: details[2],
-      location: details[3],
-    }));
-  return finalLoginCre;
+async function getKmDriven(DateRange, startendrange) {
+  let KmDriven = 0;
+  await fetchData(DateRange, startendrange).then((d) => {
+    d?.forEach((value) => {
+      KmDriven += value?.KmDriven ?? 0; // Use nullish coalescing to default to 0 if undefined
+    });
+  });
+  return KmDriven;
+}
+
+async function SalesOverview(DateRange, startendrange) {
+  const TotalPickupsCompleted = await getTotalBookings(
+    DateRange,
+    startendrange
+  );
+
+  return TotalPickupsCompleted;
 }
 
 const groupByPickupBookedBy = async (DateRange, startendrange) => {
@@ -183,12 +110,12 @@ const groupByPickupBookedBy = async (DateRange, startendrange) => {
   };
 
   return data.reduce((result, item) => {
-    const name = item.pickupBookedBy;
+    const name = item.pickUpPersonName;
 
     // Add a new group for the name if it doesn't exist
     if (!result[name]) {
       result[name] = {
-        pickupBookedBy: name,
+        pickUpPersonName: name,
         bookings: [],
       };
     }
@@ -204,58 +131,71 @@ const groupByPickupBookedBy = async (DateRange, startendrange) => {
 
 async function TopPerformer(DateRange, startendrange) {
   const data = await groupByPickupBookedBy(DateRange, startendrange);
-  let topPerformer = { name: null, totalCost: 0, totalBookings: 0 };
+  let topPerformer = { name: null, totalkmsDriven: 0, totalBookings: 0 };
   for (const person in data) {
     const bookings = data[person].bookings;
-    const totalCost = bookings.reduce(
-      (sum, booking) => sum + (booking.logisticCost || 0),
+    const totalkmsDriven = bookings.reduce(
+      (sum, booking) => sum + (booking.KmDriven || 0),
       0
     );
     const totalBookings = bookings.length;
-    if (totalCost > topPerformer.totalCost) {
-      topPerformer = { name: person, totalCost, totalBookings };
+    if (totalkmsDriven > topPerformer.totalkmsDriven) {
+      topPerformer = { name: person, totalkmsDriven, totalBookings };
     }
   }
   return topPerformer.name ? topPerformer.name : "N/A";
 }
 
-function IncentiveCalculator(BookingCount) {
-  if (BookingCount < 3) {
-    return 0; // No incentive if less than 3 bookings
-  } else if (BookingCount === 3) {
-    return BookingCount * 50; // Incentive for 3 bookings: 3 * 50
-  } else if (BookingCount >= 4 && BookingCount <= 5) {
-    return BookingCount * 60; // Incentive for 4-5 bookings: 3 * 60
-  } else if (BookingCount >= 6 && BookingCount <= 7) {
-    return BookingCount * 75; // Incentive for 6-7 bookings: 3 * 75
+async function allPickupsData(DateRange, startendrange) {
+  try {
+    queryRef = query(collection(db, "pickup"));
+
+    const querySnapshot = await getDocs(queryRef);
+    const fetchedData = querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      return { ...data }; // Attach the parsed data
+    });
+    // Update the fetched data by converting pickupDatetime to Timestamp
+    const updatedData = fetchedData.map((item) => ({
+      ...item,
+      pickupDatetime: convertDateToTimestamp(item.pickupDatetime),
+    }));
+    // Filter based on the selected DateRange
+    const filteredData = updatedData.filter((item) =>
+      DateRange === "This Week"
+        ? item.pickupDatetime.seconds >= startendrange?.start?.seconds &&
+          item.pickupDatetime.seconds <= startendrange?.end?.seconds
+        : item.pickupDatetime.seconds >= startendrange?.start?.seconds &&
+          item.pickupDatetime.seconds <= startendrange?.end?.seconds
+    );
+
+    return filteredData;
+  } catch (error) {
+    console.error("Error fetching pickup data:", error);
+    return [];
   }
-  return 0; // Default, no incentive
 }
 
-async function calculateTotalIncentive(DateRange, startendrange, name) {
-  let data = await transformData(DateRange, startendrange);
-  data = [data.find((d) => d.name == name)];
-  let totalIncentive = 0;
-  for (const person in data) {
-    if (person !== "name") {
-      const personData = data[person];
-      for (const dayKey in personData) {
-        if (dayKey !== "name") {
-          const dayData = personData[dayKey];
-          const bookingCount = dayData.bookings.length;
-          // Only calculate incentive if bookings are greater than or equal to 3
-          if (bookingCount >= 3) {
-            const dayIncentive = IncentiveCalculator(bookingCount);
-            totalIncentive += dayIncentive;
-          }
-        }
-      }
-    }
-  }
-  return totalIncentive;
+async function fetchLoginCredentials() {
+  let collection_loginCre = collection(db, "LoginCredentials");
+  const querySnapshot = await getDocs(collection_loginCre);
+  const loginData = querySnapshot.docs.map((doc) => ({
+    id: doc.id, // Include the document ID if needed
+    ...doc.data(), // Spread the document fields
+  }));
+  const finalLoginCre = Object.entries(loginData[0])
+    .filter(([email, details]) => {
+      return details[3] === "CHENNAI" && details[2] === "Delivery Specialist";
+    })
+    .map(([email, details]) => ({
+      email: details[1],
+      name: details[0],
+      role: details[2],
+      location: details[3],
+    }));
+  return finalLoginCre;
 }
 
-// Transform data into the required format
 const transformData = async (DateRange, startendrange) => {
   const data = await fetchData(DateRange, startendrange);
   // Convert Firebase timestamp to dd-mm-yyyy format
@@ -269,7 +209,7 @@ const transformData = async (DateRange, startendrange) => {
   return Object.values(
     data.reduce((result, item) => {
       const formattedDate = convertToDate(item.pickupDatetime);
-      const name = item.pickupBookedBy;
+      const name = item.pickUpPersonName;
       const key = `${name}_${formattedDate}`;
 
       // Ensure the name exists in the dataset
@@ -316,10 +256,12 @@ const downloadCSV = async (person, DateRange, startendrange) => {
     "pickupDatetime",
     "packageConnectedDataTime",
     "pickUpPersonName",
+    "KmDriven",
     "pickuparea",
     "pincode",
     "rtoIfAny",
 
+    "pickUpPersonNameStatus",
     // Package Details
     "actualNoOfPackages",
     "actualWeight",
@@ -391,72 +333,18 @@ const downloadCSV = async (person, DateRange, startendrange) => {
   URL.revokeObjectURL(url);
 };
 
-function getSalesPersonBookings(person) {
-  return groupedData[person]?.bookings.length
-    ? groupedData[person]?.bookings.length
-    : 0;
-}
-
-function calculateCost(country, weight, data) {
-  if (!data) {
-    return "";
-  }
-  const temp = data[0].data;
-  const countryIndex = temp[0]["COUNTRY/ZONE"].indexOf(country.trim());
-  if (countryIndex === -1) {
-    return `Country ${country} not found.`;
-  }
-  const weightKey = `${weight.toFixed(3)} gms `;
-  const weightData = temp.find((item) => weightKey in item);
-  if (!weightData) {
-    return `Weight ${weight} gms not found.`;
-  }
-  return weightData[weightKey][countryIndex];
-}
-
-function rolesPermissions() {
-  let { role } = JSON.parse(localStorage.getItem("LoginCredentials"));
-  if (role == "Manager") {
-    return {
-      PickupManagement: [
-        "Pickup-Booking",
-        "all-pickups",
-        "logistics-Dashboard",
-        "Sales-Incentive",
-        "Pickup-Incentive",
-      ],
-      RateManagement: ["Sale-rates", "vendor-rates"],
-    };
-  }
-  if (role == "sales associate" || role == "sales admin") {
-    return {
-      PickupManagement: ["Pickup-Booking", "Pickups"],
-      RateManagement: ["Sale-rates"],
-    };
-  }
-}
-
-function formatRouteName(route) {
-  return route
-    .replace(/-/g, " ") // Replace hyphens with spaces
-    .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize each word
-}
+// Total Pickups
+// Pickups Pending
 
 export default {
-  getRevenue: getRevenue,
+  fetchData: fetchData,
   getTotalBookings: getTotalBookings,
-  AvgBookingValue: AvgBookingValue,
-  fetchLoginCredentials: fetchLoginCredentials,
+  SalesOverview: SalesOverview,
+  getTotalKGs: getTotalKGs,
+  getKmDriven: getKmDriven,
   groupByPickupBookedBy: groupByPickupBookedBy,
   TopPerformer: TopPerformer,
-  months: months,
-  IncentiveCalculator: IncentiveCalculator,
-  transformData: transformData,
+  allPickupsData: allPickupsData,
+  fetchLoginCredentials: fetchLoginCredentials,
   downloadCSV: downloadCSV,
-  getSalesPersonBookings: getSalesPersonBookings,
-  fetchStartEndDate: fetchStartEndDate,
-  calculateTotalIncentive: calculateTotalIncentive,
-  calculateCost: calculateCost,
-  rolesPermissions: rolesPermissions,
-  formatRouteName: formatRouteName,
 };

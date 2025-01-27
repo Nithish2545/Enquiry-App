@@ -243,6 +243,7 @@ function Pickups() {
                 <th className="py-3 px-4 border">Vendor</th>
                 <th className="py-3 px-4 border">Pickup Area</th>
                 <th className="py-3 px-4 border">Status</th>
+                <th className="py-3 px-4 border">PickUp Status</th>
                 <th className="py-3 px-4  border">Pickup Date & Time</th>
                 <th className="py-3 px-4 border"> Pickup Booked by</th>
                 <th className="py-3 px-4 border">PickUp Person</th>
@@ -266,6 +267,12 @@ function Pickups() {
                     <td className="py-10 px-4 border">{pickup.pickuparea}</td>
                     <td className="py-10 px-4 border text-nowrap">
                       {pickup.status}
+                    </td>
+                    <td className="py-10 px-4 border text-nowrap">
+                      {pickup.pickUpPersonNameStatus == "" ||
+                      pickup.pickUpPersonNameStatus == null
+                        ? "NOT COMPLETED"
+                        : pickup.pickUpPersonNameStatus}
                     </td>
                     <td className="py-10 px-4 border text-nowrap">
                       {pickup.pickupDatetime}

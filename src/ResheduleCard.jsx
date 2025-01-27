@@ -41,11 +41,13 @@ function CancelCard({ item, index }) {
       final_result.push({ id: doc.id, ...doc.data() });
     });
 
-    const docRef = doc(db, 
+    const docRef = doc(
+      db,
       collectionName_BaseAwb.getCollection(
         JSON.parse(localStorage.getItem("LoginCredentials")).Location
-      )
-      , final_result[0].id); // db is your Firestore instance
+      ),
+      final_result[0].id
+    ); // db is your Firestore instance
 
     const updatedFields = {
       pickupDatetime: selectedDate + " " + "&" + Hour + " " + Timeperiod,
@@ -85,16 +87,15 @@ function CancelCard({ item, index }) {
       <div className="flex flex-col mb-4 gap-2">
         {item.consignorname && (
           <p className="text-base font-medium text-gray-800">
-            <strong className="text-gray-900">Name:</strong>{" "}
+            <strong className="text-gray-900">Name:</strong>
             {item.consignorname}
           </p>
         )}
         <p className="text-base font-medium text-gray-800">
-          <strong className="text-gray-900">Shiphit AWB Number:</strong>{" "}
+          <strong className="text-gray-900">Shiphit AWB Number:</strong>
           {item.awbNumber || "-"}
         </p>
       </div>
-
       <div className="flex flex-col mb-4 gap-2">
         {item.consignorphonenumber && (
           <p className="text-base font-medium text-gray-800">
@@ -109,7 +110,6 @@ function CancelCard({ item, index }) {
           </p>
         )}
       </div>
-
       <div className="flex flex-col mb-4 gap-2">
         {item.pickUpPersonName != "" ? (
           <p className="text-base font-medium text-gray-800">
@@ -119,7 +119,6 @@ function CancelCard({ item, index }) {
         ) : (
           <></>
         )}
-
         {item.pickupDatetime && (
           <p className="text-base font-medium text-gray-800">
             <strong className="text-gray-900">Pickup Booked At:</strong>{" "}
@@ -151,7 +150,6 @@ function CancelCard({ item, index }) {
           </p>
         )}
       </div>
-
       {item.status && (
         <div className="flex items-center gap-2 mb-4">
           <p className="text-base font-medium text-gray-800">
@@ -164,7 +162,6 @@ function CancelCard({ item, index }) {
           </p>
         </div>
       )}
-
       <div className="flex justify-end mt-auto">
         <button
           onClick={openModal} // Open modal on click

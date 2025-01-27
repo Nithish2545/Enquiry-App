@@ -16,13 +16,53 @@ import Pickups from "./Pickups";
 import LogisticsDashboard from "./LogisticsDashboard";
 import { collection, getDocs, query } from "firebase/firestore";
 import AllPickups from "./AllPickups";
-import IncentiveReport from "./SalesIncentive";
+import PickupIncentive from "./PickupIncentive";
 import VendorRates from "./VendorRates";
 import ExtraChargesModule from "./ExtraChargesModule";
 import SalesIncentive from "./SalesIncentive";
+
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isConnectionFast, setIsConnectionFast] = useState(true);
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      checkConnectionSpeed(); // Check the speed when online
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+      setIsConnectionFast(false); // No internet means no speed
+    };
+
+    const checkConnectionSpeed = async () => {
+      try {
+        const startTime = Date.now();
+        await fetch("https://www.google.com/favicon.ico", { method: "HEAD" }); // Lightweight request
+        const endTime = Date.now();
+        const duration = endTime - startTime;
+
+        // Set threshold for "slow" internet, e.g., 1 second
+        setIsConnectionFast(duration < 1000);
+      } catch (error) {
+        setIsConnectionFast(false); // Treat request failure as slow/no internet
+      }
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    // Initial connection speed check
+    if (isOnline) checkConnectionSpeed();
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, [isOnline]);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -115,7 +155,7 @@ function App() {
           />
           <Route
             path="/Pickup-Incentive"
-            element={user ? <IncentiveReport /> : <Navigate to="/signin" />}
+            element={user ? <PickupIncentive /> : <Navigate to="/signin" />}
           />
           {/* Sign In route, only accessible if no user is logged in */}
           <Route

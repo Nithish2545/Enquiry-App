@@ -4,6 +4,8 @@ import { Avatar } from "@mui/material";
 import Nav from "./Nav";
 import { format, startOfWeek, addDays, subWeeks } from "date-fns";
 import { Timestamp } from "firebase/firestore";
+import PickupIncentiveUtility from "./Utility/PickupIncentiveUtility";
+
 function PickupIncentive() {
   const [DateRange, setDateRange] = useState("Last Week"); // Default value set to "This Week"
   const [data, setData] = useState({
@@ -22,7 +24,6 @@ function PickupIncentive() {
     return datePart;
   }
   function convertDateToTimestamp(dateString) {
-    console.log(dateString);
     const result = extractDate(dateString);
     const [day, month, year] = result.split("-").map(Number);
     const date = new Date(year, month - 1, day);
@@ -33,7 +34,6 @@ function PickupIncentive() {
       nanoseconds,
     };
   }
-  const [incentive, setIncentive] = useState({});
   const [startendrange, setstartEnddate] = useState({});
   const [StartDatecustome, setStartDatecustome] = useState({});
   const [endDatecustome, setstartEnddatecustome] = useState({});
@@ -66,6 +66,19 @@ function PickupIncentive() {
       ? data.groupedData[person]?.bookings.length
       : 0;
   }
+
+  function calculateTotalKmDriven(person) {
+    const bookings = data.groupedData[person]?.bookings || [];
+    return bookings.reduce(
+      (total, booking) => total + (booking.KmDriven || 0),
+      0
+    );
+  }
+
+  function calculateIncentive(person) {
+    return calculateTotalKmDriven(person) * 5;
+  }
+
   useEffect(() => {
     if (DateRange === "Last Week") {
       setstartEnddate({
@@ -79,8 +92,6 @@ function PickupIncentive() {
       });
     }
     if (DateRange === "Select range") {
-      console.log("StartDatecustome", StartDatecustome);
-      console.log("endDatecustome", endDatecustome);
       setstartEnddate({
         start: StartDatecustome,
         end: endDatecustome,
@@ -100,12 +111,18 @@ function PickupIncentive() {
           topPerformer,
           startEnddate,
         ] = await Promise.all([
-          utility.getRevenue(DateRange, startendrange),
-          utility.getTotalBookings(DateRange, startendrange),
-          utility.AvgBookingValue(DateRange, startendrange),
-          utility.fetchLoginCredentials(DateRange, startendrange),
-          utility.groupByPickupBookedBy(DateRange, startendrange),
-          utility.TopPerformer(DateRange, startendrange),
+          PickupIncentiveUtility.getTotalKGs(DateRange, startendrange),
+          PickupIncentiveUtility.getTotalBookings(DateRange, startendrange),
+          PickupIncentiveUtility.getKmDriven(DateRange, startendrange),
+          PickupIncentiveUtility.fetchLoginCredentials(
+            DateRange,
+            startendrange
+          ),
+          PickupIncentiveUtility.groupByPickupBookedBy(
+            DateRange,
+            startendrange
+          ),
+          PickupIncentiveUtility.TopPerformer(DateRange, startendrange),
           utility.fetchStartEndDate(DateRange, startendrange),
         ]);
         setData({
@@ -131,25 +148,13 @@ function PickupIncentive() {
     return name?.charAt(0).toUpperCase() + name?.slice(1);
   }
 
-  useEffect(() => {
-    // Fetch incentives for each row (name)
-    data.loginCredentials.forEach((row) => {
-      utility
-        .calculateTotalIncentive(DateRange, startendrange, row.name)
-        .then((incentive) => {
-          setIncentive((prevIncentives) => ({
-            ...prevIncentives,
-            [row.name]: incentive,
-          }));
-        });
-    });
-  }, [data]);
-
   return (
     <div>
       <Nav />
       <div className="flex flex-col gap-10 p-8 bg-gray-50 min-h-screen">
-        <div className="text-xl font-semibold"></div>
+        <div className="text-3xl font-bold text-purple-600 ">
+          Pickup Incentive
+        </div>
         {/* Filter Options Section */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <div className="flex flex-col md:flex-row items-center mb-6 gap-6 md:gap-8">
@@ -266,26 +271,27 @@ function PickupIncentive() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             <div className="bg-purple-50 p-6 rounded-lg shadow-sm text-center">
               <h2 className="text-lg font-medium text-purple-800">
-                Total Bookings
+                Pickups Completed
               </h2>
               <p className="text-3xl font-bold text-purple-600">
                 {data.totalBookings}
               </p>
             </div>
             <div className="bg-green-50 p-6 rounded-lg shadow-sm text-center">
-              <h2 className="text-lg font-medium text-green-800">
-                Total Revenue
-              </h2>
+              <h2 className="text-lg font-medium text-green-800">Total KGs</h2>
               <p className="text-3xl font-bold text-green-600">
-                ₹{data.revenue}
+                {data.revenue}
+                <span className="bg-red-500 text-white text-[10px] rounded-md px-1 py-1 ml-1">
+                  Apx
+                </span>
               </p>
             </div>
             <div className="bg-blue-50 p-6 rounded-lg shadow-sm text-center">
               <h2 className="text-lg font-medium text-blue-800">
-                Avg. Booking Value
+                Total KMs Driven
               </h2>
               <p className="text-3xl font-bold text-blue-600">
-                ₹{data.avgBookingValue}
+                {data.avgBookingValue}
               </p>
             </div>
             <div className="bg-red-50 p-6 rounded-lg shadow-sm text-center">
@@ -336,7 +342,11 @@ function PickupIncentive() {
                 <button
                   className="flex items-center justify-center bg-purple-600 py-3 px-4 rounded-lg text-white font-medium gap-2 hover:bg-purple-700 focus:ring focus:ring-purple-300 transition-all"
                   onClick={() =>
-                    utility.downloadCSV(d.name, DateRange, startendrange)
+                    PickupIncentiveUtility.downloadCSV(
+                      d.name,
+                      DateRange,
+                      startendrange
+                    )
                   }
                 >
                   <img
@@ -363,7 +373,10 @@ function PickupIncentive() {
                     Name
                   </th>
                   <th className="px-6 py-4 text-center text-lg font-semibold text-gray-700 border-b border-gray-300">
-                    Bookings
+                    Pickups
+                  </th>
+                  <th className="px-6 py-4 text-center text-lg font-semibold text-gray-700 border-b border-gray-300">
+                    KMs Driven
                   </th>
                   <th className="px-6 py-4 text-center text-lg font-semibold text-gray-700 border-b border-gray-300">
                     Incentive
@@ -391,15 +404,15 @@ function PickupIncentive() {
                       )}
                     </td>
                     <td className="px-6 py-4 text-center text-base text-gray-800 font-medium border-b border-gray-300">
-                      {/* {Object.entries(incentive).map(([name, value]) =>
-                       <p>{name}</p> 
-                      )} */}
-                      <p>{incentive[row.name]}</p>
+                      <p>{calculateTotalKmDriven(row.name)}</p>
+                    </td>
+                    <td className="px-6 py-4 text-center text-base text-gray-800 font-medium border-b border-gray-300">
+                      <p>{calculateIncentive(row.name)}</p>
                     </td>
                     <td className="px-6 py-4 text-center text-base text-gray-800 font-medium border-b border-gray-300">
                       <button
                         onClick={() =>
-                          utility.downloadCSV(
+                          PickupIncentiveUtility.downloadCSV(
                             row.name,
                             DateRange,
                             startendrange

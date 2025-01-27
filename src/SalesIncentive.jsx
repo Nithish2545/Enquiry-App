@@ -22,7 +22,6 @@ function SalesIncentive() {
     return datePart;
   }
   function convertDateToTimestamp(dateString) {
-    console.log(dateString);
     const result = extractDate(dateString);
     const [day, month, year] = result.split("-").map(Number);
     const date = new Date(year, month - 1, day);
@@ -79,8 +78,6 @@ function SalesIncentive() {
       });
     }
     if (DateRange === "Select range") {
-      console.log("StartDatecustome", StartDatecustome);
-      console.log("endDatecustome", endDatecustome);
       setstartEnddate({
         start: StartDatecustome,
         end: endDatecustome,
@@ -149,7 +146,9 @@ function SalesIncentive() {
     <div>
       <Nav />
       <div className="flex flex-col gap-10 p-8 bg-gray-50 min-h-screen">
-        <div className="text-xl font-semibold"></div>
+        <div className="text-3xl font-bold text-purple-600 ">
+          Sales Incentive
+        </div>
         {/* Filter Options Section */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <div className="flex flex-col md:flex-row items-center mb-6 gap-6 md:gap-8">
