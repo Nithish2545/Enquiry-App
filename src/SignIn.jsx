@@ -21,7 +21,6 @@ const SignIn = () => {
     try {
       await signInWithEmailAndPassword(auth, data.email, data.password);
     } catch (error) {
-      console.log(error.code)
       // Set the error message for inline display
       if (error.code === "auth/invalid-credential" || error.code === "auth/user-not-found") {
         setAuthError("Invalid email or password. Please try again.");
