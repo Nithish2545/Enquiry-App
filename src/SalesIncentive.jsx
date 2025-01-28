@@ -4,12 +4,7 @@ import { Avatar } from "@mui/material";
 import Nav from "./Nav";
 import { format, startOfWeek, addDays, subWeeks } from "date-fns";
 import { Timestamp } from "firebase/firestore";
-<<<<<<< HEAD:src/IncentiveModel.jsx
-import utilityFunctions from "./Utility/utilityFunctions";
-function IncentiveModel() {
-=======
 function SalesIncentive() {
->>>>>>> pickupPersonIncentive:src/SalesIncentive.jsx
   const [DateRange, setDateRange] = useState("Last Week"); // Default value set to "This Week"
   const [data, setData] = useState({
     revenue: 0,
