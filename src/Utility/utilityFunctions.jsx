@@ -103,7 +103,10 @@ async function fetchData(DateRange, startendrange) {
         where("status", "in", ["PAYMENT DONE", "SHIPMENT CONNECTED"])
       );
     } else if (DateRange == "Select range") {
-      console.log("test", DateRange);
+      queryRef = query(
+        collection(db, "pickup"),
+        where("status", "in", ["PAYMENT DONE", "SHIPMENT CONNECTED"])
+      );
     }
 
     const querySnapshot = await getDocs(queryRef);
@@ -162,7 +165,10 @@ async function fetchLoginCredentials() {
   }));
   const finalLoginCre = Object.entries(loginData[0])
     .filter(([email, details]) => {
-      return details[3] === "CHENNAI";
+      return (
+        (details[3] === "CHENNAI" && details[2] === "sales associate") ||
+        details[2] === "sales admin"
+      );
     })
     .map(([email, details]) => ({
       email: details[1],
@@ -423,7 +429,8 @@ function rolesPermissions() {
         "Pickup-Booking",
         "all-pickups",
         "logistics-Dashboard",
-        "Incentive-Report",
+        "Sales-Incentive",
+        "Pickup-Incentive",
       ],
       RateManagement: ["Sale-rates", "vendor-rates"],
     };

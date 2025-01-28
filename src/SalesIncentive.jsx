@@ -4,8 +4,12 @@ import { Avatar } from "@mui/material";
 import Nav from "./Nav";
 import { format, startOfWeek, addDays, subWeeks } from "date-fns";
 import { Timestamp } from "firebase/firestore";
+<<<<<<< HEAD:src/IncentiveModel.jsx
 import utilityFunctions from "./Utility/utilityFunctions";
 function IncentiveModel() {
+=======
+function SalesIncentive() {
+>>>>>>> pickupPersonIncentive:src/SalesIncentive.jsx
   const [DateRange, setDateRange] = useState("Last Week"); // Default value set to "This Week"
   const [data, setData] = useState({
     revenue: 0,
@@ -147,7 +151,9 @@ function IncentiveModel() {
     <div>
       <Nav />
       <div className="flex flex-col gap-10 p-8 bg-gray-50 min-h-screen">
-        <div className="text-xl font-semibold"></div>
+        <div className="text-3xl font-bold text-purple-600 ">
+          Sales Incentive
+        </div>
         {/* Filter Options Section */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <div className="flex flex-col md:flex-row items-center mb-6 gap-6 md:gap-8">
@@ -419,4 +425,4 @@ function IncentiveModel() {
   );
 }
 
-export default IncentiveModel;
+export default SalesIncentive;
