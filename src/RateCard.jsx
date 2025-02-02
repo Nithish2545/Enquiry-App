@@ -21,7 +21,6 @@ const RateCardForm = () => {
   const API_ENDPOINT =
     "https://script.google.com/macros/s/AKfycbzQTpIruNyz_uVoqbn221cdnhGWc7nRE7Q0JzUJiaCKZeYVxrlGTsVeFGWBdVJfDOgfNA/exec";
   const fetchData = async () => {
-    console.log("loading...");
     const uploadDataToFirestore = async (data) => {
       try {
         for (const [key, value] of Object.entries(data)) {
@@ -31,7 +30,7 @@ const RateCardForm = () => {
       } catch (error) {
         console.error("Error uploading data to Firestore:", error);
       } finally {
-        console.log("Data updated into firebase!");
+        // console.log("Data updated into firebase!");
       }
     };
     await axios.get(API_ENDPOINT).then((d) => {

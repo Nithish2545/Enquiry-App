@@ -67,7 +67,7 @@ const LogisticsDashboard = () => {
           <p className="text-3xl font-bold text-blue-500">{shippedCount}</p>
         </div>
       </div>
-      <LineChartCom />
+      {/* <LineChartCom /> */}
     </div>
   );
 };
