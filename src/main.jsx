@@ -11,5 +11,4 @@ if ("serviceWorker" in navigator) {
       console.error("Service Worker registration failed:", error);
     });
 }
-
 createRoot(document.getElementById("root")).render(<App />);

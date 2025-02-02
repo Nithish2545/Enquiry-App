@@ -13,6 +13,7 @@ const RateCardForm = () => {
   const [selectedRate, setSelectedRate] = useState(null);
   const [rateData, setRateData] = useState({});
   const [Zones, setZones] = useState([]);
+  const [Economy_Zones, setEconomy_Zones] = useState([]);
   const [Instructions, setInstructions] = useState([]);
   const [DeliverDays, setDeliverDays] = useState("");
   const [allCountryNames, setallCountryNames] = useState();
@@ -96,15 +97,23 @@ const RateCardForm = () => {
 
   useEffect(() => {
     let zonesData = [];
+    let economyZonesData = [];
     let instructionsData = [];
+
     rateData[country]?.map((d) => {
-      if (d.ZONES) zonesData.push(d.ZONES);
+      if (d.EXPRESS_ZONES) zonesData.push(d.EXPRESS_ZONES);
+    });
+    rateData[country]?.map((d) => {
+      if (d.ECONOMY_ZONES) economyZonesData.push(d.ECONOMY_ZONES);
     });
     rateData[country]?.map((d) => {
       if (d.INSTRUCTIONS) instructionsData.push(d.INSTRUCTIONS);
     });
+
     setZones(zonesData);
+    setEconomy_Zones(economyZonesData);
     setInstructions(instructionsData);
+
     if (
       rateData[country] &&
       rateData[country][0] &&
@@ -211,20 +220,39 @@ const RateCardForm = () => {
               </p>
             )}
           </div>
-
           {/* Zones and Instructions */}
           <div className="w-full flex flex-col lg:flex-row gap-6 ">
             {/* Zones */}
             <div className="flex-1 bg-gray-50 border border-gray-200 rounded-xl shadow-md p-4 lg:p-6 h-[350px] overflow-y-auto">
               <h3 className="text-xl lg:text-2xl font-medium text-purple-700 mb-4">
-                Zones
+                ECONOMY ZONES
+              </h3>
+              {Economy_Zones.length ? (
+                <ul className="space-y-2">
+                  {Economy_Zones.map((zone, index) => (
+                    <li
+                      key={index}
+                      className="text-gray-700 w-fit bg-gray-100 px-3 py-2 rounded-md hover:bg-purple-50"
+                    >
+                      {zone}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-600 text-sm">No zones available.</p>
+              )}
+            </div>
+
+            <div className="flex-1 bg-gray-50 border border-gray-200 rounded-xl shadow-md p-4 lg:p-6 h-[350px] overflow-y-auto">
+              <h3 className="text-xl lg:text-2xl font-medium text-purple-700 mb-4">
+                EXPRESS ZONES
               </h3>
               {Zones.length ? (
                 <ul className="space-y-2">
                   {Zones.map((zone, index) => (
                     <li
                       key={index}
-                      className="text-gray-700 bg-gray-100 px-3 py-2 rounded-md hover:bg-purple-50"
+                      className="text-gray-700 w-fit bg-gray-100 px-3 py-2 rounded-md hover:bg-purple-50"
                     >
                       {zone}
                     </li>
