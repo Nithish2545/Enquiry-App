@@ -374,7 +374,7 @@ function PaymentConfirmationForm() {
                 },
                 templateName: "payment_done6",
               },
-              from: "+919087786986",
+              from: "+919600690881",
               to: `+91${details.consignorphonenumber}`,
             },
           ],
