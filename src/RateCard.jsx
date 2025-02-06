@@ -16,6 +16,9 @@ const RateCardForm = () => {
   const [Economy_Zones, setEconomy_Zones] = useState([]);
   const [Instructions, setInstructions] = useState([]);
   const [DeliverDays, setDeliverDays] = useState("");
+  const [DAYSTODELIVER_Economy, setDAYSTODELIVER_Economy] = useState("");
+  const [DAYSTODELIVER_Express, setDAYSTODELIVER_Express] = useState("");
+  const [DAYSTODELIVER_DutyFree, setDAYSTODELIVER_DutyFree] = useState("");
   const [allCountryNames, setallCountryNames] = useState();
 
   const API_ENDPOINT =
@@ -98,7 +101,6 @@ const RateCardForm = () => {
     let zonesData = [];
     let economyZonesData = [];
     let instructionsData = [];
-
     rateData[country]?.map((d) => {
       if (d.EXPRESS_ZONES) zonesData.push(d.EXPRESS_ZONES);
     });
@@ -117,11 +119,19 @@ const RateCardForm = () => {
       rateData[country] &&
       rateData[country][0] &&
       rateData[country] &&
-      rateData[country][0]["DAYSTODELIVER"]
+      rateData[country][0]["DAYSTODELIVER_Economy"] &&
+      rateData[country][0]["DAYSTODELIVER_Express"] &&
+      rateData[country][0]["DAYSTODELIVER_DutyFree"]
     ) {
-      setDeliverDays(rateData[country][0]["DAYSTODELIVER"]);
+      console.log("rateData", rateData[country][0]["DAYSTODELIVER_Express"]);
+      setDAYSTODELIVER_Economy(rateData[country][0]["DAYSTODELIVER_Economy"]);
+      setDAYSTODELIVER_Express(rateData[country][0]["DAYSTODELIVER_Express"]);
+      setDAYSTODELIVER_DutyFree(rateData[country][0]["DAYSTODELIVER_DutyFree"]);
     } else {
       setDeliverDays("");
+      setDAYSTODELIVER_Economy("");
+      setDAYSTODELIVER_Express("");
+      setDAYSTODELIVER_DutyFree("");
     }
   }, [country, rateData]);
   return (
@@ -186,10 +196,30 @@ const RateCardForm = () => {
               <table className="w-full text-left border border-gray-200 rounded-lg overflow-hidden text-sm">
                 <thead className="bg-purple-100 text-gray-700">
                   <tr>
-                    <th className="px-2 lg:px-4 py-2">Weight</th>
-                    <th className="px-2 lg:px-4 py-2">Economy</th>
-                    <th className="px-2 lg:px-4 py-2">Express</th>
-                    <th className="px-2 lg:px-4 py-2">EcoDutyFree</th>
+                    <th className="px-2 lg:px-4 py-2">
+                      <p className="text-[10px] text-green-700 font-extrabold">
+                        {"Days"}
+                      </p>
+                      <p>Weight</p>
+                    </th>
+                    <th className="px-2 lg:px-4 py-2">
+                      <p className="text-[10px] text-green-700 font-extrabold">
+                        {DAYSTODELIVER_Economy}
+                      </p>
+                      <p>Economy</p>
+                    </th>
+                    <th className="px-2 lg:px-4 py-2 ">
+                      <p className="text-[10px] text-green-700 font-extrabold">
+                        {DAYSTODELIVER_Express}
+                      </p>
+                      <p>Express</p>
+                    </th>
+                    <th className="px-2 lg:px-4 py-2">
+                      <p className="text-[10px] text-green-700 font-extrabold">
+                        {DAYSTODELIVER_DutyFree}
+                      </p>
+                      <p>EcoDutyFree</p>
+                    </th>
                     <th className="px-2 lg:px-4 py-2">Eco Self</th>
                   </tr>
                 </thead>
