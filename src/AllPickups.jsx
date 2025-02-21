@@ -481,24 +481,7 @@ function Pickups() {
                     </span>{" "}
                     {selectedPickup.pickupDatetime || "NA"}
                   </p>
-                  <p>
-                    <span className="font-semibold text-purple-700">
-                      Pickup Completed:
-                    </span>{" "}
-                    {selectedPickup.pickupCompletedDatatime || "NA"}
-                  </p>
-                  <p>
-                    <span className="font-semibold text-purple-700">
-                      Payment Confirmed:
-                    </span>{" "}
-                    {selectedPickup.PaymentComfirmedDate || "NA"}
-                  </p>
-                  <p>
-                    <span className="font-semibold text-purple-700">
-                      Package Connected:
-                    </span>
-                    {selectedPickup.packageConnectedDataTime || "NA"}
-                  </p>
+
                   <p className="flex items-center gap-2 bg-gradient-to-r from-purple-100 to-purple-200 p-3 rounded-lg shadow-lg border-l-4 border-purple-700">
                     <span className="font-bold text-purple-900">Source:</span>
                     <span className="text-gray-700">
@@ -531,10 +514,16 @@ function Pickups() {
                 )}
               </div>
               {selectedPickup.PRODUCTSIMAGE?.length > 0 ? (
-                <div className="mt-6">
+                <div className="mt-6 relative ">
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">
                     Products Images
                   </h3>
+                  <p className="absolute right-3 top-1">
+                    <span className="font-semibold text-purple-700">
+                      Pickup Completed:
+                    </span>{" "}
+                    {selectedPickup.pickupCompletedDatatime || "NA"}
+                  </p>
                   <div className="grid grid-cols-1 gap-4">
                     {selectedPickup.PRODUCTSIMAGE.map((d, index) => (
                       <a href={d} key={index} target="_blank" className="w-fit">
@@ -549,7 +538,7 @@ function Pickups() {
                   </div>
                 </div>
               ) : (
-                <div className="mt-6">
+                <div className="mt-6 pb-3 border-b-2 border-purple-700">
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">
                     Products Images
                   </h3>
@@ -558,7 +547,6 @@ function Pickups() {
                   </div>
                 </div>
               )}
-
               {selectedPickup.PACKAGEWEIGHTIMAGES?.length > 0 ? (
                 <div className="mt-6">
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">
@@ -578,7 +566,7 @@ function Pickups() {
                   </div>
                 </div>
               ) : (
-                <div className="mt-6">
+                <div className="mt-6 pb-3 border-b-2 border-purple-700">
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">
                     Package Weight Images
                   </h3>
@@ -589,7 +577,7 @@ function Pickups() {
               )}
 
               {selectedPickup.FORMIMAGES?.length > 0 ? (
-                <div className="mt-6">
+                <div className="mt-6 ">
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">
                     Form Images
                   </h3>
@@ -607,7 +595,7 @@ function Pickups() {
                   </div>
                 </div>
               ) : (
-                <div className="mt-6">
+                <div className="mt-6 pb-3 border-b-2 border-purple-700 ">
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">
                     Form Images
                   </h3>
@@ -616,9 +604,34 @@ function Pickups() {
                   </div>
                 </div>
               )}
-
+              <div className="mt-6 ">
+                {selectedPickup.PickupPersonImageURL ? (
+                  <div className="grid grid-cols-1 gap-4 pb-3 border-b-2 border-purple-700">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                      Pickup Person Image
+                    </h3>
+                    <a
+                      href={selectedPickup.PickupPersonImageURL}
+                      target="_blank"
+                      className="w-fit"
+                    >
+                      <img
+                        src={selectedPickup.PickupPersonImageURL}
+                        className="w-48 rounded-2xl object-scale-down h-48"
+                      />
+                    </a>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4 pb-3 border-b-2 border-purple-700">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                      Pickup Person Image
+                    </h3>
+                    <p>No Image</p>
+                  </div>
+                )}
+              </div>
               {typeof selectedPickup.finalWeightImage === "string" ? (
-                <div className="mt-6">
+                <div className="mt-6  pb-3 border-b-2 border-purple-700">
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">
                     Final Weight Image{" "}
                   </h3>
@@ -655,7 +668,7 @@ function Pickups() {
                   </div>
                 </div>
               ) : (
-                <div className="mt-6">
+                <div className="mt-6 pb-3 border-b-2 border-purple-700">
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">
                     Final Weight Image{" "}
                   </h3>
@@ -667,10 +680,16 @@ function Pickups() {
 
               <div className="mt-6">
                 {selectedPickup.paymentProof ? (
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="relative grid grid-cols-1 gap-4 pb-3 border-b-2 border-purple-700">
                     <h3 className="text-lg font-semibold text-gray-800 mb-3">
                       Payment Proof
                     </h3>
+                    <p className="w-2/4 absolute right-3 top-1">
+                      <span className="font-semibold text-purple-700">
+                        Payment Confirmed:
+                      </span>{" "}
+                      {selectedPickup.PaymentComfirmedDate || "NA"}
+                    </p>
                     <a
                       href={selectedPickup.paymentProof}
                       target="_blank"
@@ -683,7 +702,7 @@ function Pickups() {
                     </a>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 gap-4 pb-3 border-b-2 border-purple-700">
                     <h3 className="text-lg font-semibold text-gray-800 mb-3">
                       Payment Proof{" "}
                     </h3>
@@ -694,10 +713,16 @@ function Pickups() {
 
               <div className="mt-6">
                 {selectedPickup.AWbNumberImage ? (
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="relative grid grid-cols-1 gap-4 pb-3 border-b-2 border-purple-700">
                     <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                      AWb Number Image{" "}
+                      AWb Number Image
                     </h3>
+                    <p className="w-1/2 absolute right-3 top-1">
+                      <span className="font-semibold text-purple-700">
+                        Package Connected:
+                      </span>
+                      {selectedPickup.packageConnectedDataTime || "NA"}
+                    </p>
                     <a
                       href={selectedPickup.AWbNumberImage}
                       target="_blank"
@@ -710,7 +735,7 @@ function Pickups() {
                     </a>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 gap-4 pb-3 border-b-2 border-purple-700">
                     <h3 className="text-lg font-semibold text-gray-800 mb-3">
                       AWb Number Image{" "}
                     </h3>
@@ -718,32 +743,7 @@ function Pickups() {
                   </div>
                 )}
               </div>
-              <div className="mt-6">
-                {selectedPickup.PickupPersonImageURL ? (
-                  <div className="grid grid-cols-1 gap-4">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                      Pickup Person Image{" "}
-                    </h3>
-                    <a
-                      href={selectedPickup.PickupPersonImageURL}
-                      target="_blank"
-                      className="w-fit"
-                    >
-                      <img
-                        src={selectedPickup.PickupPersonImageURL}
-                        className="w-48 rounded-2xl object-scale-down h-48"
-                      />
-                    </a>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 gap-4">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                      Pickup Person Image{" "}
-                    </h3>
-                    <p>No Image</p>
-                  </div>
-                )}
-              </div>
+
               <button
                 onClick={closeModal}
                 className="mt-6 w-fit absolute top-0 right-0 px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -763,4 +763,5 @@ function Pickups() {
     </>
   );
 }
+
 export default Pickups;

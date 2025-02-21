@@ -236,7 +236,7 @@ function PickupBooking() {
           headers: options.headers,
         }
       );
-      await utility.sendNotification();
+      // await utility.sendNotification();
       // utility.SuccessNotify("Pickup request submitted successfully.");
       setFiles([]);
       reset();
