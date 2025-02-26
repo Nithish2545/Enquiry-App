@@ -575,7 +575,7 @@ function PickupBooking() {
                 <option value="FedEx">FedEx</option>
                 <option value="SELF">SELF</option>
                 <option value="BOMBINO">BOMBINO</option>
-                <option value="ARLANTIC">ATLANTIC</option>
+                <option value="ATLANTIC">ATLANTIC</option>
               </select>
               {errors.vendor && (
                 <p className="text-red-500 text-sm mt-1">
