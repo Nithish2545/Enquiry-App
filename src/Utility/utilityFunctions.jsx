@@ -435,9 +435,20 @@ function rolesPermissions() {
       RateManagement: ["Sale-rates", "vendor-rates"],
     };
   }
-  if (role == "sales associate" || role == "sales admin") {
+  if (role == "sales associate") {
     return {
       PickupManagement: ["Pickup-Booking", "Pickups"],
+      RateManagement: ["Sale-rates"],
+    };
+  }
+  if (role == "sales admin") {
+    return {
+      PickupManagement: [
+        "Pickup-Booking",
+        "Pickups",
+        "Sales-Incentive",
+        "Pickup-Incentive",
+      ],
       RateManagement: ["Sale-rates"],
     };
   }
