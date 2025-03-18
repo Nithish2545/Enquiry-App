@@ -47,10 +47,17 @@ function PaymentConfirm() {
     return () => unsubscribe();
   }, []);
 
-  const allowedStatuses = ["PAYMENT DONE", "SHIPMENT CONNECTED"];
+  const allowedStatuses = [
+    "PAYMENT DONE",
+    "SHIPMENT CONNECTED",
+    "PAYMENT REQUESTED",
+  ];
 
-  const filteredData = data.filter((item) => item.status === activeTab);
+  const allowedStatusesfiltereddata = ["PAYMENT PENDING", "PAYMENT REQUESTED"];
 
+  const filteredData = data.filter((item) =>
+    allowedStatusesfiltereddata.includes(item.status)
+  );
   const paymentdone = data.filter((item) =>
     allowedStatuses.includes(item.status)
   );

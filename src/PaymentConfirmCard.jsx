@@ -1,15 +1,19 @@
 import jsPDF from "jspdf";
 import { useNavigate } from "react-router-dom";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import JsBarcode from "jsbarcode";
 import "jspdf-autotable";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { storage } from "./firebase";
+import { db } from "./firebase";
 import utilityFunctions from "./Utility/utilityFunctions";
+import axios from "axios";
+import { doc, updateDoc } from "firebase/firestore";
+import Lottie from "lottie-react";
 
 function PaymentConfirmCard({ item, index }) {
   const navigate = useNavigate();
   const barcodeRef = useRef(null); // Ref for barcode generation
+  const [loading, setloading] = useState(false);
+  const [animationData, setAnimationData] = useState(null);
 
   const handleAcceptClick = () => {
     const url = `/payment-confirmation-form/${item.awbNumber}`; // Use item.vendorAwbnumber if that's the correct field
@@ -18,6 +22,18 @@ function PaymentConfirmCard({ item, index }) {
       "Payment accepted. Redirecting to confirmation form!"
     ); // Add a success toast
   };
+
+  // Fetch Lottie animation from the public folder
+  useEffect(() => {
+    try {
+      fetch("/loading_animation.json")
+        .then((response) => response.json())
+        .then((data) => setAnimationData(data))
+        .catch((error) => console.error("Error loading animation:", error));
+    } catch (e) {
+      console.log(e);
+    }
+  }, []);
 
   function generate_AWBNUMBER_PDF() {
     try {
@@ -278,8 +294,15 @@ function PaymentConfirmCard({ item, index }) {
   return (
     <div
       key={index}
-      className="flex flex-col border border-gray-300 rounded-lg p-6 bg-white shadow-lg hover:shadow-2xl transition-shadow duration-300"
+      className="flex  relative flex-col border border-gray-300 rounded-lg p-6 bg-white shadow-lg hover:shadow-2xl transition-shadow duration-300"
     >
+      {item.makePaymentNotified ? (
+        <div className="absolute top-3 right-3 text-sm  text-green-700 font-semibold bg-green-100 px-3 py-1 rounded-md shadow-sm">
+          Payment request sent
+        </div>
+      ) : (
+        ""
+      )}
       <div className="flex flex-col mb-4 gap-2">
         {item.consignorname && (
           <p className="text-base font-medium text-gray-800">
@@ -288,7 +311,7 @@ function PaymentConfirmCard({ item, index }) {
           </p>
         )}
         <p className="text-base font-medium text-gray-800">
-          <strong className="text-gray-900">Shiphit AWB Number:</strong>{" "}
+          <strong className="text-gray-900">Shiphit AWB Number:</strong>
           {item.awbNumber || "-"}
         </p>
       </div>
@@ -356,7 +379,7 @@ function PaymentConfirmCard({ item, index }) {
           </p>
         </div>
       )}
-      {item.status == "PAYMENT PENDING" ? (
+      {item.status == "PAYMENT PENDING" || "PAYMENT REQUESTED" ? (
         <div className="flex justify-end mt-auto">
           <button
             onClick={handleAcceptClick}
@@ -364,6 +387,7 @@ function PaymentConfirmCard({ item, index }) {
           >
             Accept
           </button>
+          {/* )} */}
         </div>
       ) : (
         ""
@@ -386,7 +410,6 @@ function PaymentConfirmCard({ item, index }) {
       ) : (
         ""
       )}
-
       <canvas ref={barcodeRef} style={{ display: "none" }} />
       <canvas ref={barcodeRef} style={{ display: "none" }} />
     </div>

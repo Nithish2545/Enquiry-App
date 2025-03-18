@@ -10,12 +10,16 @@ import {
   getDocs,
   doc,
   updateDoc,
+  onSnapshot,
 } from "firebase/firestore";
 import collectionName_BaseAwb from "./functions/collectionName";
 import axios from "axios";
 import jsPDF from "jspdf";
 import utilityFunctions from "./Utility/utilityFunctions";
+import Lottie from "lottie-react";
+
 function PaymentConfirmationForm() {
+  const [costKg, setcostKg] = useState(0);
   const { awbnumber } = useParams();
   const [details, setDetails] = useState(null);
   const [paymentProof, setPaymentProof] = useState(null);
@@ -25,52 +29,77 @@ function PaymentConfirmationForm() {
   const [formError, setFormError] = useState("");
   const [submitLoading, setSubmitLoading] = useState(false);
   const [showPopup, setShowPopup] = useState(false); // State to control popup visibility
+  const [showPopupForPayConfirm, setshowPopupForPayConfirm] = useState(false);
   const barcodeRef = useRef(null); // Ref for barcode generation
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm();
   const navigate = useNavigate();
   const [downloadURL, setdownloadURL] = useState("");
-  useEffect(() => {
-    const fetchDetails = async () => {
-      try {
-        // Create a query to fetch documents with status "PAYMENT PENDING" and the given awbNumber
-        const q = query(
-          collection(
-            db,
-            collectionName_BaseAwb.getCollection(
-              JSON.parse(localStorage.getItem("LoginCredentials")).Location
-            )
-          ),
-          where("awbNumber", "==", parseInt(awbnumber))
-        );
+  const [animationData, setAnimationData] = useState(null);
 
-        // Fetch the query results
-        const querySnapshot = await getDocs(q);
+  console.log(
+    details?.logisticCost
+      ? details?.logisticCost
+      : parseInt(details?.actualWeight) * costKg
+  );
+
+  useEffect(() => {
+    try {
+      fetch("/loading_animation.json")
+        .then((response) => response.json())
+        .then((data) => setAnimationData(data))
+        .catch((error) => console.error("Error loading animation:", error));
+    } catch (e) {
+      console.log(e);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (details?.discountCost != null) {
+      setValue("discountCost", details?.discountCost); // Set value in React Hook Form
+    }
+  }, [details?.discountCost, setValue]);
+
+  useEffect(() => {
+    if (!awbnumber) return;
+
+    setLoading(true); // Start loading state
+
+    const q = query(
+      collection(
+        db,
+        collectionName_BaseAwb.getCollection(
+          JSON.parse(localStorage.getItem("LoginCredentials")).Location
+        )
+      ),
+      where("awbNumber", "==", parseInt(awbnumber))
+    );
+
+    const unsubscribe = onSnapshot(
+      q,
+      (querySnapshot) => {
         const userDetails = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
 
-        // Assuming you want only one result (in case there are multiple matches)
-        if (userDetails.length > 0) {
-          setDetails(userDetails[0]);
-        } else {
-          setDetails(null); // No data matched
-        }
-      } catch (error) {
+        setDetails(userDetails.length > 0 ? userDetails[0] : null);
+        setLoading(false); // Stop loading when data is received
+      },
+      (error) => {
         utilityFunctions.ErrorNotify(
           "An error occurred while fetching data. Please try again later."
         );
-      } finally {
-        setLoading(false); // Stop the loading state
+        setLoading(false); // Stop loading on error
       }
-    };
+    );
 
-    fetchDetails();
-  }, [awbnumber]); // Dependency array to refetch when awbnumber changes
+    return () => unsubscribe(); // Cleanup listener on unmount
+  }, [awbnumber]); // Re-run when `awbnumber` changes
 
   const uploadFileToFirebase = async (file, folder) => {
     const storageRef = ref(storage, `${awbnumber}/${folder}/${file.name}`);
@@ -90,15 +119,6 @@ function PaymentConfirmationForm() {
     if (file) {
       setKycImage(file);
     }
-  };
-
-  const validateForm = () => {
-    if (!paymentProof && !KycImage) {
-      setFormError("Payment proof and KYC Image is required.");
-      return false;
-    }
-    setFormError("");
-    return true;
   };
 
   const getTodayDate = async () => {
@@ -292,8 +312,58 @@ function PaymentConfirmationForm() {
     return truncatedResult;
   }
 
+  async function makePaymentNotify(docId) {
+    try {
+      const apiUrl = "https://public.doubletick.io/whatsapp/message/template";
+      const authKey = "key_z6hIuLo8GC"; // Store this securely (e.g., in environment variables)
+
+      // Message data
+      const messageData = {
+        messages: [
+          {
+            from: "+919600690881",
+            to: "+919042489612",
+            content: {
+              language: "en",
+              templateName: "makepaymentfinal_1",
+              templateData: {
+                body: {
+                  placeholders: ["nithish", "20000", "90234241232"],
+                },
+              },
+            },
+          },
+        ],
+      };
+
+      // API request headers
+      const headers = {
+        accept: "application/json",
+        "content-type": "application/json",
+        Authorization: authKey,
+      };
+
+      // Sending WhatsApp message
+      const response = await axios.post(apiUrl, messageData, { headers });
+
+      // Extract message status
+      const messageStatus = response?.data?.messages?.[0]?.status === "SENT";
+
+      // Update Firestore document
+      const pickupRef = doc(db, "pickup", docId);
+      await updateDoc(pickupRef, { makePaymentNotified: messageStatus });
+
+      // Success message
+      utilityFunctions.SuccessNotify(
+        "Make Payment notification sent successfully."
+      );
+    } catch (error) {
+      utilityFunctions.ErrorNotify(error.message);
+    } finally {
+    }
+  }
+
   const onSubmit = async (data) => {
-    if (!validateForm()) return;
     setSubmitLoading(true);
     try {
       if (!details) {
@@ -325,10 +395,10 @@ function PaymentConfirmationForm() {
         final_result[0].id
       ); // db is your Firestore instance
       const updatedFields = {
-        status: "PAYMENT DONE",
+        status: "PAYMENT REQUESTED",
         logisticCost: data.logisticsCost,
         discountCost: data.discountCost,
-        paymentProof: await uploadFileToFirebase(paymentProof, "PAYMENT PROOF"),
+        // paymentProof: await uploadFileToFirebase(paymentProof, "PAYMENT PROOF"),
         KycImage: await uploadFileToFirebase(KycImage, "KYC"),
         PaymentComfirmedDate: await getTodayDate(),
         consigneename: !data.consigneename1
@@ -341,6 +411,65 @@ function PaymentConfirmationForm() {
           ? details.consigneelocation
           : data.consigneelocation1,
         costKg: data.costKg,
+        payment_Receipt_URL: Payment_URL,
+      };
+      updateDoc(docRef, updatedFields);
+      await makePaymentNotify(details.id);
+      setShowPopup(true);
+    } catch (error) {
+      console.log(error);
+      handleError(error);
+    } finally {
+      setSubmitLoading(false);
+      resetForm(); // Reset form after submission
+    }
+  };
+
+  const paymentConfirm = async () => {
+    setSubmitLoading(true);
+    const validateForm = () => {
+      if (!paymentProof) {
+        setFormError("Payment proof Image is required.");
+        return false;
+      }
+      setFormError("");
+      return true;
+    };
+    if (!validateForm()) return;
+
+    try {
+      if (!details) {
+        throw new Error("User details not found");
+      }
+      setSubmitLoading(true);
+      const Payment_URL = await generate_Invoice_PDF(
+        details?.costKg,
+        details?.discountCost
+      );
+      const q = query(
+        collection(
+          db,
+          collectionName_BaseAwb.getCollection(
+            JSON.parse(localStorage.getItem("LoginCredentials")).Location
+          )
+        ),
+        where("awbNumber", "==", parseInt(awbnumber))
+      );
+      const querySnapshot = await getDocs(q);
+      let final_result = [];
+      querySnapshot.forEach((doc) => {
+        final_result.push({ id: doc.id, ...doc.data() });
+      });
+      const docRef = doc(
+        db,
+        collectionName_BaseAwb.getCollection(
+          JSON.parse(localStorage.getItem("LoginCredentials")).Location
+        ),
+        final_result[0].id
+      );
+      const updatedFields = {
+        status: "PAYMENT DONE",
+        paymentProof: await uploadFileToFirebase(paymentProof, "PAYMENT PROOF"),
         payment_Receipt_URL: Payment_URL,
       };
       updateDoc(docRef, updatedFields);
@@ -375,22 +504,23 @@ function PaymentConfirmationForm() {
                 templateName: "payment_done6",
               },
               from: "+919600690881",
-              to: `+91${details.consignorphonenumber}`,
+              // to: `+91${details.consignorphonenumber}`,
+              to: `+919042489612`,
             },
           ],
         },
       };
-
       const response = await axios.post(options.url, options.data, {
         headers: options.headers,
       });
-      setShowPopup(true);
+      setshowPopupForPayConfirm(true);
     } catch (error) {
       handleError(error);
     } finally {
       setSubmitLoading(false);
       resetForm(); // Reset form after submission
     }
+    console.log("testing!");
   };
 
   const handleError = (error) => {
@@ -584,7 +714,6 @@ function PaymentConfirmationForm() {
               className="p-2 border rounded bg-gray-100"
             />
           </div>
-
           <div className="flex flex-col mb-4">
             <label className="text-gray-700 font-medium mb-1">Vendor</label>
             <input
@@ -676,10 +805,15 @@ function PaymentConfirmationForm() {
               Enter Logistics Cost
             </label>
             <input
+              value={
+                details?.logisticCost
+                  ? details?.logisticCost
+                  : parseInt(details?.actualWeight) * costKg
+              }
               type="text"
               className="p-2 border rounded bg-gray-100"
-              value={details.logisticsCost}
               placeholder="Enter Logistic Cost"
+              readOnly={!!details.costKg} // Makes input readonly if discountCost exists
               {...register("logisticsCost", {
                 required: "Logistics cost is required",
                 pattern: {
@@ -703,19 +837,21 @@ function PaymentConfirmationForm() {
             <label className="text-gray-700 font-medium mb-1">Cost/KG</label>
             <input
               type="text"
+              value={details.costKg == null ? costKg : details.costKg}
               className="p-2 border rounded bg-gray-100"
               placeholder="Enter Cost/KG"
+              readOnly={details.costKg == null ? false : true} // Makes input readonly if discountCost exists
               {...register("costKg", {
                 required: "Cost/KG is required",
                 pattern: {
                   value: /^[0-9]+$/,
                   message: "Please enter a Cost/KG consisting of digits only",
                 },
-                valueAsNumber: true, // Converts input value to an integer
                 validate: (value) =>
-                  Number.isInteger(value) ||
-                  "Please enter a valid integer number",
+                  Number.isInteger(Number(value)) ||
+                  "Please enter a valid integer",
               })}
+              onChange={(e) => setcostKg(Number(e.target.value))} // Convert to number
             />
           </div>
           {errors.costKg && (
@@ -728,8 +864,8 @@ function PaymentConfirmationForm() {
             <input
               type="text"
               className="p-2 border rounded bg-gray-100"
-              value={details.logisticsCost}
               placeholder="Enter Discount Amount"
+              readOnly={!!details.discountCost} // Readonly if discountCost exists
               {...register("discountCost", {
                 required: "Please enter the discount amount.",
                 pattern: {
@@ -749,22 +885,28 @@ function PaymentConfirmationForm() {
               {errors.discountCost.message}
             </p>
           )}
-          <div className="flex flex-col mb-4">
-            <label className="text-gray-700 font-medium mb-1">
-              Payment Proof:
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="p-2 border rounded"
-              required
-            />
-          </div>
-          {errors.Paymentproof && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.Paymentproof.message}
-            </p>
+          {details.makePaymentNotified ? (
+            <>
+              <div className="flex flex-col mb-4">
+                <label className="text-gray-700 font-medium mb-1">
+                  Payment Proof:
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="p-2 border rounded"
+                  required
+                />
+              </div>
+              {errors.Paymentproof && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.Paymentproof.message}
+                </p>
+              )}
+            </>
+          ) : (
+            ""
           )}
           {details.KycImage == null || details.KycImage == "" ? (
             <>
@@ -790,13 +932,32 @@ function PaymentConfirmationForm() {
             <></>
           )}
           {formError && <p className="text-red-500 text-sm">{formError}</p>}
-          <button
-            type="submit"
-            className="w-full mt-4 p-2 bg-purple-600 text-white font-semibold rounded hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
-            disabled={submitLoading}
-          >
-            {submitLoading ? "Submitting..." : "Submit"}
-          </button>
+          {details.makePaymentNotified &&
+          details.status == "PAYMENT REQUESTED" ? (
+            <div
+              onClick={() => paymentConfirm()}
+              className="w-full mt-4 p-2 bg-purple-600 text-white font-semibold rounded hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
+              // disabled={submitLoading}
+            >
+              {submitLoading ? "Submitting..." : "Submit"}
+            </div>
+          ) : (
+            <button
+              type="submit"
+              className="w-full mt-4 p-2 flex items-center justify-center bg-purple-600 text-white font-semibold rounded hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600"
+              disabled={submitLoading}
+            >
+              {submitLoading ? (
+                <Lottie
+                  animationData={animationData}
+                  loop={true}
+                  className="w-8 h-8"
+                />
+              ) : (
+                "Make Payment"
+              )}
+            </button>
+          )}
         </form>
       ) : (
         <div className="text-center text-gray-500">
@@ -807,15 +968,37 @@ function PaymentConfirmationForm() {
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-70">
           <div className="bg-white p-8 rounded-lg shadow-lg transition-transform transform scale-95 hover:scale-100 duration-300">
             <h3 className="text-xl font-bold text-center text-gray-800 mb-6">
-              Payment Submitted
+              Payment Requested
             </h3>
             <p className="text-center text-gray-600 mb-4">
-              Thank you for your payment!
+              Thank you! Your payment request has been sent.
             </p>
             <button
               className="mt-4 w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition duration-200"
               onClick={() => {
                 setShowPopup(false);
+                // navigate("/Payment-confirm");
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showPopupForPayConfirm && (
+        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-70">
+          <div className="bg-white p-8 rounded-lg shadow-lg transition-transform transform scale-95 hover:scale-100 duration-300">
+            <h3 className="text-xl font-bold text-center text-gray-800 mb-6">
+              Payment Completed
+            </h3>
+            <p className="text-center text-gray-600 mb-4">
+              Thank you! Your payment has been successfully completed.
+            </p>
+            <button
+              className="mt-4 w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition duration-200"
+              onClick={() => {
+                setshowPopupForPayConfirm(false);
                 navigate("/Payment-confirm");
               }}
             >
@@ -824,6 +1007,7 @@ function PaymentConfirmationForm() {
           </div>
         </div>
       )}
+
       {/* Hidden canvas for generating barcode */}
       <canvas ref={barcodeRef} style={{ display: "none" }} />
     </div>
