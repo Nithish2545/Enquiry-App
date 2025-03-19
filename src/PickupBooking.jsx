@@ -4,7 +4,7 @@ import { getData } from "country-list";
 import Nav from "./Nav";
 import { db, storage } from "./firebase";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
-import { addDoc, collection, getDocs } from "firebase/firestore";
+import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
 import axios from "axios";
 import collectionName_baseAwb from "./functions/collectionName";
 import utility from "./Utility/utilityFunctions";
@@ -23,6 +23,18 @@ function PickupBooking() {
   const [service, setservice] = useState("");
   const [latitudelongitude, setlatitudelongitude] = useState("");
   const [error, seterror] = useState("");
+  const [isSourceFixed, setIsSourceFixed] = useState(false);
+  const [sourceOptions, setSourceOptions] = useState([
+    "FB Ad",
+    "Google Ad",
+    "Website Ad",
+    "Direct Ad",
+    "Whatsapp Campaign",
+    "REP",
+    "Customer Refer",
+    "Employee Refer",
+    "Offline Ad",
+  ]);
   const [source, setsource] = useState("");
   function splitLati_Logi(value) {
     const [lat, long] = value.split(",").map(Number);
@@ -34,7 +46,9 @@ function PickupBooking() {
 
   const {
     control,
+    setValue,
     register,
+    watch,
     handleSubmit,
     formState: { errors },
     reset,
@@ -79,6 +93,7 @@ function PickupBooking() {
       "Germany",
       "France",
     ];
+
     // Sort countries alphabetically
     const sortedCountries = countryData.sort((a, b) =>
       a.name.localeCompare(b.name)
@@ -107,6 +122,46 @@ function PickupBooking() {
 
     setCountryCodeToName(codeToNameMap);
   }, []);
+
+  const auto_populate = async (phoneNumber) => {
+    if (phoneNumber.length >= 9 && phoneNumber.length <= 10) {
+      try {
+        const q = query(
+          collection(db, "pickup"),
+          where("consignorphonenumber", "==", phoneNumber)
+        );
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          const data = querySnapshot.docs[0].data();
+          console.log("data", data);
+          const dynamicSource = data.Source || "Unknown Source"; // Get source from DB
+
+          // Ensure the dynamic source is added to options first
+          setSourceOptions((prev) =>
+            prev.includes(dynamicSource) ? prev : [...prev, dynamicSource]
+          );
+
+          // Wait for state update before setting value
+          setTimeout(() => {
+            setValue("source", dynamicSource); // Set form value dynamically
+            setsource(dynamicSource);
+            setIsSourceFixed(true); // Disable the field
+          }, 100);
+        } else {
+          // Reset if no match found
+          setValue("source", "Select");
+          setIsSourceFixed(false);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      // Reset if input is too short or long
+      setValue("source", "Select");
+      setIsSourceFixed(false);
+    }
+  };
 
   const onSubmit = async (data) => {
     try {
@@ -156,12 +211,10 @@ function PickupBooking() {
         consignorname: data.Consignorname,
         consignorphonenumber: data.Consignornumber,
         consignorlocation: data.Consignorlocation,
-
         // Consignee Data
         consigneename: data.consigneename,
         consigneephonenumber: data.consigneenumber,
         consigneelocation: data.consigneelocation,
-
         content: data.Content,
         longitude: result.longitude,
         latitude: result.latitude,
@@ -181,18 +234,14 @@ function PickupBooking() {
         vendorName: data.vendor,
         service: service,
         imageUrLs: null,
-
         pickupCompletedDatatime: null,
         pickUpPersonName: "Unassigned",
-
         postNumberOfPackages: null,
         postPickupWeight: null,
-
         actualNoOfPackages: null,
         actualWeight: null,
         PaymentComfirmedDate: "",
         status: "RUN SHEET",
-
         pickupBookedBy: username,
         vendorAwbnumber: null,
         pickUpPersonNameStatus: null,
@@ -345,6 +394,7 @@ function PickupBooking() {
                     onChange: (e) => {
                       // Remove non-numeric characters
                       e.target.value = e.target.value.replace(/[^0-9]/g, "");
+                      auto_populate(e.target.value);
                     },
                   })}
                   className={`w-full px-3 py-2 border ${
@@ -696,26 +746,24 @@ function PickupBooking() {
             <div>
               <p className="text-gray-700 font-semibold mb-2">Source</p>
               <select
-                className="w-1/2 px-3 py-2 border rounded-md focus:outline-none focus:border-[#8847D9]"
-                {...register("source", {
-                  required: "Source is required",
-                })}
-                onChange={(e) => {
-                  setsource(e.target.value);
-                }}
+                {...register("source", { required: "Source is required" })}
+                value={watch("source") || "Select"} // Ensure correct value
+                disabled={isSourceFixed} // Disable if auto-populated
+                className={`w-1/2 px-3 py-2 border rounded-md focus:outline-none ${
+                  isSourceFixed
+                    ? "bg-gray-200 cursor-not-allowed"
+                    : "focus:border-[#8847D9]"
+                }`}
+                onChange={(e) => setsource(e.target.value)}
               >
-                <option value="">Select</option>
-                <option value="FB Ad">FB Ad</option>
-                <option value="Google Ad">Google Ad</option>
-                <option value="Website Ad">Website Ad</option>
-                <option value="Direct Ad">Direct Ad</option>
-                <option value="Whatsapp Campaign">Whatsapp Campaign</option>
-                <option value="REP">REP</option>
-                <option value="Customer Refer">Customer Refer</option>
-                <option value="Employee Refer">Employee Refer</option>
-                <option value="Offline Ad">Offline Ad</option>
+                <option value="Select">Select</option>
+                {sourceOptions?.map((option, index) => (
+                  <option key={index} value={option}>
+                    {option}
+                  </option>
+                ))}
               </select>
-              {errors.service && (
+              {errors.source && (
                 <p className="text-red-500 text-sm mt-1">
                   {errors.source.message}
                 </p>
