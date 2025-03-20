@@ -134,9 +134,7 @@ function PickupBooking() {
 
         if (!querySnapshot.empty) {
           const data = querySnapshot.docs[0].data();
-          console.log("data", data);
-          const dynamicSource = data.Source || "Unknown Source"; // Get source from DB
-
+          const dynamicSource = "REP"; // Get source from DB
           // Ensure the dynamic source is added to options first
           setSourceOptions((prev) =>
             prev.includes(dynamicSource) ? prev : [...prev, dynamicSource]
@@ -150,7 +148,8 @@ function PickupBooking() {
           }, 100);
         } else {
           // Reset if no match found
-          setValue("source", "Select");
+          setValue("source", source); // Set form value dynamically
+          setsource(source);
           setIsSourceFixed(false);
         }
       } catch (error) {
@@ -162,8 +161,23 @@ function PickupBooking() {
       setIsSourceFixed(false);
     }
   };
+  async function checkRepeatedCustomer(phoneNumber) {
+    const q = query(
+      collection(db, "pickup"),
+      where("consignorphonenumber", "==", phoneNumber)
+    );
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const data = querySnapshot.docs[0].data();
+      const dynamicSource = "REP"; // Get source from DB
+      return dynamicSource;
+    }
+    return false;
+  }
 
   const onSubmit = async (data) => {
+    console.log(data.Consignornumber);
     try {
       if (latitudelongitude == "") {
         seterror("Latitude & Longitude  Is Required!");
@@ -253,38 +267,79 @@ function PickupBooking() {
         Source: source,
       });
 
-      const options = {
-        method: "POST",
-        headers: {
-          accept: "application/json",
-          "content-type": "application/json",
-          Authorization: "key_z6hIuLo8GC", // Add your authorization token here
-        },
-        data: {
-          messages: [
-            {
-              from: "+919600690881",
-              to: `+91${data.Consignornumber}`,
-              content: {
-                language: "en_US",
-                templateName: "shipmentbooked_dynamic",
-                templateData: {
-                  body: {
-                    placeholders: [data.Consignorname],
+      if (!(await checkRepeatedCustomer(data.Consignornumber))) {
+        const options = {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+            "content-type": "application/json",
+            Authorization: "key_z6hIuLo8GC", // Add your authorization token here
+          },
+          data: {
+            messages: [
+              {
+                from: "+919600690881",
+                to: `+91${data.Consignornumber}`,
+                content: {
+                  language: "en_US",
+                  templateName: "shipmentbooked_dynamic",
+                  templateData: {
+                    body: {
+                      placeholders: [data.Consignorname],
+                    },
                   },
                 },
               },
-            },
-          ],
-        },
-      };
-      const response = await axios.post(
-        "https://public.doubletick.io/whatsapp/message/template",
-        options.data,
-        {
-          headers: options.headers,
-        }
-      );
+            ],
+          },
+        };
+
+        const response = await axios.post(
+          "https://public.doubletick.io/whatsapp/message/template",
+          options.data,
+          {
+            headers: options.headers,
+          }
+        );
+        return;
+      } else {
+        const options = {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+            "content-type": "application/json",
+            Authorization: "key_z6hIuLo8GC", // Add your authorization token here
+          },
+          data: {
+            messages: [
+              {
+                from: "+919600690881",
+                to: `+91${data.Consignornumber}`,
+                content: {
+                  language: "en",
+                  templateName: "repeatedpickupbookingtemplate",
+                  templateData: {
+                    body: {
+                      placeholders: [data.Consignorname],
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        };
+
+        const response = await axios.post(
+          "https://public.doubletick.io/whatsapp/message/template",
+          options.data,
+          {
+            headers: options.headers,
+          }
+        );
+
+        return;
+      }
+
       // await utility.sendNotification();
       // utility.SuccessNotify("Pickup request submitted successfully.");
       setFiles([]);
@@ -747,7 +802,7 @@ function PickupBooking() {
               <p className="text-gray-700 font-semibold mb-2">Source</p>
               <select
                 {...register("source", { required: "Source is required" })}
-                value={watch("source") || "Select"} // Ensure correct value
+                value={source} // Ensure correct value
                 disabled={isSourceFixed} // Disable if auto-populated
                 className={`w-1/2 px-3 py-2 border rounded-md focus:outline-none ${
                   isSourceFixed
