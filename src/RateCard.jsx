@@ -33,7 +33,6 @@ const RateCardForm = () => {
       } catch (error) {
         console.error("Error uploading data to Firestore:", error);
       } finally {
-        // console.log("Data updated into firebase!");
       }
     };
     await axios.get(API_ENDPOINT).then((d) => {
@@ -114,16 +113,13 @@ const RateCardForm = () => {
     setZones(zonesData);
     setEconomy_Zones(economyZonesData);
     setInstructions(instructionsData);
-
     if (
       rateData[country] &&
       rateData[country][0] &&
-      rateData[country] &&
       rateData[country][0]["DAYSTODELIVER_Economy"] &&
       rateData[country][0]["DAYSTODELIVER_Express"] &&
       rateData[country][0]["DAYSTODELIVER_DutyFree"]
     ) {
-      console.log("rateData", rateData[country][0]["DAYSTODELIVER_Express"]);
       setDAYSTODELIVER_Economy(rateData[country][0]["DAYSTODELIVER_Economy"]);
       setDAYSTODELIVER_Express(rateData[country][0]["DAYSTODELIVER_Express"]);
       setDAYSTODELIVER_DutyFree(rateData[country][0]["DAYSTODELIVER_DutyFree"]);
